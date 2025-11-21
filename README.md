@@ -22,7 +22,7 @@ Franciszek Dyląg, Mateusz Guzowski, Marcin Wojdalski
 - **Authentication & Authorization** - Managing user authentication and authorization
 - **WebSocket Layer** - Real-time message delivery
 - **REST API** - User management, conversation history, group operations
-- **Message Service** - Handle message exchanging process
+- **Message Service** - Handle message exchanging process, this should also be responsible for handling attachments
 
 ---
 
@@ -54,7 +54,6 @@ Note: We might also use Redis as a message broker (i.e. when sending async email
 
 - **Message Delivery**: Handle offline users (store & forward when online)
 - **Security**: Validate user permissions for conversations
-- **File Sharing**: Add file upload service later if needed
 
 --- 
 
