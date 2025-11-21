@@ -60,5 +60,6 @@ Note: We might also use Redis as a message broker (i.e. when sending async email
 
 ## Additional Features:
 - Read receipts & typing indicators
+- Calendar integration -> user status might be automatically toggled to busy when having a meeting in his calendar
 - Dockerizing our application
 - Swagger documentation
