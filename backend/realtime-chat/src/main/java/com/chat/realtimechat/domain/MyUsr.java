@@ -1,11 +1,11 @@
-package com.chat.domain;
+package com.chat.realtimechat.domain;
 
 import jakarta.persistence.*;
 
 import java.util.Objects;
 
 @Entity
-public class User {
+public class MyUsr {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -77,8 +77,8 @@ public class User {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id);
+        MyUsr myUsr = (MyUsr) o;
+        return Objects.equals(id, myUsr.id);
     }
 
     @Override
