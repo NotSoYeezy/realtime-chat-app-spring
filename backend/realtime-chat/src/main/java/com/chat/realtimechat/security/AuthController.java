@@ -2,7 +2,11 @@ package com.chat.realtimechat.security;
 
 
 import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.model.dto.request.LoginRequset;
+import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.UserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,23 +21,18 @@ public class AuthController {
     private final UserRepository repo;
     private final PasswordEncoder encoder;
     private final JwtUtil jwtUtil;
+    private final UserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
-        repo.save(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user.toString());
+    public ResponseEntity<String> register(@RequestBody @Valid RegistrationRequest req) {
+        User registeredUser = userService.registerUser(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser.toString());
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody User req) {
-        User user = repo.findByUsername(req.getUsername())
-                .orElseThrow();
-
-        if (!encoder.matches(req.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Bad credentials");
-        }
-
-        return jwtUtil.generateToken(user.getUsername());
+    public ResponseEntity<String> login(@RequestBody @Valid LoginRequset req) {
+        User loginUser = userService.authenticate(req.getUsername(), req.getPassword());
+        String token = jwtUtil.generateToken(loginUser.getUsername());
+        return ResponseEntity.ok(token);
     }
 }
