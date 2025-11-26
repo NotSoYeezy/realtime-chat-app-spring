@@ -16,7 +16,7 @@ public class UserController {
 //        user.setEmail(newUser.getEmail());
 //        user.setPassword(newUser.getPassword());
 
-        return "hello";
+        return myUsr.getUsername();
     }
 
 }
