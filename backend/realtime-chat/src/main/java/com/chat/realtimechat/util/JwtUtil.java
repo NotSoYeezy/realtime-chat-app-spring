@@ -1,4 +1,4 @@
-package com.chat.realtimechat.security;
+package com.chat.realtimechat.util;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

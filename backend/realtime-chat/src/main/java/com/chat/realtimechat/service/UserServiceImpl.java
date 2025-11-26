@@ -45,9 +45,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User authenticate(String username, String password){
+    public User authenticate(String username, String password) {
         User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Username not found"));
-        if (!passwordEncoder.matches(password, user.getPassword())){
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Incorrect password");
         }
         return user;
@@ -59,7 +59,7 @@ public class UserServiceImpl implements UserService {
 //    }
 
     @Override
-    public void deleteUser(Long id){
+    public void deleteUser(Long id) {
 
     }
 }

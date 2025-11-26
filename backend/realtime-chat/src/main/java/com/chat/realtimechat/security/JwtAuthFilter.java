@@ -1,5 +1,6 @@
 package com.chat.realtimechat.security;
 
+import com.chat.realtimechat.util.JwtUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
