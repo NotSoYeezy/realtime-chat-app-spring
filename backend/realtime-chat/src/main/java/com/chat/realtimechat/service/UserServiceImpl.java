@@ -1,6 +1,6 @@
 package com.chat.realtimechat.service;
 
-import com.chat.realtimechat.domain.MyUsr;
+import com.chat.realtimechat.domain.User;
 import com.chat.realtimechat.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -13,7 +13,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Iterable<MyUsr> findAllUsers() {
+    public Iterable<User> findAllUsers() {
         return userRepository.findAll();
     }
 }

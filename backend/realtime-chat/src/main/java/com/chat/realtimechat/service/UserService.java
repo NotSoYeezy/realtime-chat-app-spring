@@ -1,7 +1,7 @@
 package com.chat.realtimechat.service;
 
-import com.chat.realtimechat.domain.MyUsr;
+import com.chat.realtimechat.domain.User;
 
 public interface UserService {
-    Iterable<MyUsr> findAllUsers();
+    Iterable<User> findAllUsers();
 }

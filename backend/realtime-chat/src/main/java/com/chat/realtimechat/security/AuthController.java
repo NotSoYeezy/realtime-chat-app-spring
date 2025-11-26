@@ -1,7 +1,7 @@
 package com.chat.realtimechat.security;
 
 
-import com.chat.realtimechat.domain.MyUsr;
+import com.chat.realtimechat.domain.User;
 import com.chat.realtimechat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,15 +19,15 @@ public class AuthController {
     private final JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody MyUsr user) {
+    public ResponseEntity<String> register(@RequestBody User user) {
         user.setPassword(encoder.encode(user.getPassword()));
         repo.save(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(user.toString());
     }
 
     @PostMapping("/login")
-    public String login(@RequestBody MyUsr req) {
-        MyUsr user = repo.findByUsername(req.getUsername())
+    public String login(@RequestBody User req) {
+        User user = repo.findByUsername(req.getUsername())
                 .orElseThrow();
 
         if (!encoder.matches(req.getPassword(), user.getPassword())) {

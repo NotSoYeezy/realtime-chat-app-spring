@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.util.Objects;
 
 @Entity
-public class MyUsr {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
@@ -78,8 +78,8 @@ public class MyUsr {
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        MyUsr myUsr = (MyUsr) o;
-        return Objects.equals(id, myUsr.id);
+        User user = (User) o;
+        return Objects.equals(id, user.id);
     }
 
     @Override
