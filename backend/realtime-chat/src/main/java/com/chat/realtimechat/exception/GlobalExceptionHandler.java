@@ -42,25 +42,18 @@ public class GlobalExceptionHandler {
             UserAlreadyExistsException ex,
             HttpServletRequest request
     ) {
-        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
     @ExceptionHandler({
             LoginUserNotFoundException.class,
             IncorrectPasswordException.class
     })
-    public void handleAuthErrors(
-            Exception ex
-    ) {
-        throw new InvalidCredentialsException();
-    }
-
-    @ExceptionHandler(InvalidCredentialsException.class)
     public ResponseEntity<ApiError> handleAuthErrors(
-            InvalidCredentialsException ex,
+            Exception ex,
             HttpServletRequest request
     ) {
-        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+        return buildError(HttpStatus.BAD_REQUEST, "Invalid username or password", request);
     }
 
     @ExceptionHandler(Exception.class)
