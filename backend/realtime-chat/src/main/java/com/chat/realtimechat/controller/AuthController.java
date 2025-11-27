@@ -40,7 +40,7 @@ public class AuthController {
         User loginUser = userService.authenticate(req.getUsername(), req.getPassword());
         String token = jwtUtil.generateToken(loginUser.getUsername());
         LoginResponse response = new LoginResponse(token);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PatchMapping("/update")
