@@ -5,6 +5,7 @@ import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
 import com.chat.realtimechat.exception.UserAlreadyExistsException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
+import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,14 +59,25 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(User user) {
-        User existingUser = userRepository.findById(user.getId())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        existingUser.setUsername(user.getUsername());
-        existingUser.setName(user.getName());
-        existingUser.setSurname(user.getSurname());
-        existingUser.setEmail(user.getEmail());
-        existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+    public User updateUser(UpdateRequest request, String username) {
+        User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
+
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
+        }
+        if (request.getSurname() != null) {
+            user.setSurname(request.getSurname());
+        }
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+        if (request.getPassword() != null) {
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+        }
+        if (request.getUsername() != null) {
+            user.setUsername(request.getUsername());
+        }
+
         return userRepository.save(user);
     }
 
