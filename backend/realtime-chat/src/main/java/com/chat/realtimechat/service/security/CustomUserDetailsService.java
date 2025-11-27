@@ -1,4 +1,4 @@
-package com.chat.realtimechat.security;
+package com.chat.realtimechat.service.security;
 
 import com.chat.realtimechat.domain.User;
 import com.chat.realtimechat.repository.UserRepository;
