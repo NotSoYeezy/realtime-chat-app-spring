@@ -1,8 +1,12 @@
 package com.chat.realtimechat.service;
 
 import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.exception.IncorrectPasswordException;
+import com.chat.realtimechat.exception.LoginUserNotFoundException;
+import com.chat.realtimechat.exception.UserAlreadyExistsException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.repository.UserRepository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -29,9 +33,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registerUser(RegistrationRequest request){
-        if (userRepository.findByUsername(request.getUsername()).isPresent()){
-            throw new RuntimeException("Username is already in use");
+    public User registerUser(RegistrationRequest request) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
+            throw new UserAlreadyExistsException(request.getUsername());
         }
 
         User user = new User();
@@ -46,20 +50,27 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username).orElseThrow(() -> new RuntimeException("Username not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
         if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("Incorrect password");
+            throw new IncorrectPasswordException();
         }
         return user;
     }
 
-//    @Override
-//    public User updateUser(User user){
-//
-//    }
+    @Override
+    public User updateUser(User user) {
+        User existingUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        existingUser.setUsername(user.getUsername());
+        existingUser.setName(user.getName());
+        existingUser.setSurname(user.getSurname());
+        existingUser.setEmail(user.getEmail());
+        existingUser.setPassword(passwordEncoder.encode(user.getPassword()));
+        return userRepository.save(user);
+    }
 
     @Override
     public void deleteUser(Long id) {
-
+        userRepository.deleteById(id);
     }
 }
