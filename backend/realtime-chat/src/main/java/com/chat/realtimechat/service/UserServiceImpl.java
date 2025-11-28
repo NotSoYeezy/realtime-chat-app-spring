@@ -7,6 +7,7 @@ import com.chat.realtimechat.exception.UserAlreadyExistsException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -75,7 +76,13 @@ public class UserServiceImpl implements UserService {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
         if (request.getUsername() != null) {
-            user.setUsername(request.getUsername());
+            String newUsername = request.getUsername();
+            if (!newUsername.equals(user.getUsername())) {
+                if (userRepository.findByUsername(newUsername).isPresent()) {
+                    throw new UserAlreadyExistsException(newUsername);
+                }
+                user.setUsername(newUsername);
+            }
         }
 
         return userRepository.save(user);
