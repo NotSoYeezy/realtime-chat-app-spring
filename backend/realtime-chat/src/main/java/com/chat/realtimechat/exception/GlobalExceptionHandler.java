@@ -45,6 +45,14 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(EmailAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleEmailExists(
+            EmailAlreadyExistsException ex,
+            HttpServletRequest request
+    ){
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
     @ExceptionHandler({
             LoginUserNotFoundException.class,
             IncorrectPasswordException.class
