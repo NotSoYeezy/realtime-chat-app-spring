@@ -1,6 +1,7 @@
 package com.chat.realtimechat.service;
 
 import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.exception.EmailAlreadyExistsException;
 import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
 import com.chat.realtimechat.exception.UserAlreadyExistsException;
@@ -64,6 +65,9 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
 
         if (request.getEmail() != null) {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new EmailAlreadyExistsException();
+            }
             user.setEmail(request.getEmail());
         }
         if (request.getSurname() != null) {

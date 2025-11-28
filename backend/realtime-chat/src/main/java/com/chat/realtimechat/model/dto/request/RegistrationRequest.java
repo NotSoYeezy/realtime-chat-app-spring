@@ -2,12 +2,16 @@ package com.chat.realtimechat.model.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Null;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 
 @Data
 public class RegistrationRequest {
+    @Null(message = "ID cannot be set by a user")
+    private Long id;
+
     @NotBlank(message = "Username is required")
     private String username;
 
