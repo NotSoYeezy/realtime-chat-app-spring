@@ -6,19 +6,14 @@ import com.chat.realtimechat.model.dto.request.LoginRequest;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.model.dto.response.LoginResponse;
-import com.chat.realtimechat.repository.UserRepository;
-import com.chat.realtimechat.service.security.CustomUserDetailsService;
 import com.chat.realtimechat.util.JwtUtil;
 import com.chat.realtimechat.service.UserService;
-import jakarta.annotation.Nullable;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.webmvc.autoconfigure.WebMvcProperties;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -38,7 +33,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody @Valid LoginRequest req) {
         User loginUser = userService.authenticate(req.getUsername(), req.getPassword());
-        String token = jwtUtil.generateToken(loginUser.getUsername());
+        String token = jwtUtil.generateToken(loginUser);
         LoginResponse response = new LoginResponse(token);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
