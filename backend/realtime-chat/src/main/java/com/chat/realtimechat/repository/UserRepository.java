@@ -1,6 +1,6 @@
 package com.chat.realtimechat.repository;
 
-import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.model.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;

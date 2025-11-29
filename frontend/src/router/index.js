@@ -8,19 +8,19 @@ const router = createRouter({
       path: '/register',
       name: 'Register',
       component: () => import("@/views/RegisterView.vue"),
-      meta: {requiresGuest: true}
+      meta: { requiresGuest: true } // Tylko dla niezalogowanych
     },
     {
       path: '/login',
       name: 'Login',
       component: () => import("@/views/LoginView.vue"),
-      meta: {requiresGuest: true}
+      meta: { requiresGuest: true } // Tylko dla niezalogowanych
     },
     {
       path: "/",
       name: 'index',
       component: () => import("@/views/Index.vue"),
-      meta: {requiresAuth: true}
+      meta: { requiresAuth: true } // Tylko dla zalogowanych
     }
   ],
 })
@@ -29,10 +29,12 @@ router.beforeEach((to, from, next) => {
   const authStore = useAuthStore()
 
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next('/login')
-  } else if (to.meta.requiresGuest && authStore.isAuthenticated) {
-    next('/dashboard')
-  } else {
+    next({ name: 'Login' })
+  }
+  else if (to.meta.requiresGuest && authStore.isAuthenticated) {
+    next({ name: 'index' })
+  }
+  else {
     next()
   }
 })

@@ -1,19 +1,22 @@
 package com.chat.realtimechat.util;
 
-import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.model.entity.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
-import java.security.PublicKey;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET = "supersekretnykluczsupersekretnyklucz123";
-    private final long EXPIRATION = 1000 * 60 * 60;
+    @Value("${jwt.secretKey}")
+    private String SECRET;
+
+    @Value("${jwt.authExpirationMs}")
+    private long EXPIRATION;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET.getBytes());

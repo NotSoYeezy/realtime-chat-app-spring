@@ -1,4 +1,4 @@
-package com.chat.realtimechat.domain;
+package com.chat.realtimechat.model.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.chat.realtimechat.service;
 
-import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.exception.EmailAlreadyExistsException;
 import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
@@ -8,8 +8,6 @@ import com.chat.realtimechat.exception.UserAlreadyExistsException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -52,8 +50,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User authenticate(String username, String password) {
-        User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
+    public User authenticate(String email, String password) {
+        User user = userRepository.findByEmail(email).orElseThrow(LoginUserNotFoundException::new);
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IncorrectPasswordException();
         }

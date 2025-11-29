@@ -1,9 +1,8 @@
 package com.chat.realtimechat.service;
 
-import com.chat.realtimechat.domain.User;
+import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
-import org.hibernate.sql.Update;
 
 import java.util.Optional;
 

@@ -23,15 +23,15 @@ const handleSubmit = async () => {
 
   try {
     const response = await api.post('/auth/login', {
-      username: email.value,
+      email: email.value,
       password: password.value
     })
-    console.log('dupa')
-    console.log(response)
-    const { token } = response.data
-    authStore.setToken(token)
 
-    router.push('/')
+    const { token, refreshToken } = response.data
+    authStore.setTokens(token, refreshToken)
+
+    await router.push('/')
+    console.log("After push")
   } catch (err) {
     error.value = err.response?.data?.message || 'Nieprawidłowy email lub hasło.'
   } finally {
@@ -56,7 +56,7 @@ const handleSubmit = async () => {
 
       <FormInput
         v-model="email"
-        type="text"
+        type="email"
         label="Email"
         placeholder="Enter your email address"
         required

@@ -1,0 +1,12 @@
+package com.chat.realtimechat.model.dto.response;
+
+import com.chat.realtimechat.model.entity.RefreshToken;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@Getter
+@RequiredArgsConstructor
+public class AuthTokenResponse {
+    private final String token;
+    private final String refreshToken;
+}

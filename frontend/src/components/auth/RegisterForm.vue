@@ -36,12 +36,10 @@ const handleSubmit = async () => {
       password: password.value
     })
 
-    // Opcja 1: Automatyczne logowanie po rejestracji
     if (response.data.token) {
       authStore.setToken(response.data.token)
-      router.push('/dashboard')
+      router.push('/')
     } else {
-      // Opcja 2: Przekierowanie na stronę logowania
       router.push('/login')
     }
   } catch (err) {
