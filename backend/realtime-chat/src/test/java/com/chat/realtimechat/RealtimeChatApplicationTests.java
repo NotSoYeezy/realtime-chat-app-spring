@@ -12,5 +12,6 @@ class RealtimeChatApplicationTests {
 
     @Test
     void contextLoads() {
+        assert true;
     }
 }

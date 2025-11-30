@@ -25,5 +25,18 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
+  tester:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: build
+    depends_on:
+      - postgresdb
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5432/chatdb
+      - SPRING_DATASOURCE_USERNAME=dbuser
+      - SPRING_DATASOURCE_PASSWORD=dbpass
+    entrypoint: ["mvn", "clean","test"]
+
 volumes:
   postgres_data:
