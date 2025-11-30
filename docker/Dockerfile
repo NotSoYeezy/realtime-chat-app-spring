@@ -9,10 +9,6 @@ COPY backend/realtime-chat/src ./src
 
 RUN mvn clean package -DskipTests
 
-COPY backend/realtime-chat/src ./src
-
-RUN mvn clean package -DskipTests
-
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
