@@ -67,7 +67,7 @@ public class AuthController {
                     String newJwt = jwtUtil.generateToken(token.getUser());
                     return ResponseEntity.ok(Map.of("token", newJwt));
                 })
-                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("asdasd"));
+                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid refresh token."));
     }
 
     @PostMapping("/logout")
