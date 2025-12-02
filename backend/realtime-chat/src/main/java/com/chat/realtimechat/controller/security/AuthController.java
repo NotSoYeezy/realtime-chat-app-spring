@@ -1,7 +1,8 @@
-package com.chat.realtimechat.controller;
+package com.chat.realtimechat.controller.security;
 
 
 import com.chat.realtimechat.model.dto.request.RefreshTokenRequest;
+import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.RefreshToken;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.LoginRequest;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
@@ -33,9 +34,18 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody @Valid RegistrationRequest req) {
+    public ResponseEntity<UserResponse> register(@RequestBody @Valid RegistrationRequest req) {
         User registeredUser = userService.registerUser(req);
-        return ResponseEntity.status(HttpStatus.CREATED).body(registeredUser);
+        String token = jwtUtil.generateToken(registeredUser);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(registeredUser.getId());
+        UserResponse response = new UserResponse(
+                registeredUser.getId(),
+                registeredUser.getUsername(),
+                registeredUser.getEmail(),
+                token,
+                refreshToken.getToken()
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/login")

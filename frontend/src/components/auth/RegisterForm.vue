@@ -1,19 +1,21 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
-
-import FormInput from '@/components/ui/FormInput.vue'
+import AuthCard from '@/components/auth/AuthCard.vue'
+import AppLogo from '@/components/common/AppLogo.vue'
+import FormInput from '@/components/common/FormInput.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue'
-import BaseButton from '@/components/ui/BaseButton.vue'
+import BaseButton from '@/components/common/BaseButton.vue'
 
 const router = useRouter()
+const authStore = useAuthStore()
 
 const username = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
-
 const error = ref('')
 const loading = ref(false)
 
@@ -34,7 +36,12 @@ const handleSubmit = async () => {
       password: password.value
     })
 
-    router.push('/login')
+    if (response.data.token) {
+      authStore.setTokens(response.data.token, response.data.refreshToken)
+      router.push('/')
+    } else {
+      router.push('/login')
+    }
   } catch (err) {
     error.value = err.response?.data?.message || 'Registration error.'
   } finally {
