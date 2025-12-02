@@ -1,14 +1,3 @@
-<template>
-  <div>
-    <h1>Dashboard</h1>
-    <p>Witaj! Jesteś zalogowany.</p>
-    <p v-if="loading">Ładowanie...</p>
-    <p v-else-if="error">Błąd: {{ error }}</p>
-    <p v-else>{{ data }}</p>
-    <button @click="handleLogout">Wyloguj</button>
-  </div>
-</template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
@@ -48,3 +37,14 @@ const handleLogout = async () => {
   router.push('/login')
 }
 </script>
+
+<template>
+  <div>
+    <h1>Dashboard</h1>
+    <p>Witaj! Jesteś zalogowany.</p>
+    <p v-if="loading">Ładowanie...</p>
+    <p v-else-if="error">Błąd: {{ error }}</p>
+    <p v-else>{{ data }}</p>
+    <button @click="handleLogout">Wyloguj</button>
+  </div>
+</template>

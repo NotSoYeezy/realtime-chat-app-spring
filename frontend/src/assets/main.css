@@ -1,20 +1,88 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --color-primary: #4F46E5;
-  --color-background-light: #f6f6f8;
-  --color-background-dark: #111827;
+/* ============================================
+   1) ROOT VARIABLES — LIGHT + DARK
+   ============================================ */
+@layer base {
+  :root {
+    /* Light backgrounds */
+    --color-bg-body: #f5f7fb;
+    --color-bg-card: #ffffff;
+    --color-bg-input: #ffffff;
 
-  --font-family-display: Inter, system-ui, sans-serif;
+    /* Light text */
+    --color-text-primary: #0f172a;
+    --color-text-secondary: #475569;
 
-  --radius-default: 0.25rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
-  --radius-full: 9999px;
+    /* Light borders */
+    --color-border: #d8dee9;
+
+    /* Light primary / accents */
+    --color-primary: #6a5af9;
+    --accent-1: #c084fc;
+    --accent-2: #7dd3fc;
+
+    /* Light blobs */
+    --blob-1: rgba(192, 132, 252, 0.35);
+    --blob-2: rgba(125, 211, 252, 0.35);
+
+    /* Light gradient */
+    --grad-1: #6a5af9;
+    --grad-2: #c084fc;
+    --grad-blob-1: rgba(192, 132, 252, 0.35);
+    --grad-blob-2: rgba(125, 211, 252, 0.35);
+
+    /* Error colors */
+    --color-error-bg: #ffe5e5;
+    --color-error-border: #ffb3b3;
+    --color-error-text: #b91c1c;
+  }
+
+  /* DARK THEME OVERRIDES */
+  .dark {
+    /* Backgrounds */
+    --color-bg-body: #0f172a;
+    --color-bg-card: #1e293b;
+    --color-bg-input: #1e293b;
+
+    /* Text */
+    --color-text-primary: #f1f5f9;
+    --color-text-secondary: #cbd5e1;
+
+    /* Borders */
+    --color-border: #475569;
+
+    /* Primary + accents */
+    --color-primary: #818cf8;
+    --accent-1: rgba(147, 51, 234, 0.35);
+    --accent-2: rgba(79, 70, 229, 0.25);
+
+    /* Blobs */
+    --blob-1: rgba(147, 51, 234, 0.3);
+    --blob-2: rgba(79, 70, 229, 0.25);
+
+    /* Dark gradient */
+    --grad-1: #0f172a;
+    --grad-2: #020617;
+    --grad-blob-1: rgba(147, 51, 234, 0.3);
+    --grad-blob-2: rgba(79, 70, 229, 0.25);
+
+    /* Error colors */
+    --color-error-bg: rgba(255, 60, 60, 0.15);
+    --color-error-border: rgba(255, 100, 100, 0.4);
+    --color-error-text: #fca5a5;
+  }
 }
 
-.material-symbols-outlined {
-  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+/* ============================================
+   2) AUTH PAGE GRADIENT BACKGROUND
+   ============================================ */
+@layer base {
+  .auth-background {
+    background:
+      linear-gradient(135deg, var(--grad-1), var(--grad-2)),
+      radial-gradient(circle at 20% 30%, var(--grad-blob-1), transparent 60%),
+      radial-gradient(circle at 80% 70%, var(--grad-blob-2), transparent 60%);
+    background-blend-mode: screen;
+  }
 }

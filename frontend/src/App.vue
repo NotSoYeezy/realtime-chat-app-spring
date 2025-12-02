@@ -1,17 +1,19 @@
 <script setup>
-import { onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-
-const authStore = useAuthStore();
+import { onMounted, onBeforeUnmount } from 'vue';
+import { applyTheme } from '@/utils/theme';
 
 onMounted(() => {
-  if (authStore.accessToken) {
-    authStore.startRefreshTokenTimer();
-  }
+  applyTheme(); // inicjalizacja motywu
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.addEventListener('change', applyTheme);
+});
+
+onBeforeUnmount(() => {
+  const mq = window.matchMedia('(prefers-color-scheme: dark)');
+  mq.removeEventListener('change', applyTheme);
 });
 </script>
 
 <template>
   <RouterView />
 </template>
-

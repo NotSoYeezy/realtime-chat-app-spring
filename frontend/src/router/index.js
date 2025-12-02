@@ -19,7 +19,7 @@ const router = createRouter({
     {
       path: "/",
       name: 'index',
-      component: () => import("@/views/Index.vue"),
+      component: () => import("@/views/HomeView.vue"),
       meta: { requiresAuth: true } // Tylko dla zalogowanych
     }
   ],

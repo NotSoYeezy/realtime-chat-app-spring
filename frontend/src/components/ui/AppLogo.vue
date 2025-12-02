@@ -13,14 +13,22 @@ const sizes = {
 <template>
   <div class="flex items-center gap-2">
     <div
-      :class="[sizes[size].icon, 'flex items-center justify-center rounded-lg bg-primary']"
+      :class="[
+        sizes[size].icon,
+        'flex items-center justify-center rounded-lg',
+        'bg-[var(--color-primary)]'
+      ]"
     >
-      <span class="material-symbols-outlined text-2xl text-white">
+      <span class="material-symbols-outlined text-2xl text-[#ffffff]">
         connect_without_contact
       </span>
     </div>
+
     <span
-      :class="[sizes[size].text, 'font-bold text-slate-800 dark:text-slate-200']"
+      :class="[
+        sizes[size].text,
+        'font-bold text-[var(--color-text-primary)]'
+      ]"
     >
       ConnectApp
     </span>
