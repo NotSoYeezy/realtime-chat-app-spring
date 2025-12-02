@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.Objects;
 
 @Setter
@@ -20,6 +21,7 @@ public class User {
     private String surname;
     private String email;
     private String password;
+    private LocalDateTime lastSeen;
 
     @Override
     public String toString() {

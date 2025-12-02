@@ -21,8 +21,6 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
 
     @Override
     public RefreshToken createRefreshToken(Long userId) {
-        refreshTokenRepository.deleteByUserId(userId);;
-
         var token = new RefreshToken();
         token.setUser(userRepository.findById(userId).get());
         token.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));

@@ -8,10 +8,15 @@ services:
       - "8080:8080"
     depends_on:
       - postgresdb
+      - rabbitmq
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5432/chatdb
       - SPRING_DATASOURCE_USERNAME=dbuser
       - SPRING_DATASOURCE_PASSWORD=dbpass
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=61613
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
 
   postgresdb:
     image: postgres:17-alpine
@@ -24,6 +29,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq-stomp
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+      - "61613:61613"
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    command: >
+      /bin/sh -c "
+      rabbitmq-plugins enable --offline rabbitmq_stomp rabbitmq_management && 
+      rabbitmq-server"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   postgres-testdb:
     image: postgres:17-alpine
@@ -47,14 +69,20 @@ services:
     ports:
       - "7070:7070"
     depends_on:
+      - rabbitmq
       - postgres-testdb
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-testdb:5432/testdb
       - SPRING_DATASOURCE_USERNAME=dbuser
       - SPRING_DATASOURCE_PASSWORD=dbpass
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=61613
+      - RABBITMQ_USER=guest
+      - RABBITMQ_PASS=guest
     entrypoint: ["mvn", "clean","test"]
     profiles: ["test"]
 
 volumes:
   postgres_data:
   postgres_test_data:
+  rabbitmq_data:
