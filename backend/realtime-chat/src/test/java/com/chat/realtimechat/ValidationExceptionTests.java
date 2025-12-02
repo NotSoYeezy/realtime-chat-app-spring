@@ -1,7 +1,7 @@
 package com.chat.realtimechat;
 
 
-import com.chat.realtimechat.controller.AuthController;
+import com.chat.realtimechat.controller.security.AuthController;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;

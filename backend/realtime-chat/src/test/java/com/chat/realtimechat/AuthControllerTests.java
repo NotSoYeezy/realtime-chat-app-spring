@@ -1,6 +1,6 @@
 package com.chat.realtimechat;
 
-import com.chat.realtimechat.controller.AuthController;
+import com.chat.realtimechat.controller.security.AuthController;
 import com.chat.realtimechat.model.dto.request.LoginRequest;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
+
 
 import static org.assertj.core.api.Assertions.assertThat;
 
