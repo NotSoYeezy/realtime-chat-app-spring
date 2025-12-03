@@ -1,34 +1,23 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import {ref, onMounted} from "vue";
+import {toggleTheme, applyTheme} from "@/utils/theme.js";
 
-const isDark = ref(false)
-
-function applyTheme(dark) {
-  const html = document.documentElement
-  html.classList.toggle('dark', dark)
-  isDark.value = dark
-}
-
-function toggleTheme() {
-  const newValue = !isDark.value
-  localStorage.theme = newValue ? 'dark' : 'light'
-  applyTheme(newValue)
-}
+const isDark = ref(false);
 
 onMounted(() => {
-  // 1. Stored preference
-  if (localStorage.theme === 'dark') return applyTheme(true)
-  if (localStorage.theme === 'light') return applyTheme(false)
+  applyTheme();
+  isDark.value = document.documentElement.classList.contains('dark');
+});
 
-  // 2. System default
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-  applyTheme(prefersDark)
-})
+function handleToggle() {
+  toggleTheme();
+  isDark.value = document.documentElement.classList.contains('dark');
+}
 </script>
 
 <template>
   <button
-    @click="toggleTheme"
+    @click="handleToggle"
     class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 focus:outline-none
            bg-[var(--color-border)]"
     :class="{
