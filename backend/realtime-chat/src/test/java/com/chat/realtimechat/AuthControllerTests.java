@@ -15,6 +15,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 
 
+import java.util.Map;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
@@ -44,7 +46,8 @@ class AuthControllerTests {
         registrationRequest.setEmail(TEST_EMAIL);
         registrationRequest.setPassword(TEST_PASSWORD);
         registrationRequest.setUsername(TEST_USERNAME);
-        authController.register(registrationRequest);
+        var response = authController.register(registrationRequest);
+        authController.logoutUser(Map.of("refreshToken", response.getBody().getRefreshToken()));
     }
 
 
@@ -82,11 +85,7 @@ class AuthControllerTests {
 
     @Test
     void testAuthControllerUpdateUser() {
-        RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setEmail(TEST_EMAIL);
-        registrationRequest.setPassword(TEST_PASSWORD);
-        registrationRequest.setUsername(TEST_USERNAME);
-        authController.register(registrationRequest);
+        registerTestUser();
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(TEST_EMAIL);
