@@ -7,6 +7,7 @@ import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.security.CustomUserDetailsService;
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +39,14 @@ class AuthControllerTests {
         userRepository.deleteAll();
     }
 
+    void registerTestUser() {
+        RegistrationRequest registrationRequest = new RegistrationRequest();
+        registrationRequest.setEmail(TEST_EMAIL);
+        registrationRequest.setPassword(TEST_PASSWORD);
+        registrationRequest.setUsername(TEST_USERNAME);
+        authController.register(registrationRequest);
+    }
+
 
     @Test
     void testAuthControllerRegister() {
@@ -59,11 +68,7 @@ class AuthControllerTests {
 
     @Test
     void testAuthControllerLogin() {
-        RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setEmail(TEST_EMAIL);
-        registrationRequest.setPassword(TEST_PASSWORD);
-        registrationRequest.setUsername(TEST_USERNAME);
-        authController.register(registrationRequest);
+        registerTestUser();
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(TEST_EMAIL);
