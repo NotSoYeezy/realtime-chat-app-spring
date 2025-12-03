@@ -3,11 +3,9 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
-import AuthCard from '@/components/auth/AuthCard.vue'
-import AppLogo from '@/components/common/AppLogo.vue'
-import FormInput from '@/components/common/FormInput.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue'
-import BaseButton from '@/components/common/BaseButton.vue'
+import BaseButton from '@/components/ui/BaseButton.vue'
+import FormInput from '@/components/ui/FormInput.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -30,10 +28,10 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    await api.post('/auth/register', {
+    const response = await api.post('/auth/register', {
       username: username.value,
       email: email.value,
-      password: password.value
+      password: password.value,
     })
 
     if (response.data.token) {
@@ -52,39 +50,19 @@ const handleSubmit = async () => {
 
 <template>
   <form @submit.prevent="handleSubmit" class="flex flex-col gap-5">
-
     <!-- ERROR MESSAGE -->
     <div
       v-if="error"
-      class="px-4 py-3 rounded-lg text-sm
-             bg-[var(--color-error-bg)]
-             text-[var(--color-error-text)]
-             border border-[var(--color-error-border)]"
+      class="px-4 py-3 rounded-lg text-sm bg-[var(--color-error-bg)] text-[var(--color-error-text)] border border-[var(--color-error-border)]"
     >
       {{ error }}
     </div>
 
-    <FormInput
-      v-model="username"
-      label="Username"
-      placeholder="Enter your username"
-      required
-    />
+    <FormInput v-model="username" label="Username" placeholder="Enter your username" required />
 
-    <FormInput
-      v-model="email"
-      type="email"
-      label="Email"
-      placeholder="Enter your email"
-      required
-    />
+    <FormInput v-model="email" type="email" label="Email" placeholder="Enter your email" required />
 
-    <PasswordInput
-      v-model="password"
-      label="Password"
-      placeholder="Enter your password"
-      required
-    />
+    <PasswordInput v-model="password" label="Password" placeholder="Enter your password" required />
 
     <PasswordInput
       v-model="confirmPassword"
@@ -96,6 +74,5 @@ const handleSubmit = async () => {
     <BaseButton type="submit" :fullWidth="true" :disabled="loading">
       {{ loading ? 'Creating account...' : 'Register' }}
     </BaseButton>
-
   </form>
 </template>
