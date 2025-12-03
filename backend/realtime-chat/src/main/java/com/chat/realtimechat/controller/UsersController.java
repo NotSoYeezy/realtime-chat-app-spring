@@ -1,0 +1,36 @@
+package com.chat.realtimechat.controller;
+
+import com.chat.realtimechat.model.dto.response.RegisteredUserResponse;
+import com.chat.realtimechat.model.dto.response.UserResponse;
+import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("api/users")
+@RequiredArgsConstructor
+public class UsersController {
+
+    private final UserRepository userRepository;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> getUser(@PathVariable Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        UserResponse registeredUserResponse = new UserResponse(
+                user.getEmail(),
+                user.getUsername(),
+                user.getName(),
+                user.getSurname()
+        );
+        return ResponseEntity.status(HttpStatus.OK).body(registeredUserResponse);
+    }
+}

@@ -2,7 +2,7 @@ package com.chat.realtimechat.controller.security;
 
 
 import com.chat.realtimechat.model.dto.request.RefreshTokenRequest;
-import com.chat.realtimechat.model.dto.response.UserResponse;
+import com.chat.realtimechat.model.dto.response.RegisteredUserResponse;
 import com.chat.realtimechat.model.entity.RefreshToken;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.LoginRequest;
@@ -34,11 +34,11 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
 
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody @Valid RegistrationRequest req) {
+    public ResponseEntity<RegisteredUserResponse> register(@RequestBody @Valid RegistrationRequest req) {
         User registeredUser = userService.registerUser(req);
         String token = jwtUtil.generateToken(registeredUser);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(registeredUser.getId());
-        UserResponse response = new UserResponse(
+        RegisteredUserResponse response = new RegisteredUserResponse(
                 registeredUser.getId(),
                 registeredUser.getUsername(),
                 registeredUser.getEmail(),
