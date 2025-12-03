@@ -30,7 +30,7 @@ const handleSubmit = async () => {
     authStore.setTokens(token, refreshToken)
     router.push('/')
   } catch (err) {
-    error.value = err.response?.data?.message || 'Nieprawidłowy email lub hasło.'
+    error.value = err.response?.data?.message || 'Incorrect email or password.'
   } finally {
     loading.value = false
   }
@@ -44,9 +44,9 @@ const handleSubmit = async () => {
     <div
       v-if="error"
       class="px-4 py-3 rounded-lg text-sm
-             bg-[var(--color-error-bg)]
-             text-[var(--color-error-text)]
-             border border-[var(--color-error-border)]"
+             bg-[var(--color-danger-bg)]
+             text-[var(--color-danger-text)]
+             border border-[var(--color-danger-border)]"
     >
       {{ error }}
     </div>
@@ -67,7 +67,7 @@ const handleSubmit = async () => {
     />
 
     <BaseButton type="submit" :fullWidth="true" :disabled="loading">
-      {{ loading ? 'Signing in...' : 'Sign In' }}
+      {{ loading ? 'Signing in&#8230;' : 'Sign In' }}
     </BaseButton>
 
   </form>

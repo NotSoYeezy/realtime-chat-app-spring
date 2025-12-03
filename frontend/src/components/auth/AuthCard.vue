@@ -7,7 +7,7 @@ defineProps({
 
 <template>
   <div
-    class="w-full max-w-md rounded-xl p-8 md:p-10 shadow-lg bg-[var(--color-bg-card)] text-[var(--color-text-primary)]"
+    class="w-full max-w-md rounded-xl p-8 md:p-10 shadow-lg bg-[var(--surface-panel)] text-[var(--color-text-primary)]"
   >
     <!-- HEADER -->
     <div class="text-center">

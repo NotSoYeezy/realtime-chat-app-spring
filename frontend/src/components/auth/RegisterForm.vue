@@ -21,7 +21,7 @@ const handleSubmit = async () => {
   error.value = ''
 
   if (password.value !== confirmPassword.value) {
-    error.value = 'Passwords do not match!'
+    error.value = 'Passwords do not match.'
     return
   }
 
@@ -53,7 +53,7 @@ const handleSubmit = async () => {
     <!-- ERROR MESSAGE -->
     <div
       v-if="error"
-      class="px-4 py-3 rounded-lg text-sm bg-[var(--color-error-bg)] text-[var(--color-error-text)] border border-[var(--color-error-border)]"
+      class="px-4 py-3 rounded-lg text-sm bg-[var(--color-danger-bg)] text-[var(--color-danger-text)] border border-[var(--color-danger-border)]"
     >
       {{ error }}
     </div>

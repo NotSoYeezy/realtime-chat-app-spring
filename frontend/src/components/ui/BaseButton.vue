@@ -18,7 +18,7 @@ defineProps({
         'bg-[var(--color-primary)] text-[var(--color-text-on-primary)] ' +
           'hover:brightness-[1.12] hover:shadow-[0_0_12px_var(--color-primary-glow)] ' +
           'focus:ring-[var(--color-primary)] focus:ring-offset-2 ' +
-          'ring-offset-[var(--color-bg-card)]',
+          'ring-offset-[var(--surface-panel)]',
       disabled && 'opacity-50 cursor-not-allowed hover:none',
     ]"
   >

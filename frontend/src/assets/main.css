@@ -1,88 +1,134 @@
 @import "tailwindcss";
 
-/* ============================================
-   1) ROOT VARIABLES — LIGHT + DARK
-   ============================================ */
+/* ============================================================
+   1) DESIGN TOKENS — LIGHT + DARK THEME
+   ============================================================ */
 @layer base {
   :root {
-    /* Light backgrounds */
-    --color-bg-body: #f5f7fb;
+    /* BRAND */
+    --color-primary: #6f63ff;
+    --color-primary-hover: #857aff;
+    --color-primary-bg-soft: rgba(111, 99, 255, 0.12);
+
+    /* BACKGROUND */
+    --color-bg-body: #f7f9fc;
     --color-bg-card: #ffffff;
     --color-bg-input: #ffffff;
 
-    /* Light text */
-    --color-text-primary: #0f172a;
-    --color-text-secondary: #475569;
+    /* SURFACES */
+    --surface-panel: #f1f3f9;
+    --surface-panel-strong: #e7eaf3;
+    --surface-hover: #eef1f7;
 
-    /* Light borders */
-    --color-border: #d8dee9;
+    /* TEXT */
+    --color-text-primary: #1c2333;
+    --color-text-secondary: #687289;
+    --color-text-muted: #9ca3b5;
 
-    /* Light primary / accents */
-    --color-primary: #6a5af9;
-    --accent-1: #c084fc;
-    --accent-2: #7dd3fc;
+    /* BORDERS */
+    --color-border: #d3d9e5;
+    --color-border-soft: #e2e6f0;
 
-    /* Light blobs */
-    --blob-1: rgba(192, 132, 252, 0.35);
-    --blob-2: rgba(125, 211, 252, 0.35);
+    /* CHAT BUBBLES */
+    --bubble-incoming: #eef1f7;
+    --bubble-outgoing: #e8e4ff;
 
-    /* Light gradient */
-    --grad-1: #6a5af9;
-    --grad-2: #c084fc;
-    --grad-blob-1: rgba(192, 132, 252, 0.35);
-    --grad-blob-2: rgba(125, 211, 252, 0.35);
+    /* TIMESTAMP */
+    --chat-timestamp: #a6aec2;
 
-    /* Error colors */
-    --color-error-bg: #ffe5e5;
-    --color-error-border: #ffb3b3;
-    --color-error-text: #b91c1c;
+    /* STATUS */
+    --status-online: #17c964;
+    --status-away: #f5a623;
+    --status-busy: #f44444;
+
+    --status-online-bg: #d8fae7;
+    --status-away-bg: #fff6c8;
+    --status-busy-bg: #fde2e2;
+
+    /* DANGER */
+    --color-danger: #e54848;
+    --color-danger-bg: #ffeaea;
+    --color-danger-border: #f7b4b4;
+    --color-danger-text: #c02727;
+
+    /* SIDEBAR / HEADER */
+    --sidebar-bg: #ffffff;
+    --header-bg: #ffffff;
   }
 
-  /* DARK THEME OVERRIDES */
+
+  /* ============================================================
+     DARK THEME
+     ============================================================ */
   .dark {
-    /* Backgrounds */
-    --color-bg-body: #0f172a;
-    --color-bg-card: #1e293b;
-    --color-bg-input: #1e293b;
+    /* BRAND */
+    --color-primary: #9c92ff;
+    --color-primary-hover: #b3aaff;
+    --color-primary-bg-soft: rgba(156, 146, 255, 0.15);
 
-    /* Text */
-    --color-text-primary: #f1f5f9;
-    --color-text-secondary: #cbd5e1;
+    /* BACKGROUND */
+    --color-bg-body: #0f1423;
+    --color-bg-card: #181e2e;
+    --color-bg-input: #1f2537;
 
-    /* Borders */
-    --color-border: #475569;
+    /* SURFACES */
+    --surface-panel: #1b2033;
+    --surface-panel-strong: #232a42;
+    --surface-hover: #252d49;
 
-    /* Primary + accents */
-    --color-primary: #818cf8;
-    --accent-1: rgba(147, 51, 234, 0.35);
-    --accent-2: rgba(79, 70, 229, 0.25);
+    /* TEXT */
+    --color-text-primary: #f2f4f7;
+    --color-text-secondary: #b4bcd1;
+    --color-text-muted: #8893ab;
 
-    /* Blobs */
-    --blob-1: rgba(147, 51, 234, 0.3);
-    --blob-2: rgba(79, 70, 229, 0.25);
+    /* BORDERS */
+    --color-border: #323a50;
+    --color-border-soft: #3d4660;
 
-    /* Dark gradient */
-    --grad-1: #0f172a;
-    --grad-2: #020617;
-    --grad-blob-1: rgba(147, 51, 234, 0.3);
-    --grad-blob-2: rgba(79, 70, 229, 0.25);
+    /* CHAT BUBBLES */
+    --bubble-incoming: #252d49;
+    --bubble-outgoing: #2e2753;
 
-    /* Error colors */
-    --color-error-bg: rgba(255, 60, 60, 0.15);
-    --color-error-border: rgba(255, 100, 100, 0.4);
-    --color-error-text: #fca5a5;
+    /* TIMESTAMP */
+    --chat-timestamp: #929bb2;
+
+    /* STATUS */
+    --status-online: #4ade80;
+    --status-away: #facc15;
+    --status-busy: #fb7185;
+
+    --status-online-bg: rgba(74, 222, 128, 0.15);
+    --status-away-bg: rgba(250, 204, 21, 0.15);
+    --status-busy-bg: rgba(251, 113, 133, 0.15);
+
+    /* DANGER */
+    --color-danger: #f87171;
+    --color-danger-bg: rgba(248, 113, 113, 0.15);
+    --color-danger-border: rgba(248, 113, 113, 0.35);
+    --color-danger-text: #fca5a5;
+
+    /* SIDEBAR / HEADER */
+    --sidebar-bg: #181e2e;
+    --header-bg: #181e2e;
   }
 }
 
 /* ============================================
-   2) AUTH PAGE GRADIENT BACKGROUND
+   AUTH PAGE GRADIENT BACKGROUND
    ============================================ */
-@layer base {
+@layer components {
   .auth-background {
     background:
-      linear-gradient(135deg, var(--grad-1), var(--grad-2)),
-      radial-gradient(circle at 20% 30%, var(--grad-blob-1), transparent 60%),
-      radial-gradient(circle at 80% 70%, var(--grad-blob-2), transparent 60%);
+      linear-gradient(135deg, #f5f0ff 0%, #efe8ff 35%, #e8f2ff 100%),
+      radial-gradient(650px at 15% 25%, rgba(175, 100, 255, 0.45), transparent 65%),
+      radial-gradient(850px at 85% 75%, rgba(90, 160, 255, 0.40), transparent 70%);
+    background-blend-mode: screen;
+  }
+
+  .dark .auth-background {
+    background: linear-gradient(145deg, #0b0f1a 0%, #11182a 50%, #0d1324 100%),
+    radial-gradient(700px at 25% 30%, rgba(140, 120, 255, 0.25), transparent 70%),
+    radial-gradient(900px at 85% 75%, rgba(70, 150, 255, 0.22), transparent 65%);
     background-blend-mode: screen;
   }
 }

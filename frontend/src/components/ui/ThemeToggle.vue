@@ -37,7 +37,7 @@ onMounted(() => {
   >
     <!-- knob -->
     <span
-      class="absolute h-5 w-5 rounded-full bg-[var(--color-bg-card)] shadow transform transition-all duration-300"
+      class="absolute h-5 w-5 rounded-full bg-[var(--surface-panel)] shadow transform transition-all duration-300"
       :class="{
         'translate-x-6': isDark,
         'translate-x-1': !isDark
