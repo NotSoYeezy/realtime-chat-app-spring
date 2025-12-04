@@ -1,6 +1,6 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import { useAuthStore } from '@/stores/auth'
+import { useAuthStore } from '@/stores/auth.js'
 import { useRouter } from 'vue-router'
 import '@/assets/main.css'
 
@@ -60,7 +60,6 @@ const toggleTheme = () => {
 onMounted(async() => {
   isDarkMode.value = loadThemePreference();
   updateTheme(isDarkMode.value);
-  currentUser.value = setCurrentUser();
 });
 
 watch(isDarkMode, updateTheme);
