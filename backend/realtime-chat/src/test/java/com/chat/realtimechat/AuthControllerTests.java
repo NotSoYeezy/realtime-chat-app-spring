@@ -7,12 +7,15 @@ import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.security.CustomUserDetailsService;
+import org.aspectj.lang.annotation.Before;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.userdetails.UserDetails;
 
+
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -38,6 +41,15 @@ class AuthControllerTests {
         userRepository.deleteAll();
     }
 
+    void registerTestUser() {
+        RegistrationRequest registrationRequest = new RegistrationRequest();
+        registrationRequest.setEmail(TEST_EMAIL);
+        registrationRequest.setPassword(TEST_PASSWORD);
+        registrationRequest.setUsername(TEST_USERNAME);
+        var response = authController.register(registrationRequest);
+        authController.logoutUser(Map.of("refreshToken", response.getBody().getRefreshToken()));
+    }
+
 
     @Test
     void testAuthControllerRegister() {
@@ -59,11 +71,7 @@ class AuthControllerTests {
 
     @Test
     void testAuthControllerLogin() {
-        RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setEmail(TEST_EMAIL);
-        registrationRequest.setPassword(TEST_PASSWORD);
-        registrationRequest.setUsername(TEST_USERNAME);
-        authController.register(registrationRequest);
+        registerTestUser();
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(TEST_EMAIL);
@@ -77,11 +85,7 @@ class AuthControllerTests {
 
     @Test
     void testAuthControllerUpdateUser() {
-        RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setEmail(TEST_EMAIL);
-        registrationRequest.setPassword(TEST_PASSWORD);
-        registrationRequest.setUsername(TEST_USERNAME);
-        authController.register(registrationRequest);
+        registerTestUser();
 
         LoginRequest loginRequest = new LoginRequest();
         loginRequest.setEmail(TEST_EMAIL);
