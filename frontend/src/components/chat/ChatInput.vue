@@ -12,7 +12,7 @@ const emit = defineEmits(['update:messageContent', 'sendMessage', 'typing'])
 <template>
   <div class="p-4 border-t border-[var(--color-border)] bg-[var(--surface-panel)]">
     <div
-      class="max-w-4xl mx-auto flex items-center gap-2 p-2 rounded-xl bg-[var(--surface-panel) border border-[var(--color-border)]]"
+      class="max-w-4xl mx-auto flex items-center gap-2 p-2 rounded-xl bg-[var(--surface-panel)"
     >
       <input
         :value="messageContent"

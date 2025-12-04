@@ -86,7 +86,7 @@ defineEmits(['setStatus'])
             v-if="name === currentUser"
             class="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary-bg-soft)] text-[var(--color-primary)] font-bold"
           >
-            TY
+            YOU
           </span>
         </div>
       </div>

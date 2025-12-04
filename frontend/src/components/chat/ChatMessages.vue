@@ -71,3 +71,7 @@ watch(() => props.messages, async () => {
 
   </div>
 </template>
+
+<style scoped>
+
+</style>
