@@ -12,19 +12,27 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.TransactionSystemException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @SpringBootTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@AutoConfigureMockMvc
 public class ValidationExceptionTests {
 
+    @Autowired
+    private MockMvc mockMvc;
     @Autowired
     private AuthController authController;
     @Autowired
@@ -43,20 +51,16 @@ public class ValidationExceptionTests {
     }
 
     @Test
-    public void RegistrationRequestValidationExceptionTest() {
-        RegistrationRequest invalidRequest = new RegistrationRequest();
-        invalidRequest.setUsername(TEST_USERNAME);
-        invalidRequest.setPassword(TEST_PASSWORD);
-
-//        assertThatThrownBy(() -> authController.register(invalidRequest))
-//                .isInstanceOfAny(
-//                        TransactionSystemException.class,
-//                        DataIntegrityViolationException.class,
-//                        jakarta.validation.ValidationException.class
-//                );
-
-        assertThat(userRepository.count()).isEqualTo(0);
+    void RegistrationRequestValidationExceptionTest() throws Exception {
+        mockMvc.perform(post("/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                            {
+                              "username": "testuser",
+                              "password": "1234456789",
+                              "email": "testexample.com"
+                            }
+                        """)
+        ).andExpect(status().isBadRequest());
     }
-
-
 }
