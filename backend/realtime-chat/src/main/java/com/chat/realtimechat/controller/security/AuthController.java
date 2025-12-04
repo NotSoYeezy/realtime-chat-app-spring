@@ -66,18 +66,11 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(@RequestBody @Valid RefreshTokenRequest req) {
-        String requestToken = req.getRefreshToken();
-        return refreshTokenRepository.findByToken(requestToken)
-                .map(token -> {
-                    if (refreshTokenService.isTokenExpired(token)) {
-                        refreshTokenRepository.delete(token);
-                        return ResponseEntity.badRequest().body("Refresh token expired. Please login again.");
-                    }
-                    String newJwt = jwtUtil.generateToken(token.getUser());
-                    return ResponseEntity.ok(Map.of("token", newJwt));
-                })
-                .orElse(ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid refresh token."));
+    public ResponseEntity<AuthTokenResponse> refreshToken(@RequestBody @Valid RefreshTokenRequest req) {
+        String reqToken = req.getRefreshToken();
+        String newJwt = refreshTokenService.generateNewJwtToken(reqToken);
+        AuthTokenResponse response = new AuthTokenResponse(newJwt, reqToken);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
     @PostMapping("/logout")

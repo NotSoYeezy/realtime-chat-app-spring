@@ -64,6 +64,17 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, "Invalid username or password", request);
     }
 
+    @ExceptionHandler({
+            RefreshTokenExpiredException.class,
+            IncorrectRefreshTokenException.class
+    })
+    public ResponseEntity<ApiError> handleRefreshTokenExpired(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(
             Exception ex,
