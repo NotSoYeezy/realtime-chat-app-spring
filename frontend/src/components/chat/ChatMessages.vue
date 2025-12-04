@@ -1,15 +1,26 @@
 <script setup>
-defineProps({
+import { ref, watch, nextTick } from 'vue'
+
+const props = defineProps({
   messages: Array,
   currentUser: String,
   typingUsers: Set,
   loading: Boolean,
   formatTime: Function
 })
+
+const containerRef = ref(null)
+
+watch(() => props.messages, async () => {
+  await nextTick()
+  if (containerRef.value) {
+    containerRef.value.scrollTop = containerRef.value.scrollHeight
+  }
+}, { deep: true })
 </script>
 
 <template>
-  <div id="messages-scroll" class="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--surface-panel)]">
+  <div id="messages-scroll" ref="containerRef" class="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--surface-panel)]">
 
     <div v-if="loading" class="text-center text-[var(--color-text-secondary)]">
       <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>

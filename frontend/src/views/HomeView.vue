@@ -79,18 +79,10 @@ const formatTime = (timestamp) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-const scrollToBottom = async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}
-
 const loadHistory = async () => {
   try {
     const response = await api.get('/chat/history')
     messages.value = response.data
-    scrollToBottom()
   } catch (err) {
     console.error("Can't fetch history:", err)
   } finally {
@@ -141,7 +133,6 @@ const onMessageReceived = (payload) => {
     delete onlineUsers.value[message.sender]
   } else {
     messages.value.push(message)
-    scrollToBottom()
 
     if (message.type === 'CHAT') {
       typingUsers.value.delete(message.sender)
