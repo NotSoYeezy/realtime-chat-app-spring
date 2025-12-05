@@ -1,35 +1,151 @@
-@import './base.css';
+@import "tailwindcss";
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
+/* ============================================================
+   1) DESIGN TOKENS — LIGHT + DARK THEME
+   ============================================================ */
+@layer base {
+  :root {
+    /* BRAND */
+    --color-primary: #6f63ff;
+    --color-primary-hover: #857aff;
+    --color-primary-bg-soft: rgba(111, 99, 255, 0.12);
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
+    /* BACKGROUND */
+    --color-bg-body: #f7f9fc;
+    --color-bg-card: #ffffff;
+    --color-bg-input: #ffffff;
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+    /* SURFACES */
+    --surface-panel: #f1f3f9;
+    --surface-panel-strong: #e7eaf3;
+    --surface-hover: #eef1f7;
+
+    /* TEXT */
+    --color-text-primary: #1c2333;
+    --color-text-secondary: #687289;
+    --color-text-muted: #9ca3b5;
+
+    /* BORDERS */
+    --color-border: #d3d9e5;
+    --color-border-soft: #e2e6f0;
+
+    /* CHAT BUBBLES */
+    --bubble-incoming: #eef1f7;
+    --bubble-outgoing: #e8e4ff;
+
+    /* TIMESTAMP */
+    --chat-timestamp: #a6aec2;
+
+    /* STATUS */
+    --status-online: #17c964;
+    --status-away: #f5a623;
+    --status-busy: #f44444;
+
+    --status-online-bg: #d8fae7;
+    --status-away-bg: #fff6c8;
+    --status-busy-bg: #fde2e2;
+
+    /* DANGER */
+    --color-danger: #e54848;
+    --color-danger-bg: #ffeaea;
+    --color-danger-border: #f7b4b4;
+    --color-danger-text: #c02727;
+
+    /* SIDEBAR / HEADER */
+    --sidebar-bg: #ffffff;
+    --header-bg: #ffffff;
+  }
+
+
+  /* ============================================================
+     DARK THEME
+     ============================================================ */
+  .dark {
+    /* BRAND */
+    --color-primary: #9c92ff;
+    --color-primary-hover: #b3aaff;
+    --color-primary-bg-soft: rgba(156, 146, 255, 0.15);
+
+    /* BACKGROUND */
+    --color-bg-body: #0f1423;
+    --color-bg-card: #181e2e;
+    --color-bg-input: #1f2537;
+
+    /* SURFACES */
+    --surface-panel: #1b2033;
+    --surface-panel-strong: #232a42;
+    --surface-hover: #252d49;
+
+    /* TEXT */
+    --color-text-primary: #f2f4f7;
+    --color-text-secondary: #b4bcd1;
+    --color-text-muted: #8893ab;
+
+    /* BORDERS */
+    --color-border: #323a50;
+    --color-border-soft: #3d4660;
+
+    /* CHAT BUBBLES */
+    --bubble-incoming: #252d49;
+    --bubble-outgoing: #2e2753;
+
+    /* TIMESTAMP */
+    --chat-timestamp: #929bb2;
+
+    /* STATUS */
+    --status-online: #4ade80;
+    --status-away: #facc15;
+    --status-busy: #fb7185;
+
+    --status-online-bg: rgba(74, 222, 128, 0.15);
+    --status-away-bg: rgba(250, 204, 21, 0.15);
+    --status-busy-bg: rgba(251, 113, 133, 0.15);
+
+    /* DANGER */
+    --color-danger: #f87171;
+    --color-danger-bg: rgba(248, 113, 113, 0.15);
+    --color-danger-border: rgba(248, 113, 113, 0.35);
+    --color-danger-text: #fca5a5;
+
+    /* SIDEBAR / HEADER */
+    --sidebar-bg: #181e2e;
+    --header-bg: #181e2e;
   }
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
+/* ============================================
+   AUTH PAGE GRADIENT BACKGROUND
+   ============================================ */
+@layer components {
+  .auth-background {
+    background:
+      linear-gradient(135deg, #f5f0ff 0%, #efe8ff 35%, #e8f2ff 100%),
+      radial-gradient(650px at 15% 25%, rgba(175, 100, 255, 0.45), transparent 65%),
+      radial-gradient(850px at 85% 75%, rgba(90, 160, 255, 0.40), transparent 70%);
+    background-blend-mode: screen;
   }
 
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
+  .dark .auth-background {
+    background: linear-gradient(145deg, #0b0f1a 0%, #11182a 50%, #0d1324 100%),
+    radial-gradient(700px at 25% 30%, rgba(140, 120, 255, 0.25), transparent 70%),
+    radial-gradient(900px at 85% 75%, rgba(70, 150, 255, 0.22), transparent 65%);
+    background-blend-mode: screen;
   }
+}
+
+#messages-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+#messages-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#messages-scroll::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 20px;
+}
+
+#messages-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-text-secondary);
 }
