@@ -10,6 +10,7 @@ import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
+import com.chat.realtimechat.service.security.CustomUserDetailsService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
 import com.chat.realtimechat.service.UserService;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -87,5 +89,15 @@ public class AuthController {
                     return ResponseEntity.ok("Logged out successfully.");
                 })
                 .orElse(ResponseEntity.badRequest().body("Invalid refresh token."));
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(@AuthenticationPrincipal UserDetails myUser) {
+        String username = myUser.getUsername();
+        Optional<User> user = userService.findUsersByUsername(username);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get().getId());
+        }
+        return ResponseEntity.badRequest().body("User not found.");
     }
 }
