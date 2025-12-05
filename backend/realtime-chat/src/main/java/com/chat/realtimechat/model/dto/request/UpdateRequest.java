@@ -1,6 +1,7 @@
 package com.chat.realtimechat.model.dto.request;
 
 import com.chat.realtimechat.validation.ValidEmail;
+import com.chat.realtimechat.validation.ValidPassword;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Email;
@@ -19,7 +20,7 @@ public class UpdateRequest {
     private String username;
 
     @Nullable
-    @Size(min = 8, message = "Password must have at least 8 characters")
+    @ValidPassword
     private String password;
 
     @Nullable

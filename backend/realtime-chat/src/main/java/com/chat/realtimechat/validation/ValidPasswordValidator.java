@@ -3,10 +3,10 @@ package com.chat.realtimechat.validation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
-public class ValidEmailValidator implements ConstraintValidator<ValidEmail, String> {
+public class ValidPasswordValidator implements ConstraintValidator<ValidPassword, String> {
 
-    private static final String EMAIL_REGEX =
-            "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$";
+    private static final String PASSWORD_REGEX =
+            "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[^a-zA-Z0-9]).{8,}$";
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
@@ -16,6 +16,6 @@ public class ValidEmailValidator implements ConstraintValidator<ValidEmail, Stri
             return true;
         }
 
-        return value.matches(EMAIL_REGEX);
+        return value.matches(PASSWORD_REGEX);
     }
 }

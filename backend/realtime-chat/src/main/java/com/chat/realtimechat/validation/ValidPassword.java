@@ -6,11 +6,11 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = ValidEmailValidator.class)
+@Constraint(validatedBy = ValidPasswordValidator.class)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface ValidEmail {
-    String message() default "Invalid email format";
+public @interface ValidPassword {
+    String message() default "Password must be at least 8 characters long and include uppercase, lowercase, digit, and special character";
 
     Class<?>[] groups() default {};
 
