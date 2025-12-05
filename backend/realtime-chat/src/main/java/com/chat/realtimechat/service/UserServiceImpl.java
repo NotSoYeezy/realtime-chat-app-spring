@@ -39,7 +39,7 @@ public class UserServiceImpl implements UserService {
             throw new UserAlreadyExistsException(request.getUsername());
         }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException(request.getEmail());
+            throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = new User();
@@ -67,7 +67,7 @@ public class UserServiceImpl implements UserService {
 
         if (request.getEmail() != null) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-                throw new EmailAlreadyExistsException();
+                throw new EmailAlreadyExistsException(request.getEmail());
             }
             user.setEmail(request.getEmail());
         }
