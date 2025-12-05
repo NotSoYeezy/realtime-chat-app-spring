@@ -1,5 +1,6 @@
 package com.chat.realtimechat.model.dto.request;
 
+import com.chat.realtimechat.validation.ValidEmail;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import jakarta.annotation.Nullable;
 import jakarta.validation.constraints.Email;
@@ -22,7 +23,7 @@ public class UpdateRequest {
     private String password;
 
     @Nullable
-    @Email(message = "Invalid email address")
+    @ValidEmail
     private String email;
 
     @Nullable

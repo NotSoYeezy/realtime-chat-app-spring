@@ -1,5 +1,6 @@
 package com.chat.realtimechat.model.dto.request;
 
+import com.chat.realtimechat.validation.ValidEmail;
 import jakarta.validation.constraints.*;
 import lombok.Data;
 
@@ -17,7 +18,7 @@ public class RegistrationRequest {
     private String password;
 
     @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email address")
+    @ValidEmail
     private String email;
 
     private String name;
