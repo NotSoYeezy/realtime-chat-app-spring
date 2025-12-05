@@ -1,5 +1,4 @@
 <script setup>
-import LogoutButton from '@/components/ui/LogoutButton.vue'
 defineProps({ currentUser: String })
 </script>
 

@@ -8,6 +8,8 @@ defineProps({
   myStatus: String,
 })
 
+const emit = defineEmits(['setStatus', 'logout', 'openSettings'])
+
 const isDropdown = ref(false)
 const dropdownRef = ref(null)
 
@@ -17,6 +19,7 @@ const toggleDropdown = () => {
 
 const handleSettings = () => {
   isDropdown.value = false
+  emit('openSettings')
 }
 
 const handleClickOutside = (event) => {
@@ -33,7 +36,6 @@ onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
 })
 
-defineEmits(['setStatus', 'logout'])
 </script>
 
 <template>

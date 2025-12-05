@@ -8,7 +8,6 @@ import ThemeToggle from '@/components/ui/ThemeToggle.vue'
   >
     <div class="flex p-4 border-b border-[var(--color-border)]">
       <h2 class="font-bold text-[var(--color-text-primary)] text-lg">Channels</h2>
-      <ThemeToggle class="ml-auto" />
     </div>
   </aside>
 </template>
