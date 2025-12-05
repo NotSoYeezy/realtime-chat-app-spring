@@ -1,6 +1,6 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
-import DropDownLayout from '@/components/layout/DropDownLayout.vue'
+import DropdownLayout from '@/components/layout/DropdownLayout.vue'
 
 defineProps({
   onlineUsers: Object,
@@ -53,7 +53,7 @@ onUnmounted(() => {
                   @click="toggleDropdown()">
             {{currentUser.charAt(0)}}
           </button>
-          <DropDownLayout v-if="isDropdown"
+          <DropdownLayout v-if="isDropdown"
                           class="absolute top-full right-0 mt-2 z-20 w-48 bg-[var(--surface-panel)] rounded-lg shadow-2xl border border-[var(--color-border)] overflow-hidden"
                           @logout="$emit('logout')"
                           @close-dropdown="handleSettings"
@@ -62,7 +62,7 @@ onUnmounted(() => {
       </div>
 
       <!-- STATUS SELECTOR -->
-      <div class="grid grid-cols-3 rounded-md h-7 bg-[var(--surface-panel)] p-[2px] relative">
+      <div class="grid grid-cols-3 rounded-md h-7 bg-[var(--surface-panel-strong)] p-[2px] relative">
         <!-- SLIDER -->
         <div
           class="absolute top-[2px] bottom-[2px] left-[2px] rounded-md bg-[var(--surface-panel)] shadow transition-all duration-300 ease-in-out"

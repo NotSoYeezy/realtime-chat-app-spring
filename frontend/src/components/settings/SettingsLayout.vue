@@ -1,10 +1,10 @@
 <script setup>
 import { ref, computed } from 'vue'
-import AccountLayout from "@/components/settings/AccountLayout.vue";
-import GeneralLayout from "@/components/settings/GeneralLayout.vue";
+import AccountLayout from "@/components/settings/layout/AccountLayout.vue";
+import GeneralLayout from "@/components/settings/layout/GeneralLayout.vue";
 
 defineEmits(['close'])
-const props = defineProps({
+defineProps({
   currentUser: String
 })
 
@@ -13,6 +13,7 @@ const activeTab = ref('general')
 const tabs = [
   { id: 'general', label: 'General', component: GeneralLayout },
   { id: 'account', label: 'Account', component: AccountLayout }
+  // Proposed additional tabs: Profile, Notifications, Language & Region
 ]
 const currentComponent = computed(() => {
   const tab = tabs.find(t => t.id === activeTab.value)
@@ -23,7 +24,7 @@ const currentComponent = computed(() => {
 <template>
   <div
     class="fixed inset-0 z-50 flex items-center justify-center
-           bg-black bg-opacity-50 backdrop-blur-sm"
+         bg-black/10 backdrop-blur-sm"
     @click.self="$emit('close')"
   >
     <div
