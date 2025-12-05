@@ -1,4 +1,6 @@
 <script setup>
+import { onMounted, onUnmounted, ref } from 'vue'
+import DropDownLayout from '@/components/layout/DropDownLayout.vue'
 
 defineProps({
   onlineUsers: Object,
@@ -6,7 +8,32 @@ defineProps({
   myStatus: String,
 })
 
-defineEmits(['setStatus'])
+const isDropdown = ref(false)
+const dropdownRef = ref(null)
+
+const toggleDropdown = () => {
+  isDropdown.value = !isDropdown.value
+}
+
+const handleSettings = () => {
+  isDropdown.value = false
+}
+
+const handleClickOutside = (event) => {
+  if (dropdownRef.value && !dropdownRef.value.contains(event.target)) {
+    isDropdown.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+defineEmits(['setStatus', 'logout'])
 </script>
 
 <template>
@@ -14,13 +41,22 @@ defineEmits(['setStatus'])
     class="w-64 hidden lg:flex flex-col bg-[var(--surface-panel)] border-l border-[var(--color-border)]"
   >
     <div class="p-4 border-b border-[var(--color-border)]">
-      <!-- HEADER -->
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-[var(--color-text-primary)]">Community</h3>
-
-        <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">
+        <span class="text-xs px-2 py-0.5 rounded-full mr-16 bg-green-100 text-green-700 font-medium">
           {{ Object.keys(onlineUsers).length }}
         </span>
+        <div class="relative" ref="dropdownRef">
+          <button class="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]"
+                  @click="toggleDropdown()">
+            {{currentUser.charAt(0)}}
+          </button>
+          <DropDownLayout v-if="isDropdown"
+                          class="absolute top-full right-0 mt-2 z-20 w-48 bg-[var(--surface-panel)] rounded-lg shadow-2xl border border-[var(--color-border)] overflow-hidden"
+                          @logout="$emit('logout')"
+                          @close-dropdown="handleSettings"
+          />
+        </div>
       </div>
 
       <!-- STATUS SELECTOR -->

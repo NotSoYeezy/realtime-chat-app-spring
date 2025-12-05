@@ -32,7 +32,6 @@ defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logo
 
       <ChatHeader
         :currentUser="currentUser"
-        @logout="$emit('logout')"
       />
 
       <ChatMessages
@@ -63,6 +62,7 @@ defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logo
       :currentUser="currentUser"
       :myStatus="myStatus"
       @setStatus="$emit('setStatus', $event)"
+      @logout="$emit('logout')"
     />
   </div>
 </template>

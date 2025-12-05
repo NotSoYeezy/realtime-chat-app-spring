@@ -17,6 +17,5 @@ defineProps({ currentUser: String })
         <span class="font-medium text-[var(--color-primary)]">{{ currentUser }}</span>
       </p>
     </div>
-    <LogoutButton @logout="$emit('logout')"/>
   </header>
 </template>

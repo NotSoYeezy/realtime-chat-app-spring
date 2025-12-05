@@ -5,7 +5,6 @@ import { useAuthStore } from '@/stores/auth'
 import SockJS from 'sockjs-client/dist/sockjs'
 import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
-import Settings from '@/views/Settings.vue'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
 
 const router = useRouter()
@@ -16,13 +15,10 @@ const messageContent = ref('')
 const stompClient = ref(null)
 const isConnected = ref(false)
 const currentUser = ref('')
-const messagesContainer = ref(null)
 const loading = ref(true)
 const typingUsers = ref(new Set())
 const onlineUsers = ref({})
 const myStatus = ref('ONLINE')
-const isProfileDropdown = ref(false)
-const currentView = ref('chat')
 let typingTimeout = null
 
 const getCurrentUserFromToken = () => {
@@ -50,28 +46,6 @@ const getCurrentUserFromToken = () => {
   }
 }
 
-const openSettings = () => {
-  currentView.value = 'settings'
-  isProfileDown.value = false
-}
-
-const backToChat = () => {
-  currentView.value = 'chat'
-}
-
-const toggleProfileDropdown = () => {
-  isProfileDropdown.value = !isProfileDropdown.value
-}
-
-const closeProfileDropdown = (event) => {
-  if (
-    isProfileDropdown.value &&
-    event.target.closest('#profile-dropdown-button') === null &&
-    event.target.closest('#profile-dropdown-menu') === null
-  ) {
-    isProfileDropdown.value = false
-  }
-}
 
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
@@ -207,14 +181,12 @@ onMounted(async () => {
   await fetchOnlineUsers()
   await loadHistory()
   connect()
-  document.addEventListener('click', closeProfileDropdown)
 })
 
 onBeforeUnmount(() => {
   if (stompClient.value) {
     stompClient.value.disconnect()
   }
-  document.removeEventListener('click', closeProfileDropdown)
 })
 </script>
 
