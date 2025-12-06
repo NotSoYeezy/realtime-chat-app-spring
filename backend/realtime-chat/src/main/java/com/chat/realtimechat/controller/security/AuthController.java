@@ -59,12 +59,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<User> update(@RequestBody @Valid UpdateRequest req,
+    @PostMapping("/update")
+    public ResponseEntity<?> update(@RequestBody @Valid UpdateRequest req,
                                        @AuthenticationPrincipal UserDetails user) {
         String username = user.getUsername();
-        User updateUser = userService.updateUser(req, username);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(updateUser);
+        userService.updateUser(req, username);
+        return ResponseEntity.ok("You changed your credentials");
     }
 
     @PostMapping("/refresh")
@@ -100,4 +100,15 @@ public class AuthController {
         }
         return ResponseEntity.badRequest().body("User not found.");
     }
+
+    @PostMapping("/checkPassword")
+    public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody Map<String, String> request) {
+        String username = user.getUsername();
+        boolean result = userService.checkPassword(username, request.get("password"));
+        if (result) {
+            return ResponseEntity.ok("Password check successful.");
+        }
+        return ResponseEntity.badRequest().body("Password check failed.");
+    }
+
 }
