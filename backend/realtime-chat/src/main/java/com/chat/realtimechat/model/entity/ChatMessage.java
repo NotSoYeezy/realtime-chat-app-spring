@@ -27,6 +27,9 @@ public class ChatMessage {
 
     private LocalDateTime timestamp;
 
+    @Column(nullable = false)
+    private String roomId;
+
     @Enumerated(EnumType.STRING)
     private MessageType type;
 

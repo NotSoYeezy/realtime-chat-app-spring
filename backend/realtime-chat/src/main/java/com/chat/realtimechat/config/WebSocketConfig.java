@@ -54,7 +54,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableStompBrokerRelay("/topic")
+        registry.enableStompBrokerRelay("/topic", "/queue")
                 .setRelayHost(relayHost)
                 .setRelayPort(relayPort)
                 .setClientLogin(login)
