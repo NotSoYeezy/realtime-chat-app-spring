@@ -41,7 +41,7 @@ const handleSubmit = async () => {
       router.push('/login')
     }
   } catch (err) {
-    error.value = err.response?.data?.message || 'Registration error.'
+    error.value = err.response?.data?.message || 'Registration error'
   } finally {
     loading.value = false
   }
@@ -49,7 +49,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" class="flex flex-col gap-5">
+  <form @submit.prevent="handleSubmit" novalidate class="flex flex-col gap-5">
     <!-- ERROR MESSAGE -->
     <div
       v-if="error"

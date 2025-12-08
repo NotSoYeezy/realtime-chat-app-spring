@@ -38,7 +38,7 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <form @submit.prevent="handleSubmit" class="flex flex-col gap-5">
+  <form @submit.prevent="handleSubmit" novalidate class="flex flex-col gap-5">
 
     <!-- ERROR MESSAGE -->
     <div

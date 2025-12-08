@@ -8,9 +8,16 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
+import java.util.Map;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
+    private static final Map<String, Integer> FIELD_PRIORITY = Map.of(
+            "username", 3,
+            "email", 2,
+            "password", 1
+    );
 
     private ResponseEntity<ApiError> buildError(
             HttpStatus status,
@@ -33,7 +40,16 @@ public class GlobalExceptionHandler {
             MethodArgumentNotValidException ex,
             HttpServletRequest request
     ) {
-        String msg = ex.getBindingResult().getFieldError().getDefaultMessage();
+        var err = ex.getBindingResult()
+                .getFieldErrors()
+                .stream()
+                .max(Comparator.comparingInt(
+                        e -> FIELD_PRIORITY.getOrDefault(e.getField(), 0)
+                ))
+                .orElse(null);
+
+        String msg = (err != null) ? err.getDefaultMessage() : "Validation error";
+
         return buildError(HttpStatus.BAD_REQUEST, msg, request);
     }
 
