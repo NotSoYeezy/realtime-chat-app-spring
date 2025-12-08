@@ -7,6 +7,8 @@ import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
 
+const currentRoom = ref('general')
+let roomSubscription = null
 const router = useRouter()
 const authStore = useAuthStore()
 
@@ -54,14 +56,37 @@ const formatTime = (timestamp) => {
 }
 
 const loadHistory = async () => {
+  loading.value = true
+  messages.value = []
   try {
-    const response = await api.get('/chat/history')
+    const response = await api.get(`/chat/history/${currentRoom.value}`)
     messages.value = response.data
   } catch (err) {
     console.error("Can't fetch history:", err)
   } finally {
     loading.value = false
   }
+}
+
+const subscribeToRoom = () => {
+  if (!stompClient.value || !isConnected.value) return
+
+  if (roomSubscription) {
+    roomSubscription.unsubscribe()
+  }
+
+  roomSubscription = stompClient.value.subscribe(
+    `/topic/${currentRoom.value}`,
+    onMessageReceived
+  )
+}
+
+const switchRoom = async (roomId) => {
+  if (currentRoom.value === roomId) return
+  currentRoom.value = roomId
+  typingUsers.value.clear()
+  await loadHistory()
+  subscribeToRoom()
 }
 
 const connect = () => {
@@ -80,7 +105,8 @@ const onConnected = () => {
   isConnected.value = true
   console.log('Connected to websocket')
 
-  stompClient.value.subscribe('/topic/public', onMessageReceived)
+  subscribeToRoom()
+  stompClient.value.subscribe('/topic/public', onGlobalMessageReceived)
 
   stompClient.value.send(
     '/app/chat.addUser',
@@ -92,6 +118,7 @@ const onConnected = () => {
   )
 }
 
+
 const onError = (error) => {
   console.error('WebSocket error:', error)
   isConnected.value = false
@@ -99,18 +126,25 @@ const onError = (error) => {
 
 const onMessageReceived = (payload) => {
   const message = JSON.parse(payload.body)
+
   if (message.type === 'TYPING') {
     handleTypingNotification(message.sender)
-  } else if (message.type === 'JOIN') {
-    onlineUsers.value[message.sender] = message.userStatus || 'ONLINE'
-  } else if (message.type === 'LEAVE') {
-    delete onlineUsers.value[message.sender]
   } else {
     messages.value.push(message)
-
     if (message.type === 'CHAT') {
       typingUsers.value.delete(message.sender)
     }
+  }
+}
+
+const onGlobalMessageReceived = (payload) => {
+  const message = JSON.parse(payload.body)
+  if (message.type === 'JOIN') {
+    onlineUsers.value[message.sender] = message.userStatus || 'ONLINE'
+  } else if (message.type === 'LEAVE') {
+    delete onlineUsers.value[message.sender]
+  } else if (message.userStatus) {
+    onlineUsers.value[message.sender] = message.userStatus
   }
 }
 
@@ -129,9 +163,14 @@ const sendMessage = () => {
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
+      roomId: currentRoom.value,
     }
 
-    stompClient.value.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
+    stompClient.value.send(
+      `/app/chat.sendMessage/${currentRoom.value}`,
+      {},
+      JSON.stringify(chatMessage)
+    )
     messageContent.value = ''
   }
 }
@@ -140,7 +179,8 @@ const handleTyping = () => {
   if (!stompClient.value || !isConnected.value) return
 
   if (!typingTimeout) {
-    stompClient.value.send(`/app/chat.typing`, {}, JSON.stringify({}))
+    stompClient.value.send(`/app/chat.typing/${currentRoom.value}`,
+      {}, JSON.stringify({}))
 
     typingTimeout = setTimeout(() => {
       typingTimeout = null
@@ -207,5 +247,7 @@ onBeforeUnmount(() => {
     @setStatus="setStatus"
     @logout="handleLogout"
     @onMessageReceived="onMessageReceived"
+    :currentRoom="currentRoom"
+    @changeRoom="switchRoom"
   />
 </template>

@@ -18,6 +18,7 @@ defineProps({
   onlineUsers: Object,
   myStatus: String,
   formatTime: Function,
+  currentRoom: String,
 })
 
 const currentView = ref('chat')
@@ -29,12 +30,16 @@ const closeSettings = () => {
   currentView.value = 'chat'
 }
 
-defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout'])
+defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout',
+                        'changeRoom'])
 </script>
 
 <template>
   <div class="flex h-screen bg-[var(--color-bg-body)] font-display overflow-hidden">
-    <ChatSidebarLeft />
+    <ChatSidebarLeft
+      @changeRoom="$emit('changeRoom', $event)"
+      :currentRoom="currentRoom"
+    />
 
     <!-- CHAT AREA -->
     <div class="flex-1 flex flex-col min-w-0 bg-[var(--surface-panel)] relative">

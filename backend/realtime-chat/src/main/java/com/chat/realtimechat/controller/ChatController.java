@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -20,6 +21,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
@@ -38,9 +40,9 @@ public class ChatController {
     private final UserRepository userRepository;
     private final UserPresenceService presenceService;
 
-    @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessageResponse sendMessage(@Payload ChatMessageRequest request, Principal principal) {
+    @MessageMapping("/chat.sendMessage/{roomId}")
+    public void sendMessage(@DestinationVariable String roomId,
+                                           @Payload ChatMessageRequest request, Principal principal) {
         if (principal == null) {
             // TODO: CHANGE ERROR TYPE
             throw new RuntimeException("Unauthorized");
@@ -55,10 +57,11 @@ public class ChatController {
         chatMessage.setSender(user);
         chatMessage.setTimestamp(LocalDateTime.now());
         chatMessage.setType(request.getType());
+        chatMessage.setRoomId(roomId);
 
         ChatMessage saved = chatMessageRepository.save(chatMessage);
 
-        return ChatMessageResponse.fromEntity(saved);
+        messagingTemplate.convertAndSend("/topic/" + roomId, ChatMessageResponse.fromEntity(saved));
     }
 
     @MessageMapping("/chat.addUser")
@@ -71,9 +74,8 @@ public class ChatController {
         return dto;
     }
 
-    @MessageMapping("/chat.typing")
-    @SendTo("/topic/public")
-    public ChatMessageResponse typing(Principal principal) {
+    @MessageMapping("/chat.typing/{roomId}")
+    public void typing(@DestinationVariable String roomId, Principal principal) {
         if (principal == null) {
             throw new RuntimeException("Unauthorized");
         }
@@ -83,14 +85,14 @@ public class ChatController {
         notification.setType(ChatMessage.MessageType.TYPING);
         notification.setTimestamp(LocalDateTime.now());
 
-        return notification;
+        messagingTemplate.convertAndSend("/topic/" + roomId, notification);
     }
 
-    @GetMapping("/api/chat/history")
+    @GetMapping("/api/chat/history/{roomId}")
     @ResponseBody
-    public ResponseEntity<List<ChatMessageResponse>> getChatHistory() {
+    public ResponseEntity<List<ChatMessageResponse>> getChatHistory(@PathVariable String roomId) {
         return ResponseEntity.ok(
-                chatMessageRepository.findAll().stream()
+                chatMessageRepository.findByRoomId(roomId).stream()
                         .map(ChatMessageResponse::fromEntity)
                         .collect(Collectors.toList())
         );
