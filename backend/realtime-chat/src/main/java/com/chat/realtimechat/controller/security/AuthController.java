@@ -10,6 +10,7 @@ import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
+import com.chat.realtimechat.service.security.CustomUserDetailsService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
 import com.chat.realtimechat.service.UserService;
@@ -22,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -57,12 +59,12 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<User> update(@RequestBody @Valid UpdateRequest req,
+    @PostMapping("/update")
+    public ResponseEntity<?> update(@RequestBody @Valid UpdateRequest req,
                                        @AuthenticationPrincipal UserDetails user) {
         String username = user.getUsername();
-        User updateUser = userService.updateUser(req, username);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(updateUser);
+        userService.updateUser(req, username);
+        return ResponseEntity.ok("You changed your credentials");
     }
 
     @PostMapping("/refresh")
@@ -88,4 +90,25 @@ public class AuthController {
                 })
                 .orElse(ResponseEntity.badRequest().body("Invalid refresh token."));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(@AuthenticationPrincipal UserDetails myUser) {
+        String username = myUser.getUsername();
+        Optional<User> user = userService.findUsersByUsername(username);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get().getId());
+        }
+        return ResponseEntity.badRequest().body("User not found.");
+    }
+
+    @PostMapping("/checkPassword")
+    public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody Map<String, String> request) {
+        String username = user.getUsername();
+        boolean result = userService.checkPassword(username, request.get("password"));
+        if (result) {
+            return ResponseEntity.ok("Password check successful.");
+        }
+        return ResponseEntity.badRequest().body("Password check failed.");
+    }
+
 }

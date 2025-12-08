@@ -12,5 +12,6 @@ public interface UserService {
     User registerUser(RegistrationRequest request);
     User updateUser(UpdateRequest request, String username);
     void deleteUser(Long id);
+    boolean checkPassword(String username, String password);
     User authenticate(String username, String password);
 }

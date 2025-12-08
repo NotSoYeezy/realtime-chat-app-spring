@@ -6,7 +6,7 @@ import ChatMessages from '@/components/chat/ChatMessages.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatSidebarRight from '@/components/chat/ChatSidebarRight.vue'
 import ChatTypingIndicator from '@/components/chat/ChatTypingIndicator.vue'
-import SettingsLayout from '@/components/layout/SettingsLayout.vue'
+import SettingsLayout from '@/components/settings/SettingsLayout.vue'
 
 defineProps({
   messages: Array,
@@ -17,7 +17,7 @@ defineProps({
   messageContent: String,
   onlineUsers: Object,
   myStatus: String,
-  formatTime: Function
+  formatTime: Function,
 })
 
 const currentView = ref('chat')

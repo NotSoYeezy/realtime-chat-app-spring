@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     public User updateUser(UpdateRequest request, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
 
-        if (request.getEmail() != null) {
+        if (request.getEmail() != null && !user.getEmail().equals(request.getEmail())) {
             if (userRepository.findByEmail(request.getEmail()).isPresent()) {
                 throw new EmailAlreadyExistsException();
             }
@@ -77,10 +77,10 @@ public class UserServiceImpl implements UserService {
         if (request.getName() != null) {
             user.setName(request.getName());
         }
-        if (request.getPassword() != null) {
+        if (request.getPassword() != null && !request.getPassword().equals(user.getPassword())) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-        if (request.getUsername() != null) {
+        if (request.getUsername() != null && !user.getUsername().equals(request.getUsername())) {
             String newUsername = request.getUsername();
             if (!newUsername.equals(user.getUsername())) {
                 if (userRepository.findByUsername(newUsername).isPresent()) {
@@ -89,8 +89,19 @@ public class UserServiceImpl implements UserService {
                 user.setUsername(newUsername);
             }
         }
-
         return userRepository.save(user);
+    }
+
+    @Override
+    public boolean checkPassword(String username, String password){
+        Optional<User> user = userRepository.findByUsername(username);
+        if (!user.isPresent()) {
+            throw new LoginUserNotFoundException();
+        }
+        if(!passwordEncoder.matches(password,user.get().getPassword())){
+            throw new IncorrectPasswordException();
+        }
+        return true;
     }
 
     @Override
