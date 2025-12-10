@@ -176,6 +176,10 @@ const setStatus = (status) => {
   )
 }
 
+const updateProfile = () => {
+  currentUser.value = getCurrentUserFromToken()
+}
+
 onMounted(async () => {
   currentUser.value = getCurrentUserFromToken()
   await fetchOnlineUsers()

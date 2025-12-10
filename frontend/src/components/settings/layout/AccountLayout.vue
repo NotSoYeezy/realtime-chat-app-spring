@@ -6,8 +6,9 @@ import SettingsButton from '@/components/settings/SettingsButton.vue'
 import CheckPassword from '@/api/checkPassword.js'
 import UpdateProfileLayout from '@/components/settings/layout/UpdateProfileLayout.vue'
 import PasswordInput from "@/components/auth/PasswordInput.vue";
+import updateUser from "@/api/updateUser.js";
 
-defineEmits(['updateProfile'])
+const emit = defineEmits(['updateProfile', 'logout'])
 
 const user = ref(null)
 const loading = ref(true)
@@ -66,6 +67,7 @@ const handleVerify = async () => {
 const handleUpdateSuccess = () => {
   showUpdate.value = false;
   fetchUser();
+  emit('logout');
 }
 
 onMounted(fetchUser)
