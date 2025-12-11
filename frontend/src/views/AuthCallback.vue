@@ -13,7 +13,6 @@ onMounted(() => {
 
   if (accessToken && refreshToken) {
     authStore.setTokens(accessToken, refreshToken)
-
     router.replace('/')
   } else {
     console.error("Missing tokens in OAuth callback")

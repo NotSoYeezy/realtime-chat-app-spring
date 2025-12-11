@@ -1,5 +1,6 @@
 package com.chat.realtimechat.security;
 
+import com.chat.realtimechat.model.dto.response.RegisteredUserResponse;
 import com.chat.realtimechat.model.entity.RefreshToken;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.repository.UserRepository;
@@ -31,7 +32,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
-        System.out.println("onAuthenticationSuccess");
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
@@ -49,7 +49,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
 
         String targetUrl = frontendUrl + "/auth/callback"
                 +"?token=" + token
-                +"&refreshToken=" + refreshToken;
+                +"&refreshToken=" + refreshToken.getToken();
 
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
