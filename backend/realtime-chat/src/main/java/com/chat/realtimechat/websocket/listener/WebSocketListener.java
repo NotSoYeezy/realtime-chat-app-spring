@@ -1,7 +1,9 @@
 package com.chat.realtimechat.websocket.listener;
 
 import com.chat.realtimechat.model.dto.response.ChatMessageResponse;
+import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
 import com.chat.realtimechat.model.entity.ChatMessage;
+import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.UserStatus;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.UserPresenceService;
@@ -10,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -33,9 +36,14 @@ public class WebSocketListener {
             String username = user.getName();
             presenceService.connectUser(username);
 
-            sendPresenceMessage(username, ChatMessage.MessageType.JOIN, UserStatus.ONLINE);
+            UserStatus currentStatus = presenceService.getOnlineUsers()
+                    .get(username)
+                    .getStatus();
+
+            sendPresenceMessage(username, ChatMessage.MessageType.JOIN, currentStatus);
         }
     }
+
 
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
@@ -56,8 +64,15 @@ public class WebSocketListener {
     }
 
     private void sendPresenceMessage(String username, ChatMessage.MessageType type,  UserStatus status) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
         ChatMessageResponse message = new ChatMessageResponse();
-        message.setSender(username);
+        message.setSender(new OnlineInfoResponse(
+                user.getName(),
+                user.getSurname(),
+                user.getUsername(),
+                status
+        ));
         message.setType(type);
         message.setTimestamp(LocalDateTime.now());
         message.setUserStatus(status);

@@ -11,9 +11,6 @@ public class RegistrationRequest {
     @Null(message = "ID cannot be set by a user")
     private Long id;
 
-    @NotBlank(message = "Username is required")
-    private String username;
-
     @NotBlank(message = "Password is required")
     @ValidPassword
     private String password;
@@ -22,6 +19,9 @@ public class RegistrationRequest {
     @ValidEmail
     private String email;
 
+    @NotBlank(message = "Name is required")
     private String name;
+
+    @NotBlank(message = "Surname is required")
     private String surname;
 }

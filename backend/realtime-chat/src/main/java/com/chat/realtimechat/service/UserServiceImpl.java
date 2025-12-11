@@ -4,13 +4,13 @@ import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.exception.EmailAlreadyExistsException;
 import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
-import com.chat.realtimechat.exception.UserAlreadyExistsException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.text.Normalizer;
 import java.util.Optional;
 
 @Service
@@ -35,16 +35,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User registerUser(RegistrationRequest request) {
-        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
-            throw new UserAlreadyExistsException(request.getUsername());
-        }
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new EmailAlreadyExistsException(request.getEmail());
         }
 
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setUsername(request.getUsername());
+        user.setName(request.getName());
+        user.setSurname(request.getSurname());
+        user.setUsername(generateUsername(request.getName(), request.getSurname()));
         user.setSurname(request.getSurname());
         user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -80,22 +79,13 @@ public class UserServiceImpl implements UserService {
         if (request.getPassword() != null && !request.getPassword().equals(user.getPassword())) {
             user.setPassword(passwordEncoder.encode(request.getPassword()));
         }
-        if (request.getUsername() != null && !user.getUsername().equals(request.getUsername())) {
-            String newUsername = request.getUsername();
-            if (!newUsername.equals(user.getUsername())) {
-                if (userRepository.findByUsername(newUsername).isPresent()) {
-                    throw new UserAlreadyExistsException(newUsername);
-                }
-                user.setUsername(newUsername);
-            }
-        }
         return userRepository.save(user);
     }
 
     @Override
     public boolean checkPassword(String username, String password){
         Optional<User> user = userRepository.findByUsername(username);
-        if (!user.isPresent()) {
+        if (user.isEmpty()) {
             throw new LoginUserNotFoundException();
         }
         if(!passwordEncoder.matches(password,user.get().getPassword())){
@@ -107,5 +97,28 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Long id) {
         userRepository.deleteById(id);
+    }
+
+    private String generateUsername(String name, String surname) {
+        String base = (stripAccents(name) + "-" + stripAccents(surname))
+                .toLowerCase()
+                .replace(" ", "-");
+
+        String hash = Integer.toHexString((name + surname + System.nanoTime()).hashCode());
+        String username = base + "#" + hash.substring(0, 4);
+
+        while (userRepository.existsByUsername(username)) {
+            hash = Integer.toHexString((name + surname + System.nanoTime()).hashCode());
+            username = base + "#" + hash.substring(0, 4);
+        }
+
+        return username;
+    }
+
+
+    private String stripAccents(String input) {
+        return Normalizer.normalize(input, Normalizer.Form.NFD)
+                .replaceAll("\\p{M}", "")
+                .replaceAll("[^\\p{ASCII}]", "");
     }
 }

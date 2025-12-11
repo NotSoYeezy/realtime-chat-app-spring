@@ -7,7 +7,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class RegisteredUserResponse {
     private final Long id;
-    private final String username;
+    private final String name;
+    private final String surname;
     private final String email;
     private final String token;
     private final String refreshToken;

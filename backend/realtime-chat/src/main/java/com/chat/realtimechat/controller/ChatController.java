@@ -3,6 +3,7 @@ package com.chat.realtimechat.controller;
 import com.chat.realtimechat.model.dto.request.ChatMessageRequest;
 import com.chat.realtimechat.model.dto.request.StatusUpdateRequest;
 import com.chat.realtimechat.model.dto.response.ChatMessageResponse;
+import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
 import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.UserStatus;
@@ -41,14 +42,8 @@ public class ChatController {
     @MessageMapping("/chat.sendMessage")
     @SendTo("/topic/public")
     public ChatMessageResponse sendMessage(@Payload ChatMessageRequest request, Principal principal) {
-        if (principal == null) {
-            // TODO: CHANGE ERROR TYPE
-            throw new RuntimeException("Unauthorized");
-        }
 
-        String username = principal.getName();
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+        User user = getCurrentUser(principal);
 
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setContent(request.getContent());
@@ -61,12 +56,18 @@ public class ChatController {
         return ChatMessageResponse.fromEntity(saved);
     }
 
+
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
     public ChatMessageResponse addUser(Principal principal) {
+
+        User user = getCurrentUser(principal);
+        OnlineInfoResponse info = presenceService.getOnlineUsers().get(user.getUsername());
+
         ChatMessageResponse dto = new ChatMessageResponse();
-        dto.setSender(principal.getName());
+        dto.setSender(senderInfo(user));
         dto.setType(ChatMessage.MessageType.JOIN);
+        dto.setUserStatus(info.getStatus());
         dto.setTimestamp(LocalDateTime.now());
         return dto;
     }
@@ -74,12 +75,11 @@ public class ChatController {
     @MessageMapping("/chat.typing")
     @SendTo("/topic/public")
     public ChatMessageResponse typing(Principal principal) {
-        if (principal == null) {
-            throw new RuntimeException("Unauthorized");
-        }
+
+        User user = getCurrentUser(principal);
 
         ChatMessageResponse notification = new ChatMessageResponse();
-        notification.setSender(principal.getName());
+        notification.setSender(senderInfo(user));
         notification.setType(ChatMessage.MessageType.TYPING);
         notification.setTimestamp(LocalDateTime.now());
 
@@ -98,23 +98,46 @@ public class ChatController {
 
     @GetMapping("/api/chat/users/online")
     @ResponseBody
-    public ResponseEntity<Map<String, UserStatus>> getOnlineUsers() {
+    public ResponseEntity<Map<String, OnlineInfoResponse>> getOnlineUsers() {
         return ResponseEntity.status(HttpStatus.OK).body(presenceService.getOnlineUsers());
     }
 
     @MessageMapping("/user/setStatus")
     @SendTo("/topic/public")
     public ChatMessageResponse changeStatus(@Payload StatusUpdateRequest request, Principal principal) {
-        String username = principal.getName();
 
-        presenceService.updateUserStatus(username, request.getStatus());
+        User user = getCurrentUser(principal);
+        presenceService.updateUserStatus(user.getUsername(), request.getStatus());
 
         ChatMessageResponse notification = new ChatMessageResponse();
         notification.setType(ChatMessage.MessageType.JOIN);
-        notification.setSender(username);
+        notification.setSender(senderInfo(user));
         notification.setUserStatus(request.getStatus());
         notification.setTimestamp(LocalDateTime.now());
 
         return notification;
+    }
+
+
+    private User getCurrentUser(Principal principal) {
+        if (principal == null) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException(principal.getName()));
+    }
+
+    private OnlineInfoResponse senderInfo(User user) {
+        return presenceService.getOnlineUsers()
+                .getOrDefault(
+                        user.getUsername(),
+                        new OnlineInfoResponse(
+                                user.getName(),
+                                user.getSurname(),
+                                user.getUsername(),
+                                UserStatus.ONLINE
+                        )
+                );
     }
 }

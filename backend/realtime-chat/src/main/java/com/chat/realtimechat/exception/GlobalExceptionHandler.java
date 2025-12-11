@@ -77,7 +77,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        return buildError(HttpStatus.BAD_REQUEST, "Invalid username or password", request);
+        return buildError(HttpStatus.BAD_REQUEST, "Invalid login or password", request);
     }
 
     @ExceptionHandler({
