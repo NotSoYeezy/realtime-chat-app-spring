@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/api/axios'
 
+import GoogleLogin from '@/components/auth/GoogleLogin.vue'
 import FormInput from '@/components/ui/FormInput.vue'
 import PasswordInput from '@/components/auth/PasswordInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
@@ -69,6 +70,16 @@ const handleSubmit = async () => {
     <BaseButton type="submit" :fullWidth="true" :disabled="loading">
       {{ loading ? 'Signing in&#8230;' : 'Sign In' }}
     </BaseButton>
+
+    <div class="relative flex items-center justify-center my-2">
+      <div class="border-t border-[var(--color-border)] w-full opacity-50"></div>
+      <span class="bg-transparent px-3 text-xs text-[var(--color-text-secondary)] font-medium uppercase tracking-wide">
+        Or
+      </span>
+      <div class="border-t border-[var(--color-border)] w-full opacity-50"></div>
+    </div>
+
+    <GoogleLogin />
 
   </form>
 </template>
