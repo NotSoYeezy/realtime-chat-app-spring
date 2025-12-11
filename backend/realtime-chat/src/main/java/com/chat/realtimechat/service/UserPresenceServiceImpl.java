@@ -1,18 +1,34 @@
 package com.chat.realtimechat.service;
 
+import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
 import com.chat.realtimechat.model.enums.UserStatus;
+import com.chat.realtimechat.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@RequiredArgsConstructor
 public class UserPresenceServiceImpl implements UserPresenceService {
-    private final Map<String, UserStatus> onlineUsers = new ConcurrentHashMap<>();
+    
+    private final UserRepository userRepository;
+    private final Map<String, OnlineInfoResponse> onlineUsers = new ConcurrentHashMap<>();
 
     @Override
     public void connectUser(String username) {
-        onlineUsers.put(username, UserStatus.ONLINE);
+        if (onlineUsers.containsKey(username)) {
+            return;
+        }
+
+        userRepository.findByUsername(username).ifPresent(user ->
+                onlineUsers.put(username, new OnlineInfoResponse(
+                user.getName(),
+                user.getSurname(),
+                user.getUsername(),
+                UserStatus.ONLINE
+        )));
     }
 
     @Override
@@ -23,12 +39,12 @@ public class UserPresenceServiceImpl implements UserPresenceService {
     @Override
     public void updateUserStatus(String username, UserStatus status) {
         if (onlineUsers.containsKey(username)) {
-            onlineUsers.put(username, status);
+            onlineUsers.get(username).setStatus(status);
         }
     }
 
     @Override
-    public Map<String, UserStatus> getOnlineUsers() {
-        return  onlineUsers;
+    public Map<String, OnlineInfoResponse> getOnlineUsers() {
+        return onlineUsers;
     }
 }

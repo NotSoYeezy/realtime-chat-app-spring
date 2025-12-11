@@ -14,6 +14,8 @@ const messages = ref([])
 const messageContent = ref('')
 const stompClient = ref(null)
 const isConnected = ref(false)
+const currentName = ref('')
+const currentSurname = ref('')
 const currentUser = ref('')
 const loading = ref(true)
 const typingUsers = ref(new Set())
@@ -21,31 +23,42 @@ const onlineUsers = ref({})
 const myStatus = ref('ONLINE')
 let typingTimeout = null
 
-const getCurrentUserFromToken = () => {
-  const token = authStore.accessToken
-  if (!token) return 'Anonymous'
 
+const decodeToken = (token) => {
   try {
     const base64Url = token.split('.')[1]
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
-    const jsonPayload = decodeURIComponent(
-      window
-        .atob(base64)
-        .split('')
-        .map(function (c) {
-          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)
-        })
-        .join(''),
-    )
+    const jsonPayload = window.atob(base64)
 
-    const payload = JSON.parse(jsonPayload)
-    return payload.sub
+    return JSON.parse(jsonPayload)
   } catch (e) {
-    console.error('Error decoding token', e)
-    return 'Anonymous'
+    console.error("Invalid token", e)
+    return null
   }
 }
 
+const getUserIdFromToken = () => {
+  const token = authStore.accessToken
+  if (!token) return null
+
+  const payload = decodeToken(token)
+  if (!payload) return null
+
+  return payload.userId
+}
+
+const loadUserProfile = async () => {
+  const userId = getUserIdFromToken();
+
+  try {
+    const response = await api.get(`/users/${userId}`)
+    console.log(response.data)
+    return response.data
+  } catch (e) {
+    console.error("Failed to load user profile", e)
+    return null
+  }
+}
 
 const formatTime = (timestamp) => {
   if (!timestamp) return ''
@@ -99,28 +112,44 @@ const onError = (error) => {
 
 const onMessageReceived = (payload) => {
   const message = JSON.parse(payload.body)
+
   if (message.type === 'TYPING') {
     handleTypingNotification(message.sender)
-  } else if (message.type === 'JOIN') {
-    onlineUsers.value[message.sender] = message.userStatus || 'ONLINE'
-  } else if (message.type === 'LEAVE') {
-    delete onlineUsers.value[message.sender]
-  } else {
-    messages.value.push(message)
+    return
+  }
 
-    if (message.type === 'CHAT') {
-      typingUsers.value.delete(message.sender)
+  if (message.type === 'JOIN') {
+    const s = message.sender
+    if (s && s.username) {
+      onlineUsers.value[s.username] = s
     }
+    return
+  }
+
+  if (message.type === 'LEAVE') {
+    const s = message.sender
+    if (s && s.username) {
+      delete onlineUsers.value[s.username]
+    }
+    return
+  }
+
+  // normal message
+  messages.value.push(message)
+
+  if (message.type === 'CHAT') {
+    typingUsers.value.delete(message.sender?.username)
   }
 }
 
-const handleTypingNotification = (sender) => {
-  if (sender === currentUser.value) return
 
-  typingUsers.value.add(sender)
+const handleTypingNotification = (sender) => {
+  if (sender.username === currentUser.value) return
+
+  typingUsers.value.add(sender.username)
 
   setTimeout(() => {
-    typingUsers.value.delete(sender)
+    typingUsers.value.delete(sender.username)
   }, 3000)
 }
 
@@ -160,6 +189,7 @@ const fetchOnlineUsers = async () => {
   try {
     const response = await api.get('/chat/users/online')
     onlineUsers.value = response.data
+    console.log("abc", response.data)
   } catch (error) {
     console.error(error)
   }
@@ -177,7 +207,12 @@ const setStatus = (status) => {
 }
 
 onMounted(async () => {
-  currentUser.value = getCurrentUserFromToken()
+  const profile = await loadUserProfile()
+  if (profile) {
+    currentName.value = profile.name
+    currentSurname.value = profile.surname
+    currentUser.value = profile.username
+  }
   await fetchOnlineUsers()
   await loadHistory()
   connect()
@@ -196,6 +231,8 @@ onBeforeUnmount(() => {
     :typingUsers="typingUsers"
     :loading="loading"
     :currentUser="currentUser"
+    :currentName="currentName"
+    :currentSurname="currentSurname"
     :isConnected="isConnected"
     :messageContent="messageContent"
     :onlineUsers="onlineUsers"

@@ -10,7 +10,6 @@ import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
-import com.chat.realtimechat.service.security.CustomUserDetailsService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
 import com.chat.realtimechat.service.UserService;
@@ -42,7 +41,8 @@ public class AuthController {
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(registeredUser.getId());
         RegisteredUserResponse response = new RegisteredUserResponse(
                 registeredUser.getId(),
-                registeredUser.getUsername(),
+                registeredUser.getName(),
+                registeredUser.getSurname(),
                 registeredUser.getEmail(),
                 token,
                 refreshToken.getToken()
@@ -93,8 +93,7 @@ public class AuthController {
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe(@AuthenticationPrincipal UserDetails myUser) {
-        String username = myUser.getUsername();
-        Optional<User> user = userService.findUsersByUsername(username);
+        Optional<User> user = userService.findUsersByUsername(myUser.getUsername());
         if (user.isPresent()) {
             return ResponseEntity.ok(user.get().getId());
         }

@@ -17,9 +17,6 @@ public class UpdateRequest {
     private Long id;
 
     @Nullable
-    private String username;
-
-    @Nullable
     @ValidPassword
     private String password;
 

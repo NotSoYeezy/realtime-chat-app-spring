@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class ChatMessageResponse {
-    private String sender;
+    private OnlineInfoResponse sender;
     private String content;
     private LocalDateTime timestamp;
     private ChatMessage.MessageType type;
@@ -21,7 +21,12 @@ public class ChatMessageResponse {
         dto.setType(message.getType());
 
         if (message.getSender() != null) {
-            dto.setSender(message.getSender().getUsername());
+            dto.setSender(new OnlineInfoResponse(
+                    message.getSender().getName(),
+                    message.getSender().getSurname(),
+                    message.getSender().getUsername(),
+                    UserStatus.ONLINE
+            ));
         }
         return dto;
     }

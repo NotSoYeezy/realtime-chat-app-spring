@@ -10,7 +10,8 @@ import FormInput from '@/components/ui/FormInput.vue'
 const router = useRouter()
 const authStore = useAuthStore()
 
-const username = ref('')
+const name = ref('')
+const surname = ref('')
 const email = ref('')
 const password = ref('')
 const confirmPassword = ref('')
@@ -29,7 +30,8 @@ const handleSubmit = async () => {
 
   try {
     const response = await api.post('/auth/register', {
-      username: username.value,
+      name: name.value,
+      surname: surname.value,
       email: email.value,
       password: password.value,
     })
@@ -58,7 +60,9 @@ const handleSubmit = async () => {
       {{ error }}
     </div>
 
-    <FormInput v-model="username" label="Username" placeholder="Enter your username" required />
+    <FormInput v-model="name" label="Name" placeholder="Enter your name" required />
+
+    <FormInput v-model="surname" label="Surname" placeholder="Enter your surname" required />
 
     <FormInput v-model="email" type="email" label="Email" placeholder="Enter your email" required />
 
