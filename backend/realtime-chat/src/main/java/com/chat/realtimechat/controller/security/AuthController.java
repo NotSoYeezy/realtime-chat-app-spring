@@ -95,20 +95,17 @@ public class AuthController {
     public ResponseEntity<?> getMe(@AuthenticationPrincipal UserDetails myUser) {
         String username = myUser.getUsername();
         Optional<User> user = userService.findUsersByUsername(username);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get().getId());
-        }
-        return ResponseEntity.badRequest().body("User not found.");
+        return ResponseEntity.ok(user.get().getId());
     }
 
     @PostMapping("/checkPassword")
     public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody Map<String, String> request) {
         String username = user.getUsername();
-        boolean result = userService.checkPassword(username, request.get("password"));
-        if (result) {
+        boolean check = userService.checkPassword(username, request.get("password"));
+        if (check) {
             return ResponseEntity.ok("Password check successful.");
         }
-        return ResponseEntity.badRequest().body("Password check failed.");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("No passwords");
     }
 
 }

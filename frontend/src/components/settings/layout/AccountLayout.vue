@@ -6,19 +6,25 @@ import SettingsButton from '@/components/settings/SettingsButton.vue'
 import CheckPassword from '@/api/checkPassword.js'
 import UpdateProfileLayout from '@/components/settings/layout/UpdateProfileLayout.vue'
 import PasswordInput from "@/components/auth/PasswordInput.vue";
-import updateUser from "@/api/updateUser.js";
+import UpdateUser from "@/api/updateUser.js";
 
 const emit = defineEmits(['updateProfile', 'logout'])
 
 const user = ref(null)
 const loading = ref(true)
 const error = ref(null)
-const verifyError = ref(' ')
 
-const showPassword = ref(false)
+const hasPassword = ref(true)
 const showVerify = ref(false)
 const showUpdate = ref(false)
+const showCreatePassword = ref(false)
+
 const currentPassword = ref('')
+const newPassword = ref('')
+const confirmPassword = ref('')
+
+const verifyError = ref(' ')
+const createError = ref(' ')
 
 const fetchUser = async () => {
   loading.value = true
@@ -39,6 +45,23 @@ const fetchUser = async () => {
     loading.value = false
   }
 }
+
+const checkPasswordStatus = async () => {
+  try {
+    const response = await CheckPassword.checkPassword(null);
+
+    if (response.status === 200) {
+      hasPassword.value = true;
+    }
+  } catch (err) {
+    if (err.response && err.response.status === 501) {
+      hasPassword.value = false;
+    } else {
+      console.error("Error checking password status:", err);
+    }
+  }
+}
+
 
 const handleVerify = async () => {
   verifyError.value = ' '
@@ -64,13 +87,45 @@ const handleVerify = async () => {
   }
 }
 
+
+const handleCreatePassword = async () => {
+  createError.value = ' '
+  const payload = {}
+
+  if (!newPassword.value || !confirmPassword.value) {
+    createError.value = "Please fill in both fields.";
+    return;
+  }
+
+  if (newPassword.value !== confirmPassword.value) {
+    createError.value = "Passwords do not match.";
+    return;
+  }
+
+  try {
+    payload.password = newPassword.value;
+    const response = await UpdateUser.updateUser(payload)
+    if(response.status === 200) {
+      showCreatePassword.value = false;
+      hasPassword.value = true;
+      newPassword.value = '';
+      confirmPassword.value = '';
+    }
+  } catch (err) {
+    createError.value = err.load.data.message;
+  }
+}
+
 const handleUpdateSuccess = () => {
   showUpdate.value = false;
   fetchUser();
   emit('logout');
 }
 
-onMounted(fetchUser)
+onMounted( async () => {
+  await fetchUser();
+  await checkPasswordStatus();
+})
 </script>
 
 <template>
@@ -119,49 +174,106 @@ onMounted(fetchUser)
             </div>
           </div>
 
-          <div class="pt-2">
-            <div v-if="!showVerify">
-              <SettingsButton @click="showVerify = true">
-                Update profile
-              </SettingsButton>
-            </div>
+          <div class="pt-2 border-t border-[var(--color-border)]">
 
-            <div v-else class="space-y-4 pt-4 border-t border-[var(--color-border)] animate-in slide-in-from-top-2 fade-in duration-200">
-              <p class="text-sm text-[var(--color-text-secondary)]">
-                To make changes, please confirm your current password.
-              </p>
-
-              <div>
-                <label class="block text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-1 font-semibold">
-                  Current Password
-                </label>
-
-                <PasswordInput
-                  v-model="currentPassword"
-                  :type="showPassword ? 'text' : 'password'"
-                  placeholder="Enter password"
-                  :class="{ verifyError }"
-                />
-
-                <p v-if="verifyError" class="text-[var(--color-danger-text)] text-xs mt-1">
-                  {{ verifyError }}
-                </p>
-              </div>
-
-              <div class="flex items-center gap-3">
-                <SettingsButton @click="handleVerify">
-                  Verify
+            <div v-if="hasPassword">
+              <div v-if="!showVerify" class="pt-4">
+                <SettingsButton @click="showVerify = true">
+                  Update profile
                 </SettingsButton>
-                <button
-                  @click="showVerify = false; currentPassword = ''"
-                  class="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
-                >
-                  Cancel
-                </button>
+              </div>
+
+              <div v-else class="space-y-4 pt-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                <p class="text-sm text-[var(--color-text-secondary)]">
+                  To make changes, please confirm your current password.
+                </p>
+
+                <div>
+                  <label class="block text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-1 font-semibold">
+                    Current Password
+                  </label>
+                  <PasswordInput
+                    v-model="currentPassword"
+                    :type="'password'"
+                    placeholder="Enter password"
+                    :class="{ verifyError }"
+                  />
+                  <p v-if="verifyError.trim()" class="text-[var(--color-danger-text)] text-xs mt-1">
+                    {{ verifyError }}
+                  </p>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <SettingsButton @click="handleVerify">
+                    Verify
+                  </SettingsButton>
+                  <button
+                    @click="showVerify = false; currentPassword = ''"
+                    class="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
               </div>
             </div>
+
+            <div v-else>
+              <div v-if="!showCreatePassword" class="pt-4 space-y-4">
+                <p class="text-sm text-[var(--color-text-secondary)]">
+                  You are logged in via Google. Set a password to enable profile editing.
+                </p>
+                <div>
+                  <SettingsButton @click="showCreatePassword = true">
+                    Create Password
+                  </SettingsButton>
+                </div>
+              </div>
+              <div v-else class="space-y-4 pt-4 animate-in slide-in-from-top-2 fade-in duration-200">
+                <div class="grid gap-4">
+                  <div>
+                    <label class="block text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-1 font-semibold">
+                      New Password
+                    </label>
+                    <PasswordInput
+                      v-model="newPassword"
+                      type="password"
+                      placeholder="Enter new password"
+                    />
+                  </div>
+
+                  <div>
+                    <label class="block text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-1 font-semibold">
+                      Confirm Password
+                    </label>
+                    <PasswordInput
+                      v-model="confirmPassword"
+                      type="password"
+                      placeholder="Confirm new password"
+                    />
+                  </div>
+                </div>
+
+                <p v-if="createError.trim()" class="text-[var(--color-danger-text)] text-xs">
+                  {{ createError }}
+                </p>
+
+                <div class="flex items-center gap-3">
+                  <SettingsButton @click="handleCreatePassword">
+                    Set Password
+                  </SettingsButton>
+                  <button
+                    @click="showCreatePassword = false; newPassword = ''; confirmPassword = ''"
+                    class="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+
           </div>
-        </div> </div>
+        </div>
+      </div>
     </div>
   </SettingsTab>
 </template>

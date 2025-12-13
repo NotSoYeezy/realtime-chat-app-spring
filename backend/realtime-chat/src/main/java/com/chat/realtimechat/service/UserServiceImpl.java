@@ -98,6 +98,9 @@ public class UserServiceImpl implements UserService {
         if (!user.isPresent()) {
             throw new LoginUserNotFoundException();
         }
+        if(password == null && user.get().getPassword() == null){
+            return false;
+        }
         if(!passwordEncoder.matches(password,user.get().getPassword())){
             throw new IncorrectPasswordException();
         }

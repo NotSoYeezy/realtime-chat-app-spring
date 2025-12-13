@@ -25,12 +25,12 @@ public class UsersController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        UserResponse registeredUserResponse = new UserResponse(
+        UserResponse userResponse = new UserResponse(
                 user.getEmail(),
                 user.getUsername(),
                 user.getName(),
                 user.getSurname()
         );
-        return ResponseEntity.status(HttpStatus.OK).body(registeredUserResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
     }
 }

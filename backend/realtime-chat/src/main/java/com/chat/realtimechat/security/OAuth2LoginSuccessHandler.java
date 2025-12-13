@@ -43,7 +43,6 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     newUser.setUsername(name);
                     return userRepository.save(newUser);
                 });
-
         String token = jwtUtil.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
