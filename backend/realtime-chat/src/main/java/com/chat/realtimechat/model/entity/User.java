@@ -22,6 +22,7 @@ public class User {
     private String email;
     private String password;
     private LocalDateTime lastSeen;
+    private String providerId ;
 
     @Override
     public String toString() {

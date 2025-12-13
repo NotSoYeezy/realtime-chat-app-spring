@@ -35,14 +35,26 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         String email = oAuth2User.getAttribute("email");
         String name = oAuth2User.getAttribute("name");
+        String id = oAuth2User.getAttribute("sub");
+        User user;
 
-        User user = userRepository.findByEmail(email)
-                .orElseGet(() -> {
-                    User newUser = new User();
-                    newUser.setEmail(email);
-                    newUser.setUsername(name);
-                    return userRepository.save(newUser);
-                });
+        if(userRepository.findByProviderId(id).isPresent()){
+            user = userRepository.findByProviderId(id).get();
+        }
+        else if(userRepository.findByEmail(email).isPresent()){
+            user = userRepository.findByEmail(email).get();
+            user.setProviderId(id);
+        }
+        else{
+            User newUser = new User();
+            newUser.setEmail(email);
+            newUser.setUsername(name);
+            newUser.setName(name.split(" ")[0]);
+            newUser.setSurname(name.split(" ")[1]);
+            newUser.setProviderId(id);
+            user = userRepository.save(newUser);
+        }
+
         String token = jwtUtil.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 

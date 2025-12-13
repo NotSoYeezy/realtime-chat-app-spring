@@ -172,6 +172,15 @@ onMounted( async () => {
                 {{ user.username }}
               </div>
             </div>
+
+            <div>
+              <label class="block text-xs uppercase tracking-wider text-[var(--color-text-secondary)] mb-1">
+                Name
+              </label>
+              <div class="text-base font-medium">
+                {{ user.name }} {{ user.surname }}
+              </div>
+            </div>
           </div>
 
           <div class="pt-2 border-t border-[var(--color-border)]">
