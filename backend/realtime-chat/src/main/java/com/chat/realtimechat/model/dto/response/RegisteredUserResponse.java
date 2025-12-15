@@ -10,6 +10,4 @@ public class RegisteredUserResponse {
     private final String name;
     private final String surname;
     private final String email;
-    private final String token;
-    private final String refreshToken;
 }
