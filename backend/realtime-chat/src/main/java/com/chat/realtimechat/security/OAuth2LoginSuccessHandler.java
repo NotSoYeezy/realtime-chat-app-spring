@@ -42,8 +42,9 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             user = userRepository.findByProviderId(id).get();
         }
         else if(userRepository.findByEmail(email).isPresent()){
-            user = userRepository.findByEmail(email).get();
-            user.setProviderId(id);
+            User updatedUser = userRepository.findByEmail(email).get();
+            updatedUser.setProviderId(id);
+            user = userRepository.save(updatedUser);
         }
         else{
             User newUser = new User();
