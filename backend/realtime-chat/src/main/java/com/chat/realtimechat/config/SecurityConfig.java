@@ -33,8 +33,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh",
-                                "/api/auth/confirm/*", "/api/auth/resend-confirmation").permitAll()
-                        .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh", "/oauth2/authorization/google").permitAll()
+                                "/api/auth/confirm/*", "/api/auth/resend-confirmation", "/oauth2/authorization/google").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
@@ -59,10 +58,5 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
     }
 }

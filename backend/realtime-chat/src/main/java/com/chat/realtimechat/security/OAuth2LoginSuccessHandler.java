@@ -1,15 +1,13 @@
 package com.chat.realtimechat.security;
 
-import com.chat.realtimechat.model.dto.response.RegisteredUserResponse;
-import com.chat.realtimechat.model.entity.RefreshToken;
+import com.chat.realtimechat.model.entity.auth.RefreshToken;
 import com.chat.realtimechat.model.entity.User;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.UserService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -23,8 +21,8 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtil jwtUtil;
-    private final UserRepository userRepository;
     private final RefreshTokenService refreshTokenService;
+    private final UserService userService;
 
     @Value("${frontend.url:http://localhost:5173}")
     private String frontendUrl;
@@ -33,28 +31,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
-        String name = oAuth2User.getAttribute("name");
-        String id = oAuth2User.getAttribute("sub");
-        User user;
-
-        if(userRepository.findByProviderId(id).isPresent()){
-            user = userRepository.findByProviderId(id).get();
-        }
-        else if(userRepository.findByEmail(email).isPresent()){
-            User updatedUser = userRepository.findByEmail(email).get();
-            updatedUser.setProviderId(id);
-            user = userRepository.save(updatedUser);
-        }
-        else{
-            User newUser = new User();
-            newUser.setEmail(email);
-            newUser.setUsername(name);
-            newUser.setName(name.split(" ")[0]);
-            newUser.setSurname(name.split(" ")[1]);
-            newUser.setProviderId(id);
-            user = userRepository.save(newUser);
-        }
+        User user = userService.registeredGoogleUser(oAuth2User);
 
         String token = jwtUtil.generateToken(user);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
