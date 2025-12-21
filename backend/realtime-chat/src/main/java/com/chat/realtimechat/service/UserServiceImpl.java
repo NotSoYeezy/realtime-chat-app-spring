@@ -76,6 +76,7 @@ public class UserServiceImpl implements UserService {
         user.setSurname(lastName);
         user.setUsername(generateUsername(firstName, lastName));
         user.setProviderId(id);
+        user.setConfirmed(true);
         return userRepository.save(user);
     }
 
