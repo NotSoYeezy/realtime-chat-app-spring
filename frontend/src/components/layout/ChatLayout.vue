@@ -13,6 +13,8 @@ defineProps({
   typingUsers: Object,
   loading: Boolean,
   currentUser: String,
+  currentName: String,
+  currentSurname: String,
   isConnected: Boolean,
   messageContent: String,
   onlineUsers: Object,
@@ -44,7 +46,8 @@ const updateProfile = () => {
     <div class="flex-1 flex flex-col min-w-0 bg-[var(--surface-panel)] relative">
 
       <ChatHeader
-        :currentUser="currentUser"
+        :currentName="currentName"
+        :currentSurname="currentSurname"
       />
 
       <ChatMessages
@@ -52,10 +55,13 @@ const updateProfile = () => {
         :typingUsers="typingUsers"
         :loading="loading"
         :currentUser="currentUser"
+        :currentName="currentName"
+        :currentSurname="currentSurname"
         :formatTime="formatTime"
       />
 
       <ChatTypingIndicator
+        :onlineUsers="onlineUsers"
         :users="typingUsers"
         :compact="false"
       />
@@ -73,6 +79,8 @@ const updateProfile = () => {
     <ChatSidebarRight
       :onlineUsers="onlineUsers"
       :currentUser="currentUser"
+      :currentName="currentName"
+      :currentSurname="currentSurname"
       :myStatus="myStatus"
       @setStatus="$emit('setStatus', $event)"
       @logout="$emit('logout')"

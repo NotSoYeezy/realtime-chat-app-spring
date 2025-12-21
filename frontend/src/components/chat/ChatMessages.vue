@@ -1,9 +1,12 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import {getEscapedCssVarName} from "@vue/shared";
 
 const props = defineProps({
   messages: Array,
   currentUser: String,
+  currentName: String,
+  currentSurname: String,
   typingUsers: Set,
   loading: Boolean,
   formatTime: Function
@@ -32,35 +35,35 @@ watch(() => props.messages, async () => {
         v-for="(msg, i) in messages"
         :key="i"
         class="flex w-full"
-        :class="msg.sender === currentUser ? 'justify-end' : 'justify-start'"
+        :class="msg.sender.username === currentUser ? 'justify-end' : 'justify-start'"
       >
 
         <div v-if="msg.type === 'JOIN' || msg.type === 'LEAVE'" class="w-full text-center opacity-60">
           <span class="text-xs px-2 py-1 rounded bg-[var(--surface-panel-strong)] text-[var(--color-text-secondary)]">
-            {{ msg.sender }} {{ msg.type === 'JOIN' ? 'joined' : 'left' }}
+            {{ msg.sender.name }} {{msg.sender.surname }} {{ msg.type === 'JOIN' ? 'joined' : 'left' }}
           </span>
         </div>
 
         <div v-else class="flex flex-col max-w-[75%] md:max-w-[60%]">
 
           <span
-            v-if="msg.sender !== currentUser"
+            v-if="msg.sender.username !== currentUser"
             class="text-xs mb-1 text-[var(--color-text-secondary)] ml-1"
           >
-            {{ msg.sender }}
+            {{ msg.sender.name }}
           </span>
 
           <div
             :class="[
               'p-3 rounded-2xl shadow-sm border break-words',
-              msg.sender === currentUser
+              msg.sender.username === currentUser
                 ? 'bg-[var(--color-primary)] text-white border-transparent rounded-br-none'
                 : 'bg-[var(--surface-panel)] border-[var(--color-border)] rounded-bl-none text-[var(--color-text-primary)]'
             ]">
             {{ msg.content }}
           </div>
 
-          <span class="text-[var(--color-text-secondary)] text-[10px] mt-1 opacity-70" :class="msg.sender === currentUser ? 'text-right' : 'text-left'">
+          <span class="text-[var(--color-text-secondary)] text-[10px] mt-1 opacity-70" :class="msg.sender.username === currentUser ? 'text-right' : 'text-left'">
             {{ formatTime(msg.timestamp) }}
           </span>
 

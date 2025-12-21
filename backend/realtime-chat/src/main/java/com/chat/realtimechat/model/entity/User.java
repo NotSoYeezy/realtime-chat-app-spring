@@ -21,6 +21,7 @@ public class User {
     private String surname;
     private String email;
     private String password;
+    private Boolean confirmed=false;
     private LocalDateTime lastSeen;
     private String providerId ;
 
@@ -32,6 +33,7 @@ public class User {
                 ", surname='" + surname + '\'' +
                 ", email='" + email + '\'' +
                 ", password='" + password + '\'' +
+                ", confirmed='" + confirmed + '\'' +
                 '}';
     }
 

@@ -1,5 +1,8 @@
 <script setup>
-defineProps({ currentUser: String })
+defineProps({
+  currentName: String,
+  currentSurname: String
+})
 </script>
 
 <template>
@@ -13,7 +16,7 @@ defineProps({ currentUser: String })
 
       <p class="text-xs text-[var(--color-text-secondary)]">
         Logged in as:
-        <span class="font-medium text-[var(--color-primary)]">{{ currentUser }}</span>
+        <span class="font-medium text-[var(--color-primary)]">{{ currentName }} {{currentSurname }}</span>
       </p>
     </div>
   </header>

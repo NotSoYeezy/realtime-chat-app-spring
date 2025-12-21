@@ -1,9 +1,9 @@
 package com.chat.realtimechat.service.security;
 
-import com.chat.realtimechat.exception.IncorrectRefreshTokenException;
-import com.chat.realtimechat.exception.RefreshTokenExpiredException;
-import com.chat.realtimechat.model.entity.RefreshToken;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.exception.TokenExpiredException;
+import com.chat.realtimechat.exception.TokenNotFoundException;
+import com.chat.realtimechat.exception.UserNotFoundException;
+import com.chat.realtimechat.model.entity.auth.RefreshToken;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.util.JwtUtil;
@@ -27,25 +27,22 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     @Override
     public RefreshToken createRefreshToken(Long userId) {
         var token = new RefreshToken();
-        token.setUser(userRepository.findById(userId).get());
+        token.setUser(userRepository.findById(userId).orElseThrow(
+                () -> new UserNotFoundException("User not found")
+        ));
         token.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
         token.setToken(UUID.randomUUID().toString());
         return refreshTokenRepository.save(token);
     }
 
     @Override
-    public boolean isTokenExpired(RefreshToken token) {
-        return token.getExpiryDate().isBefore(Instant.now());
-    }
-
-    @Override
     public String generateNewJwtToken(String requestToken) {
         RefreshToken refreshToken = refreshTokenRepository.findByToken(requestToken).orElseThrow(
-                () -> new IncorrectRefreshTokenException("Refresh token not found")
+                () -> new TokenNotFoundException("Token not found")
         );
-        if (isTokenExpired(refreshToken)) {
+        if (refreshToken.isTokenExpired()) {
             refreshTokenRepository.delete(refreshToken);
-            throw new RefreshTokenExpiredException("Refresh token expired");
+            throw new TokenExpiredException("Refresh token expired");
         }
         return jwtUtil.generateToken(refreshToken.getUser());
     }

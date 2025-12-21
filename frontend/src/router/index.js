@@ -8,13 +8,19 @@ const router = createRouter({
       path: '/register',
       name: 'Register',
       component: () => import("@/views/RegisterView.vue"),
-      meta: { requiresGuest: true } // Tylko dla niezalogowanych
+      meta: { requiresGuest: true }
     },
     {
       path: '/login',
       name: 'Login',
       component: () => import("@/views/LoginView.vue"),
-      meta: { requiresGuest: true } // Tylko dla niezalogowanych
+      meta: { requiresGuest: true }
+    },
+    {
+      path: '/user/confirm/:token',
+      name: 'ConfirmAccount',
+      component: () => import("@/views/EmailConfirmationView.vue"),
+      meta: { requiredGuest: true }
     },
     {
       path: "/",

@@ -1,6 +1,5 @@
 package com.chat.realtimechat.model.dto.response;
 
-import com.chat.realtimechat.model.entity.RefreshToken;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

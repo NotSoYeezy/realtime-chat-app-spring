@@ -1,6 +1,7 @@
 package com.chat.realtimechat.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.Map;
 
+@Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Map<String, Integer> FIELD_PRIORITY = Map.of(
@@ -61,9 +63,9 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(EmailAlreadyExistsException.class)
+    @ExceptionHandler({EmailAlreadyExistsException.class, UserNotConfirmedException.class})
     public ResponseEntity<ApiError> handleEmailExists(
-            EmailAlreadyExistsException ex,
+            Exception ex,
             HttpServletRequest request
     ){
         return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
@@ -77,18 +79,25 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        return buildError(HttpStatus.BAD_REQUEST, "Invalid username or password", request);
+        return buildError(HttpStatus.BAD_REQUEST, "Invalid login or password", request);
     }
 
     @ExceptionHandler({
-            RefreshTokenExpiredException.class,
-            IncorrectRefreshTokenException.class
+            TokenExpiredException.class
     })
-    public ResponseEntity<ApiError> handleRefreshTokenExpired(
+    public ResponseEntity<ApiError> handleTokenExpired(
             Exception ex,
             HttpServletRequest request
     ) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler({TokenNotFoundException.class, UserNotFoundException.class})
+    public ResponseEntity<ApiError> handleResourceNotFound(
+            Exception ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
     @ExceptionHandler(Exception.class)
@@ -96,6 +105,7 @@ public class GlobalExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
+        log.error(ex.getMessage(), ex);
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
