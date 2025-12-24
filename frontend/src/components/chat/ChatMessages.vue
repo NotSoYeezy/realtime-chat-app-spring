@@ -1,6 +1,5 @@
 <script setup>
-import { ref, watch, nextTick } from 'vue'
-import {getEscapedCssVarName} from "@vue/shared";
+import { ref, watch, nextTick, onMounted } from 'vue'
 
 const props = defineProps({
   messages: Array,
@@ -14,12 +13,25 @@ const props = defineProps({
 
 const containerRef = ref(null)
 
-watch(() => props.messages, async () => {
+const scrollToBottom = async () => {
   await nextTick()
   if (containerRef.value) {
     containerRef.value.scrollTop = containerRef.value.scrollHeight
   }
-}, { deep: true })
+}
+
+watch(() => props.messages, scrollToBottom, { deep: true })
+
+watch(() => props.loading, (isLoading) => {
+  if (!isLoading) {
+    scrollToBottom()
+  }
+})
+
+onMounted(() => {
+  scrollToBottom()
+})
+
 </script>
 
 <template>
@@ -28,6 +40,11 @@ watch(() => props.messages, async () => {
     <div v-if="loading" class="text-center text-[var(--color-text-secondary)]">
       <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
       Loading messages&#8230;
+    </div>
+
+    <div v-else-if="!messages || messages.length === 0" class="h-full flex flex-col items-center justify-center text-[var(--color-text-secondary)] opacity-50">
+      <span class="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
+      <p>No messages here yet.</p>
     </div>
 
     <template v-else>
@@ -74,7 +91,3 @@ watch(() => props.messages, async () => {
 
   </div>
 </template>
-
-<style scoped>
-
-</style>

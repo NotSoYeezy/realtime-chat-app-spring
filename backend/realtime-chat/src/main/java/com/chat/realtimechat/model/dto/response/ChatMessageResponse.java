@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public class ChatMessageResponse {
     private OnlineInfoResponse sender;
     private String content;
+    private Long groupId;
+    private String groupName;
     private LocalDateTime timestamp;
     private ChatMessage.MessageType type;
     private UserStatus userStatus;
@@ -28,6 +30,12 @@ public class ChatMessageResponse {
                     UserStatus.ONLINE
             ));
         }
+
+        if (message.getGroup() != null) {
+            dto.setGroupId(message.getGroup().getId());
+            dto.setGroupName(message.getGroup().getName());
+        }
+
         return dto;
     }
 }
