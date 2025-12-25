@@ -7,13 +7,12 @@ RUN mvn dependency:go-offline
 
 COPY backend/realtime-chat/src ./src
 
-RUN #mvn clean package -DskipTests
 RUN mvn -Dmaven.test.skip=true clean package
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-RUN apk add --no-cache libgcc
+RUN apk add --no-cache gcompat libc6-compat libstdc++
 
 COPY --from=build /app/target/*.jar app.jar
 

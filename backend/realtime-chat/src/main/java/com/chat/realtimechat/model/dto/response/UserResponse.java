@@ -15,6 +15,7 @@ public class UserResponse {
 
     public static UserResponse fromEntity(User user) {
         return new UserResponse(
+                user.getId(),
                 user.getEmail(),
                 user.getUsername(),
                 user.getName(),

@@ -101,14 +101,6 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
 
-    @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<ApiError> handleUserNotFound(
-            UserNotFoundException ex,
-            HttpServletRequest request
-    ) {
-        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
-    }
-
     @ExceptionHandler(CannotFriendYourselfException.class)
     public ResponseEntity<ApiError> handleSelfFriend(
             CannotFriendYourselfException ex,

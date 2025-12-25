@@ -28,24 +28,6 @@ public class UsersController {
     private final UserRepository userRepository;
     private final UserService userService;
 
-    @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        // TODO: PAGINATION AND PARAM QUERYING!
-        List<User> users = userRepository.findAll();
-
-        List<UserResponse> response = users.stream()
-                .map(u -> new UserResponse(
-                        u.getId(),
-                        u.getEmail(),
-                        u.getUsername(),
-                        u.getName(),
-                        u.getSurname()
-                ))
-                .collect(Collectors.toList());
-
-        return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getUser(@PathVariable Long userId) {
         User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
