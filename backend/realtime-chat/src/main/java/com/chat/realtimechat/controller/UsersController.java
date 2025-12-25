@@ -47,7 +47,6 @@ public class UsersController {
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
-        UserResponse userResponse = new UserResponse(
         UserResponse registeredUserResponse = new UserResponse(
                 user.getId(),
                 user.getEmail(),
@@ -55,6 +54,6 @@ public class UsersController {
                 user.getName(),
                 user.getSurname()
         );
-        return ResponseEntity.status(HttpStatus.OK).body(userResponse);
+        return ResponseEntity.status(HttpStatus.OK).body(registeredUserResponse);
     }
 }
