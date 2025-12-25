@@ -1,7 +1,8 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useChatStore } from '@/stores/chat'
 import SockJS from 'sockjs-client/dist/sockjs'
 import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
@@ -9,30 +10,27 @@ import ChatLayout from '@/components/layout/ChatLayout.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const chatStore = useChatStore()
 
-const messages = ref([])
 const messageContent = ref('')
 const stompClient = ref(null)
 const isConnected = ref(false)
 const currentName = ref('')
 const currentSurname = ref('')
 const currentUser = ref('')
-const loading = ref(true)
 const typingUsers = ref(new Set())
 const onlineUsers = ref({})
 const myStatus = ref('ONLINE')
+const groupSubscription = ref(null)
 let typingTimeout = null
-
 
 const decodeToken = (token) => {
   try {
     const base64Url = token.split('.')[1]
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
     const jsonPayload = window.atob(base64)
-
     return JSON.parse(jsonPayload)
   } catch (e) {
-    console.error("Invalid token", e)
     return null
   }
 }
@@ -40,22 +38,17 @@ const decodeToken = (token) => {
 const getUserIdFromToken = () => {
   const token = authStore.accessToken
   if (!token) return null
-
   const payload = decodeToken(token)
   if (!payload) return null
-
   return payload.userId
 }
 
 const loadUserProfile = async () => {
-  const userId = getUserIdFromToken();
-
+  const userId = getUserIdFromToken()
   try {
     const response = await api.get(`/users/${userId}`)
-    console.log(response.data)
     return response.data
   } catch (e) {
-    console.error("Failed to load user profile", e)
     return null
   }
 }
@@ -66,17 +59,6 @@ const formatTime = (timestamp) => {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
-const loadHistory = async () => {
-  try {
-    const response = await api.get('/chat/history')
-    messages.value = response.data
-  } catch (err) {
-    console.error("Can't fetch history:", err)
-  } finally {
-    loading.value = false
-  }
-}
-
 const connect = () => {
   const token = authStore.accessToken
   if (!token) return
@@ -84,16 +66,14 @@ const connect = () => {
   const socket = new SockJS('http://localhost:8080/ws')
   stompClient.value = Stomp.over(socket)
 
-  // stompClient.value.debug = () => {}
-
   stompClient.value.connect({ Authorization: `Bearer ${token}` }, onConnected, onError)
 }
 
 const onConnected = () => {
   isConnected.value = true
-  console.log('Connected to websocket')
 
-  stompClient.value.subscribe('/topic/public', onMessageReceived)
+  stompClient.value.subscribe('/user/queue/messages', onMessageReceived)
+  stompClient.value.subscribe('/topic/public', onPublicMessageReceived)
 
   stompClient.value.send(
     '/app/chat.addUser',
@@ -103,20 +83,50 @@ const onConnected = () => {
       content: '',
     }),
   )
+
+  if (chatStore.activeGroupId) {
+    subscribeToActiveGroup(chatStore.activeGroupId)
+  }
 }
 
 const onError = (error) => {
-  console.error('WebSocket error:', error)
   isConnected.value = false
+}
+
+const subscribeToActiveGroup = (groupId) => {
+  if (!stompClient.value || !isConnected.value) return
+
+  if (groupSubscription.value) {
+    groupSubscription.value.unsubscribe()
+    groupSubscription.value = null
+  }
+
+  groupSubscription.value = stompClient.value.subscribe(
+    `/topic/group.${groupId}`,
+    onGroupMessageReceived
+  )
+}
+
+const onGroupMessageReceived = (payload) => {
+  const message = JSON.parse(payload.body)
+
+  if (message.type === 'TYPING') {
+    if (message.sender.username !== currentUser.value) {
+      handleTypingNotification(message.sender)
+    }
+  }
 }
 
 const onMessageReceived = (payload) => {
   const message = JSON.parse(payload.body)
 
-  if (message.type === 'TYPING') {
-    handleTypingNotification(message.sender)
-    return
-  }
+  if (message.type === 'TYPING') return
+
+  chatStore.handleIncomingMessage(message)
+}
+
+const onPublicMessageReceived = (payload) => {
+  const message = JSON.parse(payload.body)
 
   if (message.type === 'JOIN') {
     const s = message.sender
@@ -133,19 +143,9 @@ const onMessageReceived = (payload) => {
     }
     return
   }
-
-  // normal message
-  messages.value.push(message)
-
-  if (message.type === 'CHAT') {
-    typingUsers.value.delete(message.sender?.username)
-  }
 }
 
-
 const handleTypingNotification = (sender) => {
-  if (sender.username === currentUser.value) return
-
   typingUsers.value.add(sender.username)
 
   setTimeout(() => {
@@ -154,10 +154,11 @@ const handleTypingNotification = (sender) => {
 }
 
 const sendMessage = () => {
-  if (messageContent.value.trim() && stompClient.value && isConnected.value) {
+  if (messageContent.value.trim() && stompClient.value && isConnected.value && chatStore.activeGroupId) {
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
+      groupId: chatStore.activeGroupId
     }
 
     stompClient.value.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
@@ -166,10 +167,11 @@ const sendMessage = () => {
 }
 
 const handleTyping = () => {
-  if (!stompClient.value || !isConnected.value) return
+  if (!stompClient.value || !isConnected.value || !chatStore.activeGroupId) return
 
   if (!typingTimeout) {
-    stompClient.value.send(`/app/chat.typing`, {}, JSON.stringify({}))
+    stompClient.value.send(`/app/chat.typing/${chatStore.activeGroupId}`,
+      {}, JSON.stringify({}))
 
     typingTimeout = setTimeout(() => {
       typingTimeout = null
@@ -189,7 +191,6 @@ const fetchOnlineUsers = async () => {
   try {
     const response = await api.get('/chat/users/online')
     onlineUsers.value = response.data
-    console.log("abc", response.data)
   } catch (error) {
     console.error(error)
   }
@@ -210,6 +211,15 @@ const updateProfile = () => {
   currentUser.value = getCurrentUserFromToken()
 }
 
+watch(
+  () => chatStore.activeGroupId,
+  (newGroupId) => {
+    if (newGroupId) {
+      subscribeToActiveGroup(newGroupId)
+    }
+  }
+)
+
 onMounted(async () => {
   const profile = await loadUserProfile()
   if (profile) {
@@ -218,7 +228,7 @@ onMounted(async () => {
     currentUser.value = profile.username
   }
   await fetchOnlineUsers()
-  await loadHistory()
+  await chatStore.fetchGroups()
   connect()
 })
 
@@ -231,9 +241,10 @@ onBeforeUnmount(() => {
 
 <template>
   <ChatLayout
-    :messages="messages"
+    :activeGroupId="chatStore.activeGroupId"
+    :messages="chatStore.activeMessages"
     :typingUsers="typingUsers"
-    :loading="loading"
+    :loading="chatStore.loading"
     :currentUser="currentUser"
     :currentName="currentName"
     :currentSurname="currentSurname"
@@ -247,6 +258,5 @@ onBeforeUnmount(() => {
     @updateMessageContent="messageContent = $event"
     @setStatus="setStatus"
     @logout="handleLogout"
-    @onMessageReceived="onMessageReceived"
   />
 </template>

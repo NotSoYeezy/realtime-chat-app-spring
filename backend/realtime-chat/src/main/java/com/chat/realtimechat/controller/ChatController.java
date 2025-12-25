@@ -4,9 +4,11 @@ import com.chat.realtimechat.model.dto.request.ChatMessageRequest;
 import com.chat.realtimechat.model.dto.request.StatusUpdateRequest;
 import com.chat.realtimechat.model.dto.response.ChatMessageResponse;
 import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
+import com.chat.realtimechat.model.entity.ChatGroup;
 import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.UserStatus;
+import com.chat.realtimechat.repository.ChatGroupRepository;
 import com.chat.realtimechat.repository.ChatMessageRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.UserPresenceService;
@@ -14,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -21,6 +24,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
@@ -38,24 +42,34 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final UserRepository userRepository;
     private final UserPresenceService presenceService;
+    private final ChatGroupRepository chatGroupRepository;
 
     @MessageMapping("/chat.sendMessage")
-    @SendTo("/topic/public")
-    public ChatMessageResponse sendMessage(@Payload ChatMessageRequest request, Principal principal) {
+    public void sendMessage(@Payload ChatMessageRequest request, Principal principal) {
+        User sender = getCurrentUser(principal);
 
-        User user = getCurrentUser(principal);
+        ChatGroup group = chatGroupRepository.findById(request.getGroupId())
+                .orElseThrow(() -> new RuntimeException("Group not found"));
 
         ChatMessage chatMessage = new ChatMessage();
         chatMessage.setContent(request.getContent());
-        chatMessage.setSender(user);
+        chatMessage.setSender(sender);
         chatMessage.setTimestamp(LocalDateTime.now());
         chatMessage.setType(request.getType());
+        chatMessage.setGroup(group);
 
         ChatMessage saved = chatMessageRepository.save(chatMessage);
+        ChatMessageResponse response = ChatMessageResponse.fromEntity(saved);
 
-        return ChatMessageResponse.fromEntity(saved);
+        for (User member : group.getMembers()) {
+
+            messagingTemplate.convertAndSendToUser(
+                    member.getUsername(),
+                    "/queue/messages",
+                    response
+            );
+        }
     }
-
 
     @MessageMapping("/chat.addUser")
     @SendTo("/topic/public")
@@ -72,9 +86,8 @@ public class ChatController {
         return dto;
     }
 
-    @MessageMapping("/chat.typing")
-    @SendTo("/topic/public")
-    public ChatMessageResponse typing(Principal principal) {
+    @MessageMapping("/chat.typing/{groupId}")
+    public void typing(@DestinationVariable Long groupId, Principal principal) {
 
         User user = getCurrentUser(principal);
 
@@ -82,15 +95,21 @@ public class ChatController {
         notification.setSender(senderInfo(user));
         notification.setType(ChatMessage.MessageType.TYPING);
         notification.setTimestamp(LocalDateTime.now());
+        notification.setGroupId(groupId);
 
-        return notification;
+        messagingTemplate.convertAndSend(
+                "/topic/group." + groupId,
+                notification
+        );
     }
 
-    @GetMapping("/api/chat/history")
+    @GetMapping("/api/chat/history/{groupId}")
     @ResponseBody
-    public ResponseEntity<List<ChatMessageResponse>> getChatHistory() {
-        return ResponseEntity.ok(
-                chatMessageRepository.findAll().stream()
+    public ResponseEntity<List<ChatMessageResponse>> getChatHistory(@PathVariable Long groupId) {
+        List<ChatMessage> messages = chatMessageRepository.findByGroupId(groupId);
+
+        return ResponseEntity.status(HttpStatus.OK).body(
+                messages.stream()
                         .map(ChatMessageResponse::fromEntity)
                         .collect(Collectors.toList())
         );
@@ -117,7 +136,6 @@ public class ChatController {
 
         return notification;
     }
-
 
     private User getCurrentUser(Principal principal) {
         if (principal == null) {

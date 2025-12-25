@@ -27,6 +27,10 @@ public class ChatMessage {
 
     private LocalDateTime timestamp;
 
+    @ManyToOne
+    @JoinColumn(name= "chat_group_id")
+    private ChatGroup group;
+
     @Enumerated(EnumType.STRING)
     private MessageType type;
 

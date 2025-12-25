@@ -20,6 +20,7 @@ defineProps({
   onlineUsers: Object,
   myStatus: String,
   formatTime: Function,
+  activeGroupId: [Number, String] // Nowy prop
 })
 
 defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout', "updateProfile"])
@@ -42,40 +43,51 @@ const updateProfile = () => {
   <div class="flex h-screen bg-[var(--color-bg-body)] font-display overflow-hidden">
     <ChatSidebarLeft />
 
-    <!-- CHAT AREA -->
     <div class="flex-1 flex flex-col min-w-0 bg-[var(--surface-panel)] relative">
 
-      <ChatHeader
-        :currentName="currentName"
-        :currentSurname="currentSurname"
-      />
+      <template v-if="activeGroupId">
+        <ChatHeader
+          :currentName="currentName"
+          :currentSurname="currentSurname"
+        />
 
-      <ChatMessages
-        :messages="messages"
-        :typingUsers="typingUsers"
-        :loading="loading"
-        :currentUser="currentUser"
-        :currentName="currentName"
-        :currentSurname="currentSurname"
-        :formatTime="formatTime"
-      />
+        <ChatMessages
+          :messages="messages"
+          :typingUsers="typingUsers"
+          :loading="loading"
+          :currentUser="currentUser"
+          :currentName="currentName"
+          :currentSurname="currentSurname"
+          :formatTime="formatTime"
+        />
 
-      <ChatTypingIndicator
-        :onlineUsers="onlineUsers"
-        :users="typingUsers"
-        :compact="false"
-      />
+        <ChatTypingIndicator
+          :onlineUsers="onlineUsers"
+          :users="typingUsers"
+          :compact="false"
+        />
 
-      <ChatInput
-        :messageContent="messageContent"
-        :isConnected="isConnected"
-        @typing="$emit('typing')"
-        @sendMessage="$emit('sendMessage')"
-        @update:messageContent="$emit('updateMessageContent', $event)"
-      />
+        <ChatInput
+          :messageContent="messageContent"
+          :isConnected="isConnected"
+          @typing="$emit('typing')"
+          @sendMessage="$emit('sendMessage')"
+          @update:messageContent="$emit('updateMessageContent', $event)"
+        />
+      </template>
+
+      <div v-else class="flex-1 flex flex-col items-center justify-center text-[var(--color-text-secondary)]">
+        <div class="h-24 w-24 bg-[var(--surface-panel-strong)] rounded-full flex items-center justify-center mb-6">
+          <span class="material-symbols-outlined text-5xl opacity-50">forum</span>
+        </div>
+        <h2 class="text-2xl font-bold text-[var(--color-text-primary)] mb-2">Welcome to ConnectApp</h2>
+        <p class="max-w-md text-center">
+          Select a channel from the sidebar or create a new group to start messaging.
+        </p>
+      </div>
+
     </div>
 
-    <!-- RIGHT SIDEBAR -->
     <ChatSidebarRight
       :onlineUsers="onlineUsers"
       :currentUser="currentUser"
@@ -84,11 +96,11 @@ const updateProfile = () => {
       :myStatus="myStatus"
       @setStatus="$emit('setStatus', $event)"
       @logout="$emit('logout')"
-      @open-settings = "openSettings"
+      @open-settings="openSettings"
     />
 
     <SettingsLayout v-if="currentView === 'settings'"
-                    :currentUser = currentUser
+                    :currentUser="currentUser"
                     @close="closeSettings"
                     @logout="$emit('logout')"
     />

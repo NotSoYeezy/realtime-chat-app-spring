@@ -7,4 +7,5 @@ import lombok.Data;
 public class ChatMessageRequest {
     private String content;
     private ChatMessage.MessageType type;
+    private Long groupId;
 }
