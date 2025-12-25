@@ -1,0 +1,55 @@
+stages:
+  - build
+  - test
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - realtimechat/.m2/repository/
+
+build-frontend:
+  stage: build
+  image: node:lts
+  script:
+    - echo "Installing dependencies..."
+    - npm install
+    - echo "Building vue app..."
+    - npm run build
+  artifacts:
+    name: "frontend-dist"
+    paths:
+      - dist/
+    expire_in: 1 week
+  only:
+    - main
+    - master
+    - merge_requests
+
+build-backend:
+  stage: build
+  image: maven:3.9-eclipse-temurin-17
+  variables:
+    MAVEN_OPTS: "-Dmaven.repo.local=realtimechat/.m2/repository"
+  script:
+    - cd realtimechat
+    - echo "Building JAR file..."
+    - mvn clean package -DskipTests
+  artifacts:
+    name: "backend-jar"
+    paths:
+      - realtimechat/target/*.jar
+    expire_in: 1 week
+  only:
+    - main
+    - master
+    - merge_requests
+
+test-backend:
+  stage: test
+  image: maven:3.9-eclipse-temurin-17
+  script:
+    - echo "Running tests"
+    - cd realtimechat
+    - mvn test
+  needs: []
