@@ -32,6 +32,7 @@ public class GroupController {
     @GetMapping
     @ResponseBody
     public ResponseEntity<List<ChatGroupResponse>> getGroups(@AuthenticationPrincipal UserDetails userDetails) {
+        // TODO: REFACTOR THAT TO SERVICE
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new UsernameNotFoundException("User not found"));
 

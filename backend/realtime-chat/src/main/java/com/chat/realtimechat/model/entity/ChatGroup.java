@@ -1,5 +1,6 @@
 package com.chat.realtimechat.model.entity;
 
+import com.chat.realtimechat.model.enums.GroupType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,6 +20,8 @@ public class ChatGroup {
     private Long id;
 
     private String name;
+    @Enumerated(EnumType.STRING)
+    private GroupType type;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
