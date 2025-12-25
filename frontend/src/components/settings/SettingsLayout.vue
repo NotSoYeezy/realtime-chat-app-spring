@@ -3,7 +3,7 @@ import { ref, computed } from 'vue'
 import AccountLayout from "@/components/settings/layout/AccountLayout.vue";
 import GeneralLayout from "@/components/settings/layout/GeneralLayout.vue";
 
-defineEmits(['close'])
+defineEmits(['close', 'logout']);
 defineProps({
   currentUser: String
 })
@@ -13,7 +13,6 @@ const activeTab = ref('general')
 const tabs = [
   { id: 'general', label: 'General', component: GeneralLayout },
   { id: 'account', label: 'Account', component: AccountLayout }
-  // Proposed additional tabs: Profile, Notifications, Language & Region
 ]
 const currentComponent = computed(() => {
   const tab = tabs.find(t => t.id === activeTab.value)
@@ -62,6 +61,7 @@ const currentComponent = computed(() => {
           <component
             :is="currentComponent"
             :currentUser="currentUser"
+            @logout="$emit('logout')"
           />
         </main>
       </div>

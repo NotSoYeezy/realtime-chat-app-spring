@@ -13,6 +13,8 @@ RUN mvn -Dmaven.test.skip=true clean package
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+RUN apk add --no-cache libgcc
+
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080

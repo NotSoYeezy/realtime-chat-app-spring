@@ -106,11 +106,11 @@ public class AuthController {
     @PostMapping("/checkPassword")
     public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody Map<String, String> request) {
         String username = user.getUsername();
-        boolean result = userService.checkPassword(username, request.get("password"));
-        if (result) {
+        boolean check = userService.checkPassword(username, request.get("password"));
+        if (check) {
             return ResponseEntity.ok("Password check successful.");
         }
-        return ResponseEntity.badRequest().body("Password check failed.");
+        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("No passwords");
     }
 
     @GetMapping("/confirm/{token}")

@@ -207,6 +207,10 @@ const setStatus = (status) => {
   )
 }
 
+const updateProfile = () => {
+  currentUser.value = getCurrentUserFromToken()
+}
+
 watch(
   () => chatStore.activeGroupId,
   (newGroupId) => {

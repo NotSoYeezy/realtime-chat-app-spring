@@ -26,7 +26,12 @@ const router = createRouter({
       path: "/",
       name: 'index',
       component: () => import("@/views/HomeView.vue"),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: true } // Tylko dla zalogowanych
+    },
+    {
+      path: '/auth/callback',
+      name: 'AuthCallback',
+      component: () => import("@/views/AuthCallback.vue"),
     }
   ],
 })

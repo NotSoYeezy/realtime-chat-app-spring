@@ -20,6 +20,8 @@ const showNewPassword = ref(false)
 const showConfirmPassword = ref(false)
 const error = ref(null)
 
+const updateSuccess = ref(false)
+
 const form = ref({
   email: null,
   username: null,
@@ -113,25 +115,45 @@ const handleSave = async() => {
     const response = await UpdateUser.updateUser(payload)
 
     if (response.status === 200) {
-      emit('saved')
-      editEmail.value = false
-      editUsername.value = false
-      editPassword.value = false
-      form.value.email = ''
-      form.value.username = ''
-      form.value.password = ''
-      form.value.confirmPassword = ''
+      updateSuccess.value = true
     }
   }
   catch (err) {
     console.error(err)
-    error.value = 'Update failed'
+    error.value = err.response.data.message
   }
+}
+
+const confirmLogout = () => {
+  emit('saved')
 }
 </script>
 
 <template>
   <div class="space-y-6 animate-in fade-in duration-300">
+
+    <div v-if="updateSuccess" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+
+      <div class="bg-[var(--surface-panel)] border border-[var(--color-border)] p-8 rounded-2xl shadow-2xl max-w-md w-full flex flex-col items-center text-center space-y-6 animate-in zoom-in-95 duration-300">
+
+        <div class="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </div>
+
+        <div class="space-y-2">
+          <h4 class="text-xl font-bold text-[var(--color-text-primary)]">Profile Updated</h4>
+          <p class="text-[var(--color-text-secondary)] text-sm leading-relaxed">
+            Your account credentials have been changed successfully. For security reasons, you must log in again.
+          </p>
+        </div>
+
+        <SettingsButton @click="confirmLogout" class="w-full">
+          OK, Log me out
+        </SettingsButton>
+      </div>
+    </div>
 
     <div class="flex items-center justify-between">
       <div>

@@ -7,10 +7,10 @@ import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
-import com.chat.realtimechat.repository.RegisterConfirmTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
@@ -48,10 +48,35 @@ public class UserServiceImpl implements UserService {
         user.setName(request.getName());
         user.setSurname(request.getSurname());
         user.setUsername(generateUsername(request.getName(), request.getSurname()));
-        user.setSurname(request.getSurname());
-        user.setName(request.getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
+        return userRepository.save(user);
+    }
+
+    @Override
+    public User registeredGoogleUser(OAuth2User oAuth2User){
+        String id = oAuth2User.getAttribute("sub");
+        String email = oAuth2User.getAttribute("email");
+
+        if(userRepository.findByProviderId(id).isPresent()){
+            return userRepository.findByProviderId(id).get();
+        }
+        else if(userRepository.findByEmail(email).isPresent()){
+            User updatedUser = userRepository.findByEmail(email).get();
+            updatedUser.setProviderId(id);
+            return userRepository.save(updatedUser);
+        }
+        String name = oAuth2User.getAttribute("name");
+        String firstName = name.split(" ")[0];
+        String lastName = name.split(" ")[1];
+
+        User user = new User();
+        user.setEmail(email);
+        user.setName(firstName);
+        user.setSurname(lastName);
+        user.setUsername(generateUsername(firstName, lastName));
+        user.setProviderId(id);
+        user.setConfirmed(true);
         return userRepository.save(user);
     }
 
@@ -94,6 +119,9 @@ public class UserServiceImpl implements UserService {
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isEmpty()) {
             throw new LoginUserNotFoundException();
+        }
+        if(password == null && user.get().getPassword() == null){
+            return false;
         }
         if(!passwordEncoder.matches(password,user.get().getPassword())){
             throw new IncorrectPasswordException();

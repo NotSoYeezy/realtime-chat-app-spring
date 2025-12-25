@@ -23,6 +23,8 @@ defineProps({
   activeGroupId: [Number, String] // Nowy prop
 })
 
+defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout', "updateProfile"])
+
 const currentView = ref('chat')
 
 const openSettings = () => {
@@ -31,8 +33,10 @@ const openSettings = () => {
 const closeSettings = () => {
   currentView.value = 'chat'
 }
+const updateProfile = () => {
+  emit('updateProfile')
+}
 
-defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout'])
 </script>
 
 <template>
@@ -98,6 +102,7 @@ defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logo
     <SettingsLayout v-if="currentView === 'settings'"
                     :currentUser="currentUser"
                     @close="closeSettings"
+                    @logout="$emit('logout')"
     />
   </div>
 </template>
