@@ -12,6 +12,7 @@ services:
       - postgresdb
       - rabbitmq
     environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5432/chatdb
       - SPRING_DATASOURCE_USERNAME=dbuser
       - SPRING_DATASOURCE_PASSWORD=dbpass
