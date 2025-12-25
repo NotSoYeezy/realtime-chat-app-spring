@@ -1,5 +1,6 @@
 package com.chat.realtimechat.exception;
 
+import com.chat.realtimechat.exception.friendship.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -67,7 +68,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleEmailExists(
             Exception ex,
             HttpServletRequest request
-    ){
+    ) {
         return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
@@ -99,6 +100,55 @@ public class GlobalExceptionHandler {
     ) {
         return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
     }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ApiError> handleUserNotFound(
+            UserNotFoundException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.NOT_FOUND, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(CannotFriendYourselfException.class)
+    public ResponseEntity<ApiError> handleSelfFriend(
+            CannotFriendYourselfException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, "You cannot send a friend request to yourself", request);
+    }
+
+    @ExceptionHandler(FriendshipAlreadyExistsException.class)
+    public ResponseEntity<ApiError> handleAlreadyFriends(
+            FriendshipAlreadyExistsException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.CONFLICT, "You are already friends", request);
+    }
+
+    @ExceptionHandler(PendingFriendRequestException.class)
+    public ResponseEntity<ApiError> handlePendingRequest(
+            PendingFriendRequestException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.CONFLICT, "A friend request is already pending", request);
+    }
+
+    @ExceptionHandler(BlockedRelationshipException.class)
+    public ResponseEntity<ApiError> handleBlocked(
+            BlockedRelationshipException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.FORBIDDEN, "You cannot interact with this user", request);
+    }
+
+    @ExceptionHandler(FriendshipOperationException.class)
+    public ResponseEntity<ApiError> handleFriendshipOperation(
+            FriendshipOperationException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(

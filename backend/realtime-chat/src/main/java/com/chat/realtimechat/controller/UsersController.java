@@ -1,9 +1,10 @@
 package com.chat.realtimechat.controller;
 
-import com.chat.realtimechat.model.dto.response.RegisteredUserResponse;
+import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +16,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("api/users")
@@ -22,6 +26,7 @@ import java.util.stream.Collectors;
 public class UsersController {
 
     private final UserRepository userRepository;
+    private final UserService userService;
 
     @GetMapping
     public ResponseEntity<List<UserResponse>> getAllUsers() {
@@ -56,4 +61,22 @@ public class UsersController {
         );
         return ResponseEntity.status(HttpStatus.OK).body(registeredUserResponse);
     }
+
+    @GetMapping
+    public ResponseEntity<List<UserResponse>> getAllUsers() {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                userService.getAllUsersResponses()
+        );
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<FriendUserResponse>> searchUsers(
+            @RequestParam String query
+    ) {
+        return ResponseEntity.status(HttpStatus.OK).body(
+                userService.searchUsers(query)
+        );
+    }
+
+
 }

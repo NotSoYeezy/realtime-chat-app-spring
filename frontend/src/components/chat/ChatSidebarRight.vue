@@ -1,6 +1,8 @@
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import {onMounted, onUnmounted, ref} from 'vue'
 import DropdownLayout from '@/components/layout/DropdownLayout.vue'
+import FriendListLayout from "@/components/layout/FriendListLayout.vue"
+import {useFriendsStore} from "@/stores/friendsStore.js"
 
 defineProps({
   onlineUsers: Object,
@@ -10,7 +12,9 @@ defineProps({
   myStatus: String,
 })
 
-const emit = defineEmits(['setStatus', 'logout', 'openSettings'])
+const friendsStore = useFriendsStore()
+
+const emit = defineEmits(['setStatus', 'logout', 'openSettings', 'openFriends'])
 
 const isDropdown = ref(false)
 const dropdownRef = ref(null)
@@ -32,6 +36,7 @@ const handleClickOutside = (event) => {
 
 onMounted(() => {
   document.addEventListener('click', handleClickOutside)
+  friendsStore.fetchAll()
 })
 
 onUnmounted(() => {
@@ -47,14 +52,16 @@ onUnmounted(() => {
 
       <!-- HEADER -->
       <div class="flex items-center justify-between mb-3">
-        <h3 class="font-bold text-[var(--color-text-primary)]">Friends</h3>
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-[var(--color-text-primary)] truncate">
+            {{ currentName }} {{ currentSurname }}
+          </p>
+          <p class="text-[10px] text-[var(--color-text-secondary)]">
+            @{{ currentUser }}
+          </p>
+        </div>
 
-        <!-- ONLINE COUNTER -->
-        <span class="text-xs w-fit px-2 py-0.5 rounded-full mr-auto ml-2 bg-[var(--status-online-bg)] text-[var(--status-online)] font-medium">
-          {{ Object.keys(onlineUsers).length }}
-        </span>
-
-        <!-- CURRENT USER DROPDOWN -->
+        <!-- DROPDOWN + AVATAR -->
         <div class="relative" ref="dropdownRef">
           <button
             class="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]"
@@ -69,11 +76,22 @@ onUnmounted(() => {
             @logout="$emit('logout')"
             @close-dropdown="handleSettings"
           />
+
+          <!-- STATUS BADGE -->
+          <span
+            class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--surface-panel)]"
+            :class="{
+              'bg-green-500': myStatus === 'ONLINE',
+              'bg-red-500': myStatus === 'BUSY',
+              'bg-yellow-500': myStatus === 'AWAY',
+            }"
+          ></span>
         </div>
       </div>
 
       <!-- STATUS SELECTOR -->
-      <div class="grid grid-cols-3 rounded-md h-7 bg-[var(--surface-panel-strong)] p-[2px] relative">
+      <div
+        class="grid grid-cols-3 rounded-md h-7 bg-[var(--surface-panel-strong)] p-[2px] relative">
         <div
           class="absolute top-[2px] bottom-[2px] left-[2px] rounded-md bg-[var(--surface-panel)] shadow transition-all duration-300 ease-in-out"
           :class="{
@@ -88,61 +106,24 @@ onUnmounted(() => {
           v-for="s in ['ONLINE', 'BUSY', 'AWAY']"
           :key="s"
           @click="$emit('setStatus', s)"
-          class="z-10 flex items-center justify-center text-[10px] font-bold transition-colors duration-200 leading-none"
-          :class="[
-            s === myStatus ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]',
-          ]"
+          class="z-10 flex items-center justify-center text-[10px] font-bold transition-colors duration-200"
+          :class="[ s === myStatus ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]' ]"
         >
           {{ s }}
         </button>
       </div>
     </div>
 
+    <!-- FRIEND LIST -->
+    <FriendListLayout
+      @openChat="user => console.log('open chat', user)"
+      @removeFriend="id => friendsStore.removeFriend(id)"
+      @blockFriend="id => friendsStore.blockUser(id)"
+      @acceptRequest="id => friendsStore.acceptRequest(id)"
+      @rejectRequest="id => friendsStore.rejectRequest(id)"
+      @click="$emit('openFriends')"
+    />
 
-    <!-- USERS LIST -->
-    <div class="flex-1 p-2 space-y-1 overflow-y-auto">
-      <div
-        v-for="(info, username) in onlineUsers"
-        :key="username"
-        class="flex items-center gap-3 p-2 rounded-lg hover:bg-[var(--surface-panel-strong)]"
-      >
-        <!-- AVATAR -->
-        <div class="relative">
-          <div
-            class="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]"
-          >
-            {{ info.name.charAt(0) }}
-          </div>
-
-          <span
-            class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--surface-panel)]"
-            :class="{
-              'bg-green-500': info.status === 'ONLINE',
-              'bg-red-500': info.status === 'BUSY',
-              'bg-yellow-500': info.status === 'AWAY',
-            }"
-          ></span>
-        </div>
-
-        <!-- USER INFO -->
-        <div class="min-w-0 flex-1">
-          <p class="text-sm font-medium text-[var(--color-text-primary)] truncate">
-            {{ info.name }} {{ info.surname }}
-          </p>
-          <p class="text-[10px] text-[var(--color-text-secondary)]">
-            {{ info.status }}
-          </p>
-        </div>
-
-        <!-- CURRENT USER BADGE -->
-        <span
-          v-if="username === currentUser"
-          class="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-primary-bg-soft)] text-[var(--color-primary)] font-bold"
-        >
-          YOU
-        </span>
-      </div>
-    </div>
 
   </aside>
 </template>
