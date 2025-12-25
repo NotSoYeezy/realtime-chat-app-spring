@@ -36,7 +36,9 @@ const closeSettings = () => {
 const updateProfile = () => {
   emit('updateProfile')
 }
-
+const openFriendsTab = () => {
+  currentView.value = 'friends'
+}
 </script>
 
 <template>
@@ -96,13 +98,19 @@ const updateProfile = () => {
       :myStatus="myStatus"
       @setStatus="$emit('setStatus', $event)"
       @logout="$emit('logout')"
-      @open-settings="openSettings"
+      @open-settings = "openSettings"
+      @openFriends = "openFriendsTab"
     />
 
     <SettingsLayout v-if="currentView === 'settings'"
                     :currentUser="currentUser"
                     @close="closeSettings"
                     @logout="$emit('logout')"
+    />
+
+    <FriendsView
+      v-if="currentView === 'friends'"
+      @close="currentView = 'chat'"
     />
   </div>
 </template>
