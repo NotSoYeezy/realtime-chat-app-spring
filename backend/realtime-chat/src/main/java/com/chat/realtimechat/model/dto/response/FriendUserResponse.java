@@ -6,16 +6,15 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class UserResponse {
+public class FriendUserResponse {
     private final Long id;
-    private final String email;
     private String username;
     private String name;
     private String surname;
 
-    public static UserResponse fromEntity(User user) {
-        return new UserResponse(
-                user.getEmail(),
+    public static FriendUserResponse fromEntity(User user) {
+        return new FriendUserResponse(
+                user.getId(),
                 user.getUsername(),
                 user.getName(),
                 user.getSurname()

@@ -7,6 +7,7 @@ import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatSidebarRight from '@/components/chat/ChatSidebarRight.vue'
 import ChatTypingIndicator from '@/components/chat/ChatTypingIndicator.vue'
 import SettingsLayout from '@/components/settings/SettingsLayout.vue'
+import FriendsView from "@/views/FriendsView.vue";
 
 defineProps({
   messages: Array,

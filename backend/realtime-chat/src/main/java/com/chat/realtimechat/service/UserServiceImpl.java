@@ -1,5 +1,7 @@
 package com.chat.realtimechat.service;
 
+import com.chat.realtimechat.model.dto.response.FriendUserResponse;
+import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.exception.UserNotConfirmedException;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.exception.EmailAlreadyExistsException;
@@ -14,6 +16,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -91,6 +94,28 @@ public class UserServiceImpl implements UserService {
         }
         return user;
     }
+
+    @Override
+    public List<UserResponse> getAllUsersResponses() {
+            return userRepository.findAll()
+                    .stream()
+                    .map(UserResponse::fromEntity)
+                    .toList();
+    }
+
+    @Override
+    public List<FriendUserResponse> searchUsers(String query) {
+        return userRepository
+                .NameContainingIgnoreCaseOrSurnameContainingIgnoreCase(
+                        query,
+                        query
+                )
+                .stream()
+                .map(FriendUserResponse::fromEntity)
+                .toList();
+    }
+
+
 
     @Override
     public User updateUser(UpdateRequest request, String username) {
