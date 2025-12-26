@@ -37,6 +37,7 @@ export const useAuthStore = defineStore('auth', {
       this.startRefreshTokenTimer();
     },
 
+
     async refreshAccessToken() {
       if (!this.refreshToken) {
         this.logout();

@@ -39,7 +39,6 @@ public class WebSocketListener {
             UserStatus currentStatus = presenceService.getOnlineUsers()
                     .get(username)
                     .getStatus();
-
             sendPresenceMessage(username, ChatMessage.MessageType.JOIN, currentStatus);
         }
     }

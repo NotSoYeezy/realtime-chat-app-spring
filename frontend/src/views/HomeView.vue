@@ -66,6 +66,9 @@ const connect = () => {
   const socket = new SockJS('http://localhost:8080/ws')
   stompClient.value = Stomp.over(socket)
 
+  stompClient.value.heartbeat.outgoing = 20000
+  stompClient.value.heartbeat.incoming = 20000
+
   stompClient.value.connect({ Authorization: `Bearer ${token}` }, onConnected, onError)
 }
 
@@ -197,6 +200,9 @@ const fetchOnlineUsers = async () => {
 }
 
 const setStatus = (status) => {
+  if (!stompClient.value || !stompClient.value.connected){
+    return
+  }
   myStatus.value = status
   stompClient.value.send(
     '/app/user/setStatus',
