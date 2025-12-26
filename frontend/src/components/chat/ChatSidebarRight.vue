@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, onUnmounted, ref} from 'vue'
 import DropdownLayout from '@/components/layout/DropdownLayout.vue'
+import checkGoogleStatus from "@/api/checkGoogleStatus.js";
 import FriendListLayout from "@/components/layout/FriendListLayout.vue"
 import {useFriendsStore} from "@/stores/friendsStore.js"
 
@@ -19,6 +20,8 @@ const emit = defineEmits(['setStatus', 'logout', 'openSettings', 'openFriends'])
 const isDropdown = ref(false)
 const dropdownRef = ref(null)
 
+let pollingInterval = null
+
 const toggleDropdown = () => {
   isDropdown.value = !isDropdown.value
 }
@@ -34,13 +37,40 @@ const handleClickOutside = (event) => {
   }
 }
 
+const handleStatusClick = (status) => {
+  localStorage.setItem('my_status_preference', status);
+  emit('setStatus', status);
+}
+
+const checkStatus = async () => {
+    try {
+      const response = await checkGoogleStatus.isBusy()
+      if (response.data) {
+        emit('setStatus', 'BUSY')
+      }
+      else {
+        emit('setStatus', 'ONLINE')
+      }
+    } catch (error) {
+      console.error(error)
+  }
+}
+
 onMounted(() => {
+  checkStatus()
   document.addEventListener('click', handleClickOutside)
   friendsStore.fetchAll()
+  pollingInterval = setInterval(() => {
+    checkStatus();
+  }, 60000);
+
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  if (pollingInterval) {
+    clearInterval(pollingInterval)
+  }
 })
 </script>
 
@@ -105,7 +135,7 @@ onUnmounted(() => {
         <button
           v-for="s in ['ONLINE', 'BUSY', 'AWAY']"
           :key="s"
-          @click="$emit('setStatus', s)"
+          @click="handleStatusClick(s)"
           class="z-10 flex items-center justify-center text-[10px] font-bold transition-colors duration-200"
           :class="[ s === myStatus ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-secondary)]' ]"
         >

@@ -81,7 +81,12 @@ public class ChatController {
         ChatMessageResponse dto = new ChatMessageResponse();
         dto.setSender(senderInfo(user));
         dto.setType(ChatMessage.MessageType.JOIN);
-        dto.setUserStatus(info.getStatus());
+        if (info != null) {
+            dto.setUserStatus(info.getStatus());
+        }
+        else {
+            dto.setUserStatus(UserStatus.ONLINE);
+        }
         dto.setTimestamp(LocalDateTime.now());
         return dto;
     }
