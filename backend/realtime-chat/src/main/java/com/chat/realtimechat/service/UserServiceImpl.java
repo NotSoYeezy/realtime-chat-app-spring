@@ -11,6 +11,7 @@ import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -18,12 +19,14 @@ import org.springframework.stereotype.Service;
 import java.text.Normalizer;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @RequiredArgsConstructor
 @Service
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final FriendshipService friendshipService;
 
     @Override
     public Iterable<User> findAllUsers() {
@@ -57,14 +60,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User registeredGoogleUser(OAuth2User oAuth2User){
+    public User registeredGoogleUser(OAuth2User oAuth2User) {
         String id = oAuth2User.getAttribute("sub");
         String email = oAuth2User.getAttribute("email");
 
-        if(userRepository.findByProviderId(id).isPresent()){
+        if (userRepository.findByProviderId(id).isPresent()) {
             return userRepository.findByProviderId(id).get();
-        }
-        else if(userRepository.findByEmail(email).isPresent()){
+        } else if (userRepository.findByEmail(email).isPresent()) {
             User updatedUser = userRepository.findByEmail(email).get();
             updatedUser.setProviderId(id);
             return userRepository.save(updatedUser);
@@ -97,24 +99,32 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponse> getAllUsersResponses() {
-            return userRepository.findAll()
-                    .stream()
-                    .map(UserResponse::fromEntity)
-                    .toList();
-    }
-
-    @Override
-    public List<FriendUserResponse> searchUsers(String query) {
-        return userRepository
-                .NameContainingIgnoreCaseOrSurnameContainingIgnoreCase(
-                        query,
-                        query
-                )
+        return userRepository.findAll()
                 .stream()
-                .map(FriendUserResponse::fromEntity)
+                .map(UserResponse::fromEntity)
                 .toList();
     }
 
+    @Override
+    public List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) {
+
+        User currentUser = userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(LoginUserNotFoundException::new);
+
+        String q = query == null ? "" : query.trim();
+        if (q.length() < 2) {
+            return List.of();
+        }
+
+        Set<Long> excludedIds = friendshipService.getExcludedUserIds(currentUser.getId());
+
+        return userRepository
+                .searchCandidates(q)
+                .stream()
+                .filter(u -> !excludedIds.contains(u.getId()))
+                .map(FriendUserResponse::fromEntity)
+                .toList();
+    }
 
 
     @Override
@@ -140,15 +150,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkPassword(String username, String password){
+    public boolean checkPassword(String username, String password) {
         Optional<User> user = userRepository.findByUsername(username);
         if (user.isEmpty()) {
             throw new LoginUserNotFoundException();
         }
-        if(password == null && user.get().getPassword() == null){
+        if (password == null && user.get().getPassword() == null) {
             return false;
         }
-        if(!passwordEncoder.matches(password,user.get().getPassword())){
+        if (!passwordEncoder.matches(password, user.get().getPassword())) {
             throw new IncorrectPasswordException();
         }
         return true;

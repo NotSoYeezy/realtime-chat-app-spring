@@ -5,6 +5,8 @@ import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.List;
@@ -20,5 +22,5 @@ public interface UserService {
     boolean checkPassword(String username, String password);
     User authenticate(String username, String password);
     List<UserResponse> getAllUsersResponses();
-    List<FriendUserResponse> searchUsers(String query);
+    List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) throws UsernameNotFoundException;
 }

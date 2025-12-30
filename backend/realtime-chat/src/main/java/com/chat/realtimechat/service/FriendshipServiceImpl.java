@@ -12,7 +12,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
@@ -87,7 +89,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         User blocker = getUser(blockerId);
         User blocked = getUser(blockedId);
 
-        Friendship direct  = findRelation(blockerId, blockedId);
+        Friendship direct = findRelation(blockerId, blockedId);
         Friendship reverse = findRelation(blockedId, blockerId);
 
         if (reverse != null && reverse.getStatus() == FriendshipStatus.BLOCKED) {
@@ -198,6 +200,49 @@ public class FriendshipServiceImpl implements FriendshipService {
                 .stream()
                 .map(f -> toUserResponse(f.getFriend()))
                 .toList();
+    }
+
+    @Override
+    public Set<Long> getExcludedUserIds(Long userId) {
+
+        Set<Long> excluded = new HashSet<>();
+        excluded.add(userId);
+
+        List<Friendship> friendsAsUser =
+                friendshipRepository.findAllByUserIdAndStatus(
+                        userId, FriendshipStatus.ACCEPTED);
+
+        List<Friendship> friendsAsFriend =
+                friendshipRepository.findAllByFriendIdAndStatus(
+                        userId, FriendshipStatus.ACCEPTED);
+
+        friendsAsUser.forEach(f -> excluded.add(f.getFriend().getId()));
+        friendsAsFriend.forEach(f -> excluded.add(f.getUser().getId()));
+
+        List<Friendship> outgoing =
+                friendshipRepository.findAllByUserIdAndStatus(
+                        userId, FriendshipStatus.PENDING);
+
+        outgoing.forEach(f -> excluded.add(f.getFriend().getId()));
+
+        List<Friendship> incoming =
+                friendshipRepository.findAllByFriendIdAndStatus(
+                        userId, FriendshipStatus.PENDING);
+
+        incoming.forEach(f -> excluded.add(f.getUser().getId()));
+
+        List<Friendship> blockedAsUser =
+                friendshipRepository.findAllByUserIdAndStatus(
+                        userId, FriendshipStatus.BLOCKED);
+
+        List<Friendship> blockedAsFriend =
+                friendshipRepository.findAllByFriendIdAndStatus(
+                        userId, FriendshipStatus.BLOCKED);
+
+        blockedAsUser.forEach(f -> excluded.add(f.getFriend().getId()));
+        blockedAsFriend.forEach(f -> excluded.add(f.getUser().getId()));
+
+        return excluded;
     }
 
     private User getUser(Long id) {
