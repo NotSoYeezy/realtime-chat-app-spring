@@ -1,21 +1,35 @@
 <script setup>
+import { onMounted } from 'vue'
 import { useFriendsStore } from '@/stores/friendsStore'
+import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
-const emit = defineEmits([
+defineEmits([
   'openChat',
-  'openFriends',
-  'removeFriend'
+  'openFriends'
 ])
 
 const friendsStore = useFriendsStore()
+
+onMounted(() => {
+  if (!friendsStore.friends.length) {
+    friendsStore.fetchAll()
+  }
+})
 </script>
 
 <template>
   <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- HEADER -->
-    <div class="flex items-center justify-between px-3 py-2 border-b border-[var(--color-border)]">
-      <span class="text-xs font-semibold uppercase tracking-wide text-[var(--color-text-secondary)]">
+    <div
+      class="flex items-center justify-between
+             px-3 py-2
+             border-b border-[var(--color-border)]"
+    >
+      <span
+        class="text-xs font-semibold uppercase tracking-wide
+               text-[var(--color-text-secondary)]"
+      >
         Friends
       </span>
 
@@ -33,23 +47,13 @@ const friendsStore = useFriendsStore()
       </button>
     </div>
 
-    <!-- FRIENDS LIST -->
-    <div
-      v-for="friend in friendsStore.friends"
-      :key="friend.id"
-      class="flex items-center gap-3 p-2 rounded-lg
-             hover:bg-[var(--surface-panel-strong)]
-             cursor-pointer"
-      @click="$emit('openChat', friend)"
-    >
-      <div class="text-[var(--color-text-primary)]  h-9 w-9 rounded-full flex items-center justify-center font-bold bg-[var(--surface-panel-strong)]">
-        {{ friend.name.charAt(0) }}
-      </div>
-
-      <div class="flex-1 min-w-0 text-[var(--color-text-primary)]">
-        <p class="text-sm truncate">{{ friend.name }} {{ friend.surname }}</p>
-      </div>
-    </div>
-
+    <!-- FRIENDS LIST (DEFAULT) -->
+    <DefaultUsersList
+      class="flex-1"
+      :users="friendsStore.friends"
+      :loading="friendsStore.loading"
+      empty-text="Press here to add your first friend"
+      @rowClick="$emit('openChat', $event)"
+    />
   </div>
 </template>

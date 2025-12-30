@@ -80,7 +80,6 @@ onUnmounted(() => {
   >
     <div class="p-4 border-b border-[var(--color-border)]">
 
-      <!-- HEADER -->
       <div class="flex items-center justify-between mb-3">
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-[var(--color-text-primary)] truncate">
@@ -91,7 +90,6 @@ onUnmounted(() => {
           </p>
         </div>
 
-        <!-- DROPDOWN + AVATAR -->
         <div class="relative" ref="dropdownRef">
           <button
             class="h-9 w-9 rounded-full flex items-center justify-center font-bold bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]"
@@ -107,7 +105,6 @@ onUnmounted(() => {
             @close-dropdown="handleSettings"
           />
 
-          <!-- STATUS BADGE -->
           <span
             class="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[var(--surface-panel)]"
             :class="{
@@ -119,7 +116,6 @@ onUnmounted(() => {
         </div>
       </div>
 
-      <!-- STATUS SELECTOR -->
       <div
         class="grid grid-cols-3 rounded-md h-7 bg-[var(--surface-panel-strong)] p-[2px] relative">
         <div
@@ -144,7 +140,6 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <!-- FRIEND LIST -->
     <FriendListLayout
       @openChat="user => console.log('open chat', user)"
       @removeFriend="id => friendsStore.removeFriend(id)"

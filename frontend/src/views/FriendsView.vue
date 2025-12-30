@@ -1,10 +1,10 @@
 <script setup>
 import { ref } from 'vue'
 import XButton from '@/components/ui/XButton.vue'
-import FriendsList from "@/components/friends/layout/FriendsList.vue";
-import IncomingRequests from "@/components/friends/layout/IncomingRequests.vue";
-import AddFriend from "@/components/friends/layout/SentRequests.vue";
-import BlockedUsers from "@/components/friends/layout/BlockedUsers.vue";
+import FriendsList from "@/components/friends/layout/FriendListTab.vue";
+import IncomingRequests from "@/components/friends/layout/IncomingRequestsTab.vue";
+import AddFriend from "@/components/friends/layout/AddFriendTab.vue";
+import BlockedUsers from "@/components/friends/layout/BlockedListTab.vue";
 
 const activeTab = ref('friends')
 

@@ -4,6 +4,7 @@ import com.chat.realtimechat.model.dto.response.FriendInvitationResponse;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 
 import java.util.List;
+import java.util.Set;
 
 public interface FriendshipService
 {
@@ -28,4 +29,6 @@ public interface FriendshipService
     List<FriendInvitationResponse> getOutgoingRequests(Long userId);
 
     List<FriendUserResponse> getBlockedUsers(Long userId);
+
+    Set<Long> getExcludedUserIds(Long userId);
 }
