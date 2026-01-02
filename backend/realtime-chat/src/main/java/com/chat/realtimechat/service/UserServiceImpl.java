@@ -1,15 +1,14 @@
 package com.chat.realtimechat.service;
 
+import com.chat.realtimechat.exception.*;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
-import com.chat.realtimechat.exception.UserNotConfirmedException;
 import com.chat.realtimechat.model.entity.User;
-import com.chat.realtimechat.exception.EmailAlreadyExistsException;
-import com.chat.realtimechat.exception.IncorrectPasswordException;
-import com.chat.realtimechat.exception.LoginUserNotFoundException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.notifiers.UserEmailNotifier;
+import com.chat.realtimechat.service.security.PasswordResetTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +26,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final FriendshipService friendshipService;
+    private final PasswordResetTokenService passwordResetTokenService;
 
     @Override
     public Iterable<User> findAllUsers() {
@@ -124,6 +124,12 @@ public class UserServiceImpl implements UserService {
                 .filter(u -> !excludedIds.contains(u.getId()))
                 .map(FriendUserResponse::fromEntity)
                 .toList();
+    }
+
+    @Override
+    public void initiatePasswordReset(String email) {
+        passwordResetTokenService.initiatePasswordReset(email);
+
     }
 
 
