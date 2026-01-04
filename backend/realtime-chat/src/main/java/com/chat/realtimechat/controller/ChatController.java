@@ -19,6 +19,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.security.Principal;
@@ -59,10 +60,17 @@ public class ChatController {
         );
     }
 
+    @PostMapping("/api/chat/heartbeat")
+    @ResponseBody
+    public ResponseEntity<Void> heartbeat(Principal principal) {
+        presenceService.heartbeat(principal.getName());
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/api/chat/users/online")
     @ResponseBody
-    public ResponseEntity<Map<String, OnlineInfoResponse>> getOnlineUsers() {
-        return ResponseEntity.status(HttpStatus.OK).body(presenceService.getOnlineUsers());
+    public ResponseEntity<Map<String, OnlineInfoResponse>> getOnlineUsers(Principal principal) {
+        return ResponseEntity.status(HttpStatus.OK).body(presenceService.getOnlineUsers(principal.getName()));
     }
 
     @MessageMapping("/user/setStatus")
