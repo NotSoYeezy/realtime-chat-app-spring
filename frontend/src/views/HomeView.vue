@@ -21,7 +21,7 @@ const currentSurname = ref('')
 const currentUser = ref('')
 const typingUsers = ref(new Set())
 const onlineUsers = ref({})
-const myStatus = ref('ONLINE')
+const myStatus = ref(localStorage.getItem('user_status') || 'ONLINE')
 const groupSubscriptions = new Map()
 const replyingTo = ref(null)
 let typingTimeout = null
@@ -114,10 +114,14 @@ const connect = () => {
       stompClient.value.subscribe('/user/queue/friends-status', onFriendStatusReceived)
       stompClient.value.subscribe('/topic/public', onPublicMessageReceived)
 
-      // stompClient.value.publish({
-      //   destination: `/app/chat.addUser/${chatStore.activeGroupId}`,
-      //   body: JSON.stringify({ type: 'JOIN', content: '' })
-      // })
+      if (myStatus.value) {
+        stompClient.value.publish({
+          destination: '/app/user/setStatus',
+          body: JSON.stringify({
+            status: myStatus.value,
+          })
+        })
+      }
 
       subscribeToAllGroups()
     },
@@ -191,10 +195,8 @@ const onMessageReceived = (payload) => {
 const onFriendStatusReceived = (payload) => {
   const message = JSON.parse(payload.body)
   const s = message.sender
-  
+
   if (s && s.username) {
-     // If user goes offline, you might want to remove them or set status to OFFLINE
-     // For now, we just update the map which drives the UI
      onlineUsers.value[s.username] = s
   }
 }
@@ -283,6 +285,7 @@ const setStatus = (status) => {
     return
   }
   myStatus.value = status
+  localStorage.setItem('user_status', status)
   stompClient.value.publish({
     destination: '/app/user/setStatus',
     body: JSON.stringify({
@@ -338,6 +341,6 @@ onBeforeUnmount(() => {
     @updateMessageContent="messageContent = $event"
     @setStatus="setStatus"
     @logout="handleLogout"
-    @openFriends="fetchOnlineUsers" 
+    @openFriends="fetchOnlineUsers"
   />
 </template>

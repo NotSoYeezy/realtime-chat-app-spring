@@ -11,6 +11,7 @@ services:
     depends_on:
       - postgresdb
       - rabbitmq
+      - redis
     environment:
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgresdb:5432/chatdb
@@ -22,9 +23,11 @@ services:
       - RABBITMQ_PASS=guest
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
-      - FILE_UPLOAD_DIR=/app/uploads  # Dodaj tę zmienną
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - FILE_UPLOAD_DIR=/app/uploads
     volumes:
-      - uploads_data:/app/uploads  # Dodaj volume dla uploadów
+      - uploads_data:/app/uploads
 
   postgresdb:
     image: postgres:17-alpine
@@ -55,6 +58,33 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+      - ./redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    restart: unless-stopped
+    ports:
+      - "5540:5540"
+    volumes:
+      - redisinsight_data:/data
+    depends_on:
+      - redis
+
   postgres-testdb:
     image: postgres:17-alpine
     container_name: postgres-test-db
@@ -79,6 +109,7 @@ services:
     depends_on:
       - rabbitmq
       - postgres-testdb
+      - redis
     environment:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-testdb:5432/testdb
       - SPRING_DATASOURCE_USERNAME=dbuser
@@ -87,6 +118,8 @@ services:
       - RABBITMQ_PORT=61613
       - RABBITMQ_USER=guest
       - RABBITMQ_PASS=guest
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
     entrypoint: ["mvn", "clean","test"]
     profiles: ["test"]
 
@@ -95,3 +128,5 @@ volumes:
   postgres_test_data:
   rabbitmq_data:
   uploads_data:
+  redis_data:
+  redisinsight_data:

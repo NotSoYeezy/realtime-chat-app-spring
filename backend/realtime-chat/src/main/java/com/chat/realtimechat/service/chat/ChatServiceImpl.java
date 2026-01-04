@@ -143,15 +143,15 @@ public class ChatServiceImpl implements ChatService{
     }
 
     private OnlineInfoResponse senderInfo(User user) {
-        return presenceService.getOnlineUsers()
-                .getOrDefault(
-                        user.getUsername(),
-                        new OnlineInfoResponse(
-                                user.getName(),
-                                user.getSurname(),
-                                user.getUsername(),
-                                UserStatus.ONLINE
-                        )
-                );
+        OnlineInfoResponse onlineUser = presenceService.getOnlineUser(user.getUsername());
+        if (onlineUser != null) {
+            return onlineUser;
+        }
+        return new OnlineInfoResponse(
+                user.getName(),
+                user.getSurname(),
+                user.getUsername(),
+                UserStatus.ONLINE
+        );
     }
 }

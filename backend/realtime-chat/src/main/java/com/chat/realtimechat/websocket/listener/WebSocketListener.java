@@ -36,9 +36,7 @@ public class WebSocketListener {
             String username = user.getName();
             presenceService.connectUser(username);
 
-            UserStatus currentStatus = presenceService.getOnlineUsers()
-                    .get(username)
-                    .getStatus();
+            UserStatus currentStatus = presenceService.getOnlineUser(username).getStatus();
             sendPresenceMessage(username, ChatMessage.MessageType.JOIN, currentStatus);
         }
     }
