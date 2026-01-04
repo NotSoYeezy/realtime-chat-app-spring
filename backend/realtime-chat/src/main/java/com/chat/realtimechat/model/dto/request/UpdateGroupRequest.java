@@ -1,10 +1,8 @@
 package com.chat.realtimechat.model.dto.request;
 
 import lombok.Data;
-import java.util.Set;
 
 @Data
-public class CreateGroupRequest {
+public class UpdateGroupRequest {
     private String name;
-    private Set<Long> memberIds;
 }

@@ -1,5 +1,8 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useChatStore } from '@/stores/chat'
+import { useFriendsStore } from '@/stores/friendsStore'
+
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
 import ChatHeader from '@/components/chat/ChatHeader.vue'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
@@ -7,9 +10,11 @@ import ChatInput from '@/components/chat/ChatInput.vue'
 import ChatSidebarRight from '@/components/chat/ChatSidebarRight.vue'
 import ChatTypingIndicator from '@/components/chat/ChatTypingIndicator.vue'
 import SettingsLayout from '@/components/settings/SettingsLayout.vue'
-import FriendsView from "@/views/FriendsView.vue";
+import FriendsView from "@/views/FriendsView.vue"
+import GroupInfoModal from "@/components/chat/GroupInfoModal.vue"
+import AddMemberModal from "@/components/chat/AddMemberModal.vue"
 
-defineProps({
+const props = defineProps({
   messages: Array,
   typingUsers: Object,
   loading: Boolean,
@@ -21,21 +26,52 @@ defineProps({
   onlineUsers: Object,
   myStatus: String,
   formatTime: Function,
-  activeGroupId: [Number, String] // Nowy prop
+  activeGroupId: [Number, String],
+  replyingTo: Object
 })
 
-defineEmits(['sendMessage', 'typing', 'updateMessageContent', 'setStatus', 'logout', "updateProfile"])
+defineEmits(['sendMessage', 'typing', 'updateMessageContent',
+  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply'])
 
+const chatStore = useChatStore()
+const friendsStore = useFriendsStore()
 const currentView = ref('chat')
+
+const showInfoModal = ref(false)
+const showAddMemberModal = ref(false)
+
+const activeGroupMembers = computed(() => {
+  return chatStore.activeGroup ? chatStore.activeGroup.members : []
+})
+
+const handleOpenInfo = async () => {
+  if (chatStore.activeGroupId) {
+    await chatStore.refreshGroup(chatStore.activeGroupId)
+    showInfoModal.value = true
+  }
+}
+
+const handleOpenAddMember = () => {
+  showInfoModal.value = false
+  showAddMemberModal.value = true
+}
+
+const handleMembersAdded = async (userIds) => {
+  await chatStore.addMembersToGroup(userIds)
+  showAddMemberModal.value = false
+  showInfoModal.value = true
+}
+
+const handleCloseAddMember = () => {
+  showAddMemberModal.value = false
+  showInfoModal.value = true
+}
 
 const openSettings = () => {
   currentView.value = 'settings'
 }
 const closeSettings = () => {
   currentView.value = 'chat'
-}
-const updateProfile = () => {
-  emit('updateProfile')
 }
 const openFriendsTab = () => {
   currentView.value = 'friends'
@@ -50,8 +86,9 @@ const openFriendsTab = () => {
 
       <template v-if="activeGroupId">
         <ChatHeader
-          :currentName="currentName"
-          :currentSurname="currentSurname"
+          :activeGroup="chatStore.activeGroup"
+          :currentUser="currentUser"
+          @openInfo="handleOpenInfo"
         />
 
         <ChatMessages
@@ -62,6 +99,7 @@ const openFriendsTab = () => {
           :currentName="currentName"
           :currentSurname="currentSurname"
           :formatTime="formatTime"
+          @reply="$emit('reply', $event)"
         />
 
         <ChatTypingIndicator
@@ -73,6 +111,8 @@ const openFriendsTab = () => {
         <ChatInput
           :messageContent="messageContent"
           :isConnected="isConnected"
+          :replyingTo="replyingTo"
+          @cancelReply="$emit('cancelReply')"
           @typing="$emit('typing')"
           @sendMessage="$emit('sendMessage')"
           @update:messageContent="$emit('updateMessageContent', $event)"
@@ -92,25 +132,47 @@ const openFriendsTab = () => {
     </div>
 
     <ChatSidebarRight
+      :activeGroup="chatStore.activeGroup"
       :onlineUsers="onlineUsers"
+      :groupMembers="activeGroupMembers"
       :currentUser="currentUser"
       :currentName="currentName"
       :currentSurname="currentSurname"
       :myStatus="myStatus"
       @setStatus="$emit('setStatus', $event)"
       @logout="$emit('logout')"
-      @open-settings = "openSettings"
-      @openFriends = "openFriendsTab"
+      @open-settings="openSettings"
+      @openFriends="openFriendsTab"
     />
 
-    <SettingsLayout v-if="currentView === 'settings'"
-                    :currentUser="currentUser"
-                    @close="closeSettings"
-                    @logout="$emit('logout')"
+    <Teleport to="body">
+      <GroupInfoModal
+        v-if="showInfoModal"
+        :activeGroup="chatStore.activeGroup"
+        :currentUser="currentUser"
+        @close="showInfoModal = false"
+        @openAddMember="handleOpenAddMember"
+      />
+
+      <AddMemberModal
+        v-if="showAddMemberModal"
+        :friends="friendsStore.friends"
+        :currentMembers="chatStore.activeGroup?.members || []"
+        @close="handleCloseAddMember"
+        @add="handleMembersAdded"
+      />
+    </Teleport>
+
+    <SettingsLayout
+      v-if="currentView === 'settings'"
+      :currentUser="currentUser"
+      @close="closeSettings"
+      @logout="$emit('logout')"
     />
 
     <FriendsView
       v-if="currentView === 'friends'"
+      :onlineUsers="onlineUsers"
       @close="currentView = 'chat'"
     />
   </div>

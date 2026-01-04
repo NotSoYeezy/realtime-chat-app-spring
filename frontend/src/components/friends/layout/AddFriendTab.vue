@@ -5,6 +5,10 @@ import { useFriendsStore } from '@/stores/friendsStore'
 import UserSearch from "@/components/user/UserSearch.vue";
 import OutgoingList from '@/components/friends/layout/RequestsList.vue'
 
+defineProps({
+  onlineUsers: Object
+})
+
 const friendsStore = useFriendsStore()
 
 onMounted(() => {
@@ -18,9 +22,15 @@ onMounted(() => {
   <div class="flex flex-col h-full">
 
     <!-- TODO: make search filter blocked users, show friends as 'added' and show incoming requests as 'accept/reject' -->
-    <UserSearch placeholder="Search users to send friend requests" />
+    <UserSearch
+      placeholder="Search users to send friend requests"
+      :onlineUsers="onlineUsers"
+    />
 
-    <OutgoingList class="flex-1 overflow-y-auto" />
+    <OutgoingList
+      class="flex-1 overflow-y-auto"
+      :onlineUsers="onlineUsers"
+    />
 
   </div>
 </template>

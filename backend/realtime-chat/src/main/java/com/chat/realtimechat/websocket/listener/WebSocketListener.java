@@ -6,7 +6,7 @@ import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.UserStatus;
 import com.chat.realtimechat.repository.UserRepository;
-import com.chat.realtimechat.service.UserPresenceService;
+import com.chat.realtimechat.service.chat.UserPresenceService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;

@@ -22,6 +22,10 @@ const props = defineProps({
   userTextColor: {
     type: String,
     default: 'var(--color-text-primary)'
+  },
+  onlineUsers: {
+    type: Object,
+    default: () => ({})
   }
 })
 
@@ -73,6 +77,7 @@ const filteredUsers = computed(() => {
         <UserItem
           :user="user"
           :text-color="userTextColor"
+          :online-status="onlineUsers && onlineUsers[user.username] ? onlineUsers[user.username].status : 'OFFLINE'"
         >
           <template #actions>
             <slot

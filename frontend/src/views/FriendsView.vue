@@ -8,6 +8,10 @@ import BlockedUsers from "@/components/friends/layout/BlockedListTab.vue";
 
 const activeTab = ref('friends')
 
+defineProps({
+  onlineUsers: Object
+})
+
 defineEmits(['close'])
 
 const tabLabel = (tab) => ({
@@ -50,9 +54,9 @@ const tabLabel = (tab) => ({
         </nav>
 
         <section class="flex-1 overflow-y-auto p-4">
-          <FriendsList v-if="activeTab === 'friends'" />
-          <AddFriend v-else-if="activeTab === 'adding'" />
-          <IncomingRequests v-else-if="activeTab === 'requests'" />
+          <FriendsList v-if="activeTab === 'friends'" :onlineUsers="onlineUsers" />
+          <AddFriend v-else-if="activeTab === 'adding'" :onlineUsers="onlineUsers" />
+          <IncomingRequests v-else-if="activeTab === 'requests'" :onlineUsers="onlineUsers" />
           <BlockedUsers v-else />
         </section>
       </main>

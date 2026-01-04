@@ -4,6 +4,11 @@ import UserService from '@/api/getUser.js'
 import { useFriendsStore } from '@/stores/friendsStore.js'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
+defineProps({
+  onlineUsers: Object,
+  placeholder: String
+})
+
 const friendsStore = useFriendsStore()
 
 const query = ref('')
@@ -136,6 +141,7 @@ const onBlur = () => {
         empty-text="No users found."
         :query="''"
         user-text-color="var(--color-text-primary)"
+        :onlineUsers="onlineUsers"
         @rowClick="() => {}"
       >
         <template #actions="{ user }">

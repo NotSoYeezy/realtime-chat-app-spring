@@ -141,6 +141,7 @@ onUnmounted(() => {
     </div>
 
     <FriendListLayout
+      :onlineUsers="onlineUsers"
       @openChat="user => console.log('open chat', user)"
       @removeFriend="id => friendsStore.removeFriend(id)"
       @blockFriend="id => friendsStore.blockUser(id)"

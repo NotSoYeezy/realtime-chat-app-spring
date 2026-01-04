@@ -23,7 +23,8 @@
     "sockjs": "^0.3.24",
     "sockjs-client": "^1.6.1",
     "vue": "^3.5.22",
-    "vue-router": "^4.6.3"
+    "vue-router": "^4.6.3",
+    "vue-virtual-scroller": "^2.0.0-beta.8"
   },
   "devDependencies": {
     "@eslint/js": "^9.37.0",

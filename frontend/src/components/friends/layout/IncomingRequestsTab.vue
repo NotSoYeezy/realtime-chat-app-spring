@@ -3,11 +3,12 @@ import { computed, ref, onMounted } from 'vue'
 import { useFriendsStore } from '@/stores/friendsStore'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
-const props = defineProps({
+defineProps({
   query: {
     type: String,
     default: ''
-  }
+  },
+  onlineUsers: Object
 })
 
 const friendsStore = useFriendsStore()
@@ -66,6 +67,7 @@ const reject = async (inv) => {
       :loading="friendsStore.loading"
       :query="query"
       empty-text="You don’t have any incoming friend requests."
+      :onlineUsers="onlineUsers"
       @rowClick="() => {}"
     >
       <template #actions="{ user }">

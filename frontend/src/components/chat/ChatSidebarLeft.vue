@@ -1,37 +1,68 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useChatStore } from '@/stores/chat'
+import { useFriendsStore } from '@/stores/friendsStore'
 import api from '@/api/axios'
 import CreateGroupModal from '@/components/chat/CreateGroupModal.vue'
 
 const chatStore = useChatStore()
+const friendsStore = useFriendsStore()
 const isModalOpen = ref(false)
-const allUsers = ref([])
+
+const searchQuery = ref('')
 
 onMounted(async () => {
-  await fetchAllUsers()
+  if (friendsStore.friends.length === 0) {
+    await friendsStore.fetchAll()
+  }
 })
 
-const fetchAllUsers = async () => {
+const filteredGroups = computed(() => {
+  const query = searchQuery.value.toLowerCase().trim()
+
+  if (!query) {
+    return chatStore.sortedGroups
+  }
+
+  return chatStore.sortedGroups.filter(group =>
+    group.name.toLowerCase().includes(query)
+  )
+})
+
+const handleCreateGroup = async (payload) => {
   try {
-    const response = await api.get('/users')
-    allUsers.value = response.data
+    const formData = new FormData();
+
+    const groupData = {
+      name: payload.name,
+      memberIds: payload.memberIds
+    };
+
+    formData.append('data', new Blob([JSON.stringify(groupData)], {
+      type: 'application/json'
+    }));
+
+    if (payload.image) {
+      formData.append('image', payload.image);
+    }
+
+    const response = await api.post('/groups', formData, {
+      headers: {
+        'Content-Type': undefined
+      }
+    });
+    chatStore.addGroup(response.data);
+    isModalOpen.value = false;
+
   } catch (e) {
     console.error(e)
   }
 }
 
-const handleCreateGroup = async (payload) => {
-  try {
-    const response = await api.post('/groups', {
-      name: payload.name,
-      memberIds: payload.memberIds
-    })
-    chatStore.addGroup(response.data)
-    isModalOpen.value = false
-  } catch (e) {
-    console.error(e)
-  }
+const formatTime = (timestamp) => {
+  if (!timestamp) return ''
+  const date = new Date(timestamp)
+  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 </script>
 
@@ -52,51 +83,97 @@ const handleCreateGroup = async (payload) => {
     <div class="p-3">
       <div class="relative">
         <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] text-[18px]">search</span>
+
         <input
+          v-model="searchQuery"
           placeholder="Search chats..."
           class="w-full bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)] text-sm rounded-lg pl-9 pr-3 py-2 border border-transparent focus:border-[var(--color-border)] focus:bg-[var(--color-bg-input)] focus:outline-none transition-all"
         />
+
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)]"
+        >
+          <span class="material-symbols-outlined text-[16px]">close</span>
+        </button>
       </div>
     </div>
 
     <div class="flex-1 overflow-y-auto p-2 space-y-1 custom-scrollbar">
       <button
-        v-for="group in chatStore.sortedGroups"
+        v-for="group in filteredGroups"
         :key="group.id"
         @click="chatStore.setActiveGroup(group.id)"
         class="w-full text-left p-3 rounded-xl flex items-center gap-3 transition-all duration-200 group relative overflow-hidden"
-        :class="chatStore.activeGroupId === group.id ? 'bg-[var(--color-primary)] text-white shadow-md' : 'hover:bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]'"
+        :class="[
+          chatStore.activeGroupId === group.id
+            ? 'bg-[var(--color-primary)] text-white shadow-md'
+            : (group.unreadCount > 0 && !group.muted)
+              ? 'bg-[var(--color-primary-bg-soft)] text-[var(--color-text-primary)] border-l-4 border-[var(--color-primary)] rounded-l-none'
+              : 'hover:bg-[var(--surface-panel-strong)] text-[var(--color-text-primary)]'
+        ]"
       >
-        <div
-          class="h-10 w-10 shrink-0 rounded-full flex items-center justify-center font-bold uppercase text-sm border-2"
-          :class="chatStore.activeGroupId === group.id ? 'bg-white/20 border-transparent text-white' : 'bg-[var(--surface-panel-strong)] border-[var(--surface-panel)] text-[var(--color-text-secondary)] group-hover:bg-[var(--surface-panel)] group-hover:border-[var(--color-border)]'"
-        >
-          {{ group.name.charAt(0) }}
+
+        <div class="h-10 w-10 shrink-0 relative">
+          <img
+            v-if="group.imageUrl"
+            :src="group.imageUrl"
+            alt="Group Image"
+            class="h-full w-full rounded-full object-cover border border-[var(--color-border)]"
+          />
+
+          <div
+            v-else
+            class="h-full w-full rounded-full flex items-center justify-center font-bold uppercase text-sm border-2 transition-colors"
+            :class="chatStore.activeGroupId === group.id
+      ? 'bg-white/20 border-transparent text-white'
+      : 'bg-[var(--surface-panel-strong)] border-[var(--surface-panel)] text-[var(--color-text-secondary)] group-hover:bg-[var(--surface-panel)] group-hover:border-[var(--color-border)]'"
+          >
+            {{ group.name.charAt(0) }}
+          </div>
         </div>
 
         <div class="flex-1 min-w-0">
           <div class="flex justify-between items-baseline">
-            <span class="font-semibold truncate text-sm">{{ group.name }}</span>
-            <span v-if="chatStore.activeGroupId !== group.id" class="text-[10px] opacity-60">12:30</span>
+            <span
+              class="truncate text-sm flex items-center gap-1"
+              :class="(group.unreadCount > 0 && !group.muted && chatStore.activeGroupId !== group.id) ? 'font-bold' : 'font-semibold'"
+            >
+               {{ group.name }}
+               <span v-if="group.muted" class="material-symbols-outlined text-[12px] opacity-70">notifications_off</span>
+            </span>
+            <span v-if="chatStore.activeGroupId !== group.id" class="text-[10px] opacity-60 shrink-0">{{ formatTime(group.lastMessageTime) }}</span>
           </div>
-          <div class="text-xs truncate opacity-70 mt-0.5">
-            {{ group.lastMessage || 'No messages yet' }}
+
+          <div class="flex justify-between items-center mt-0.5 gap-2">
+            <div
+              class="text-xs truncate flex-1"
+              :class="(group.unreadCount > 0 && !group.muted && chatStore.activeGroupId !== group.id) ? 'opacity-100 font-medium' : 'opacity-70'"
+            >
+              {{ group.lastMessage || 'No messages yet' }}
+            </div>
+
+            <span
+              v-if="group.unreadCount > 0 && !group.muted"
+              class="min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1 rounded-full shrink-0"
+              :class="chatStore.activeGroupId === group.id ? 'ring-2 ring-[var(--color-primary)]' : ''"
+            >
+                {{ group.unreadCount }}
+            </span>
           </div>
         </div>
-
-        <span
-          v-if="group.unreadCount > 0"
-          class="absolute right-3 top-1/2 -translate-y-1/2 min-w-[18px] h-[18px] flex items-center justify-center bg-red-500 text-white text-[10px] font-bold px-1 rounded-full ring-2 ring-[var(--surface-panel)]"
-        >
-            {{ group.unreadCount }}
-        </span>
       </button>
+
+      <div v-if="filteredGroups.length === 0 && searchQuery" class="text-center p-4 text-[var(--color-text-secondary)] text-sm">
+        No chats found.
+      </div>
     </div>
 
     <Teleport to="body">
       <CreateGroupModal
         v-if="isModalOpen"
-        :users="allUsers"
+        :users="friendsStore.friends"
         @close="isModalOpen = false"
         @create="handleCreateGroup"
       />
