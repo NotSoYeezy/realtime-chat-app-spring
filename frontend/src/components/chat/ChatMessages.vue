@@ -1,5 +1,7 @@
 <script setup>
-import { ref, watch, nextTick, onMounted } from 'vue'
+import { ref, watch, nextTick, onMounted, computed } from 'vue'
+import { useChatStore } from '@/stores/chat'
+import ChatMessageBubble from '@/components/chat/ChatMessageBubble.vue'
 
 const props = defineProps({
   messages: Array,
@@ -11,16 +13,32 @@ const props = defineProps({
   formatTime: Function
 })
 
-const containerRef = ref(null)
+const emit = defineEmits(['reply'])
+
+const chatStore = useChatStore()
+const scrollerRef = ref(null)
 
 const scrollToBottom = async () => {
   await nextTick()
-  if (containerRef.value) {
-    containerRef.value.scrollTop = containerRef.value.scrollHeight
+  if (scrollerRef.value) {
+    scrollerRef.value.scrollToBottom()
   }
 }
 
-watch(() => props.messages, scrollToBottom, { deep: true })
+const lastMyMessageIndex = computed(() => {
+  if (!props.messages) return -1
+  for (let i = props.messages.length - 1; i >= 0; i--) {
+    const msg = props.messages[i]
+    if (msg.sender?.username === props.currentUser && msg.type === 'CHAT') {
+      return i
+    }
+  }
+  return -1
+})
+
+watch(() => props.messages, () => {
+  scrollToBottom()
+}, { deep: true })
 
 watch(() => props.loading, (isLoading) => {
   if (!isLoading) {
@@ -31,63 +49,50 @@ watch(() => props.loading, (isLoading) => {
 onMounted(() => {
   scrollToBottom()
 })
-
 </script>
 
 <template>
-  <div id="messages-scroll" ref="containerRef" class="flex-1 overflow-y-auto p-4 space-y-4 bg-[var(--surface-panel)]">
+  <div class="flex-1 overflow-hidden bg-[var(--surface-panel)] relative">
 
-    <div v-if="loading" class="text-center text-[var(--color-text-secondary)]">
+    <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] z-10 bg-[var(--surface-panel)]">
       <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
-      Loading messages&#8230;
+      <p>Loading messages&#8230;</p>
     </div>
 
-    <div v-else-if="!messages || messages.length === 0" class="h-full flex flex-col items-center justify-center text-[var(--color-text-secondary)] opacity-50">
+    <div v-else-if="!messages || messages.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] opacity-50 z-10">
       <span class="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
       <p>No messages here yet.</p>
     </div>
 
-    <template v-else>
-      <div
-        v-for="(msg, i) in messages"
-        :key="i"
-        class="flex w-full"
-        :class="msg.sender.username === currentUser ? 'justify-end' : 'justify-start'"
-      >
-
-        <div v-if="msg.type === 'JOIN' || msg.type === 'LEAVE'" class="w-full text-center opacity-60">
-          <span class="text-xs px-2 py-1 rounded bg-[var(--surface-panel-strong)] text-[var(--color-text-secondary)]">
-            {{ msg.sender.name }} {{msg.sender.surname }} {{ msg.type === 'JOIN' ? 'joined' : 'left' }}
-          </span>
-        </div>
-
-        <div v-else class="flex flex-col max-w-[75%] md:max-w-[60%]">
-
-          <span
-            v-if="msg.sender.username !== currentUser"
-            class="text-xs mb-1 text-[var(--color-text-secondary)] ml-1"
-          >
-            {{ msg.sender.name }}
-          </span>
-
-          <div
-            :class="[
-              'p-3 rounded-2xl shadow-sm border break-words',
-              msg.sender.username === currentUser
-                ? 'bg-[var(--color-primary)] text-white border-transparent rounded-br-none'
-                : 'bg-[var(--surface-panel)] border-[var(--color-border)] rounded-bl-none text-[var(--color-text-primary)]'
-            ]">
-            {{ msg.content }}
-          </div>
-
-          <span class="text-[var(--color-text-secondary)] text-[10px] mt-1 opacity-70" :class="msg.sender.username === currentUser ? 'text-right' : 'text-left'">
-            {{ formatTime(msg.timestamp) }}
-          </span>
-
-        </div>
-
-      </div>
-    </template>
+    <DynamicScroller
+      v-if="messages && messages.length > 0"
+      ref="scrollerRef"
+      :items="messages"
+      :min-item-size="60"
+      key-field="id"
+      class="h-full px-4 pt-4"
+    >
+      <template v-slot="{ item, index, active }">
+        <DynamicScrollerItem
+          :item="item"
+          :active="active"
+          :size-dependencies="[
+            item.content,
+            item.type
+          ]"
+          :data-index="index"
+          class="pb-4"
+        >
+          <ChatMessageBubble
+            :message="item"
+            :isMine="item.sender?.username === currentUser"
+            :groupMembers="chatStore.activeGroup?.members"
+            :isLastSentByMe="index === lastMyMessageIndex"
+            @reply="$emit('reply', $event)"
+          />
+        </DynamicScrollerItem>
+      </template>
+    </DynamicScroller>
 
   </div>
 </template>

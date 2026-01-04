@@ -1,4 +1,4 @@
-package com.chat.realtimechat.service;
+package com.chat.realtimechat.service.chat;
 
 import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
 import com.chat.realtimechat.model.enums.UserStatus;

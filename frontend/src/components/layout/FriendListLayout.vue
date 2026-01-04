@@ -3,6 +3,10 @@ import { onMounted } from 'vue'
 import { useFriendsStore } from '@/stores/friendsStore'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
+defineProps({
+  onlineUsers: Object
+})
+
 defineEmits([
   'openChat',
   'openFriends'
@@ -52,6 +56,7 @@ onMounted(() => {
       class="flex-1"
       :users="friendsStore.friends"
       :loading="friendsStore.loading"
+      :onlineUsers="onlineUsers"
       empty-text="Press here to add your first friend"
       @rowClick="$emit('openChat', $event)"
     />

@@ -22,6 +22,9 @@ services:
       - RABBITMQ_PASS=guest
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - FILE_UPLOAD_DIR=/app/uploads  # Dodaj tę zmienną
+    volumes:
+      - uploads_data:/app/uploads  # Dodaj volume dla uploadów
 
   postgresdb:
     image: postgres:17-alpine
@@ -91,3 +94,4 @@ volumes:
   postgres_data:
   postgres_test_data:
   rabbitmq_data:
+  uploads_data:

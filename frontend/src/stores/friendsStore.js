@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import axios from '@/api/axios'
+import { useChatStore } from '@/stores/chat'
 
 export const useFriendsStore = defineStore('friends', {
   state: () => ({
@@ -43,6 +44,9 @@ export const useFriendsStore = defineStore('friends', {
     async acceptRequest(id) {
       await axios.patch(`/friends/requests/${id}/accept`)
       await this.fetchAll()
+
+      const chatStore = useChatStore()
+      await chatStore.fetchGroups()
     },
 
     async rejectRequest(id) {

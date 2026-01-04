@@ -14,6 +14,8 @@ WORKDIR /app
 
 RUN apk add --no-cache gcompat libc6-compat libstdc++
 
+RUN mkdir -p /app/uploads && chmod 755 /app/uploads
+
 COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080

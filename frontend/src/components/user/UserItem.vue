@@ -11,6 +11,10 @@ defineProps({
   textColor: {
     type: String,
     default: 'var(--color-text-primary)'
+  },
+  onlineStatus: {
+    type: String,
+    default: 'OFFLINE'
   }
 })
 </script>
@@ -20,16 +24,27 @@ defineProps({
     <!-- LEFT: avatar + name -->
     <div class="flex items-center gap-3 min-w-0 flex-1">
       <!-- AVATAR -->
-      <div
-        class="rounded-full flex items-center justify-center font-bold
-               bg-[var(--surface-panel-strong)]"
-        :class="{
-          'h-9 w-9 text-sm': size === 'md',
-          'h-7 w-7 text-xs': size === 'sm'
-        }"
-        :style="{ color: textColor }"
-      >
-        {{ user.name?.charAt(0) ?? '?' }}
+      <div class="relative">
+        <div
+          class="rounded-full flex items-center justify-center font-bold
+                 bg-[var(--surface-panel-strong)]"
+          :class="{
+            'h-9 w-9 text-sm': size === 'md',
+            'h-7 w-7 text-xs': size === 'sm'
+          }"
+          :style="{ color: textColor }"
+        >
+          {{ user.name?.charAt(0) ?? '?' }}
+        </div>
+        <div
+          v-if="onlineStatus !== 'OFFLINE'"
+          class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-[var(--surface-panel)]"
+          :class="{
+            'bg-green-500': onlineStatus === 'ONLINE',
+            'bg-yellow-500': onlineStatus === 'AWAY',
+            'bg-red-500': onlineStatus === 'BUSY'
+          }"
+        ></div>
       </div>
 
       <!-- NAME -->

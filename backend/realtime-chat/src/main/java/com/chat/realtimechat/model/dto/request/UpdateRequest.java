@@ -30,5 +30,4 @@ public class UpdateRequest {
     @Nullable
     private String surname;
 
-
 }

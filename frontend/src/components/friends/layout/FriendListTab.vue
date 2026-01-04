@@ -4,7 +4,8 @@ import { useFriendsStore } from '@/stores/friendsStore'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
 defineProps({
-  query: String
+  query: String,
+  onlineUsers: Object
 })
 
 const friendsStore = useFriendsStore()
@@ -75,6 +76,7 @@ const blockUser = async (user) => {
     :users="friendsStore.friends"
     :loading="friendsStore.loading"
     :query="query"
+    :onlineUsers="onlineUsers"
     empty-text="You don’t have any friends yet."
     @rowClick="openChat"
   >

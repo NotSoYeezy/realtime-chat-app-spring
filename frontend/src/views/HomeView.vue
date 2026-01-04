@@ -3,7 +3,8 @@ import { ref, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
-import SockJS from 'sockjs-client/dist/sockjs'
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client/dist/sockjs';
 import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
@@ -21,8 +22,33 @@ const currentUser = ref('')
 const typingUsers = ref(new Set())
 const onlineUsers = ref({})
 const myStatus = ref('ONLINE')
-const groupSubscription = ref(null)
+const groupSubscriptions = new Map()
+const replyingTo = ref(null)
 let typingTimeout = null
+
+const subscribeToGroup = (groupId) => {
+  if (groupSubscriptions.has(groupId)) return
+  if (!stompClient.value || !isConnected.value) return
+
+  const sub = stompClient.value.subscribe(
+    `/topic/group.${groupId}`,
+    onGroupMessageReceived
+  )
+  groupSubscriptions.set(groupId, sub)
+}
+
+const unsubscribeFromGroup = (groupId) => {
+  if (groupSubscriptions.has(groupId)) {
+    groupSubscriptions.get(groupId).unsubscribe()
+    groupSubscriptions.delete(groupId)
+  }
+}
+
+const subscribeToAllGroups = () => {
+  chatStore.groups.forEach(group => {
+    subscribeToGroup(group.id)
+  })
+}
 
 const decodeToken = (token) => {
   try {
@@ -63,61 +89,95 @@ const connect = () => {
   const token = authStore.accessToken
   if (!token) return
 
-  const socket = new SockJS('http://localhost:8080/ws')
-  stompClient.value = Stomp.over(socket)
+  stompClient.value = new Client({
+    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
 
-  stompClient.value.heartbeat.outgoing = 20000
-  stompClient.value.heartbeat.incoming = 20000
+    connectHeaders: {
+      Authorization: `Bearer ${token}`,
+    },
 
-  stompClient.value.connect({ Authorization: `Bearer ${token}` }, onConnected, onError)
-}
+    debug: function (str) {
+      console.log(str);
+    },
 
-const onConnected = () => {
-  isConnected.value = true
+    reconnectDelay: 5000,
 
-  stompClient.value.subscribe('/user/queue/messages', onMessageReceived)
-  stompClient.value.subscribe('/topic/public', onPublicMessageReceived)
+    heartbeatIncoming: 20000,
+    heartbeatOutgoing: 20000,
 
-  stompClient.value.send(
-    '/app/chat.addUser',
-    {},
-    JSON.stringify({
-      type: 'JOIN',
-      content: '',
-    }),
-  )
+    onConnect: (frame) => {
+      isConnected.value = true
+      console.log('Connected: ' + frame)
 
-  if (chatStore.activeGroupId) {
-    subscribeToActiveGroup(chatStore.activeGroupId)
-  }
+      stompClient.value.subscribe('/user/queue/messages', onMessageReceived)
+      stompClient.value.subscribe('/user/queue/groups', onGroupNotificationReceived)
+      stompClient.value.subscribe('/user/queue/friends-status', onFriendStatusReceived)
+      stompClient.value.subscribe('/topic/public', onPublicMessageReceived)
+
+      // stompClient.value.publish({
+      //   destination: `/app/chat.addUser/${chatStore.activeGroupId}`,
+      //   body: JSON.stringify({ type: 'JOIN', content: '' })
+      // })
+
+      subscribeToAllGroups()
+    },
+
+    onStompError: (frame) => {
+      console.error('Broker reported error: ' + frame.headers['message'])
+      console.error('Additional details: ' + frame.body)
+    },
+
+    onWebSocketClose: () => {
+      console.log('Connection closed')
+      isConnected.value = false
+    }
+  })
+
+  stompClient.value.activate()
 }
 
 const onError = (error) => {
   isConnected.value = false
 }
 
-const subscribeToActiveGroup = (groupId) => {
-  if (!stompClient.value || !isConnected.value) return
-
-  if (groupSubscription.value) {
-    groupSubscription.value.unsubscribe()
-    groupSubscription.value = null
-  }
-
-  groupSubscription.value = stompClient.value.subscribe(
-    `/topic/group.${groupId}`,
-    onGroupMessageReceived
-  )
+const handleReply = (message) => {
+  replyingTo.value = message
 }
+
+const cancelReply = () => {
+  replyingTo.value = null
+}
+
 
 const onGroupMessageReceived = (payload) => {
   const message = JSON.parse(payload.body)
 
   if (message.type === 'TYPING') {
-    if (message.sender.username !== currentUser.value) {
+    if (message.groupId === chatStore.activeGroupId && message.sender.username !== currentUser.value) {
       handleTypingNotification(message.sender)
     }
+    return
   }
+
+  if (message.type === 'READ_RECEIPT') {
+    chatStore.updateMemberReadTime(message.groupId, message.member)
+    return
+  }
+
+  chatStore.handleIncomingMessage(message)
+}
+
+const onGroupNotificationReceived = (payload) => {
+  const data = JSON.parse(payload.body)
+
+  if (data.eventType === 'REMOVE') {
+      chatStore.removeGroup(data.groupId)
+      unsubscribeFromGroup(data.groupId)
+  } else {
+    chatStore.addGroup(data)
+    subscribeToGroup(data.id)
+  }
+
 }
 
 const onMessageReceived = (payload) => {
@@ -126,6 +186,17 @@ const onMessageReceived = (payload) => {
   if (message.type === 'TYPING') return
 
   chatStore.handleIncomingMessage(message)
+}
+
+const onFriendStatusReceived = (payload) => {
+  const message = JSON.parse(payload.body)
+  const s = message.sender
+  
+  if (s && s.username) {
+     // If user goes offline, you might want to remove them or set status to OFFLINE
+     // For now, we just update the map which drives the UI
+     onlineUsers.value[s.username] = s
+  }
 }
 
 const onPublicMessageReceived = (payload) => {
@@ -161,11 +232,17 @@ const sendMessage = () => {
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
-      groupId: chatStore.activeGroupId
+      groupId: chatStore.activeGroupId,
+      parentId: replyingTo.value ? replyingTo.value.id : null // <--- PRZEKAZANIE ID
     }
 
-    stompClient.value.send('/app/chat.sendMessage', {}, JSON.stringify(chatMessage))
+    stompClient.value.publish({
+      destination: '/app/chat.sendMessage',
+      body: JSON.stringify(chatMessage)
+    })
+
     messageContent.value = ''
+    replyingTo.value = null
   }
 }
 
@@ -173,8 +250,10 @@ const handleTyping = () => {
   if (!stompClient.value || !isConnected.value || !chatStore.activeGroupId) return
 
   if (!typingTimeout) {
-    stompClient.value.send(`/app/chat.typing/${chatStore.activeGroupId}`,
-      {}, JSON.stringify({}))
+    stompClient.value.publish({
+      destination: `/app/chat.typing/${chatStore.activeGroupId}`,
+      body: JSON.stringify({})
+    })
 
     typingTimeout = setTimeout(() => {
       typingTimeout = null
@@ -184,7 +263,7 @@ const handleTyping = () => {
 
 const handleLogout = async () => {
   if (stompClient.value) {
-    stompClient.value.disconnect()
+    stompClient.value.deactivate()
   }
   authStore.logout()
   router.push('/login')
@@ -204,27 +283,19 @@ const setStatus = (status) => {
     return
   }
   myStatus.value = status
-  stompClient.value.send(
-    '/app/user/setStatus',
-    {},
-    JSON.stringify({
+  stompClient.value.publish({
+    destination: '/app/user/setStatus',
+    body: JSON.stringify({
       status: status,
-    }),
-  )
+    })
+  })
 }
 
 const updateProfile = () => {
   currentUser.value = getCurrentUserFromToken()
 }
 
-watch(
-  () => chatStore.activeGroupId,
-  (newGroupId) => {
-    if (newGroupId) {
-      subscribeToActiveGroup(newGroupId)
-    }
-  }
-)
+
 
 onMounted(async () => {
   const profile = await loadUserProfile()
@@ -240,7 +311,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (stompClient.value) {
-    stompClient.value.disconnect()
+    stompClient.value.deactivate()
   }
 })
 </script>
@@ -259,10 +330,14 @@ onBeforeUnmount(() => {
     :onlineUsers="onlineUsers"
     :myStatus="myStatus"
     :formatTime="formatTime"
+    :replyingTo="replyingTo"
     @sendMessage="sendMessage"
+    @reply="handleReply"
+    @cancelReply="cancelReply"
     @typing="handleTyping"
     @updateMessageContent="messageContent = $event"
     @setStatus="setStatus"
     @logout="handleLogout"
+    @openFriends="fetchOnlineUsers" 
   />
 </template>

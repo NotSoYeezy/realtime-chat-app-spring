@@ -5,13 +5,12 @@ import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.repository.GoogleRefreshTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse; // Added for exception handling
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.util.DateTime;
-// FIX 1: Remove the wrong import (com.google.api.client.util.Value)
-import org.springframework.beans.factory.annotation.Value; // <--- Correct Spring import
+import org.springframework.beans.factory.annotation.Value;
 import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.Events;
 import lombok.RequiredArgsConstructor;
@@ -66,7 +65,7 @@ public class GoogleCalendarController {
                 googleRefreshTokenRepository.delete(tokenEntity);
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Google Calendar connection expired");
             }
-            throw new RuntimeException("Google Calendar Check Failed", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Google Calendar Check Failed", e);
         }
     }
 

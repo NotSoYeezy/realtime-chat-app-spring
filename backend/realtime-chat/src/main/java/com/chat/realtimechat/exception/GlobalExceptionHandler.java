@@ -93,7 +93,7 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({TokenNotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler({TokenNotFoundException.class, UserNotFoundException.class, GroupNotFoundException.class})
     public ResponseEntity<ApiError> handleResourceNotFound(
             Exception ex,
             HttpServletRequest request
@@ -139,6 +139,30 @@ public class GlobalExceptionHandler {
             HttpServletRequest request
     ) {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(GroupOperationException.class)
+    public ResponseEntity<ApiError> handleGroupOperation(
+            GroupOperationException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(GroupAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleGroupAccessDenied(
+            GroupAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiError> handleFileStorage(
+            FileStorageException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
     }
 
 

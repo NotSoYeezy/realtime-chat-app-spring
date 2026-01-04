@@ -31,6 +31,10 @@ public class ChatMessage {
     @JoinColumn(name= "chat_group_id")
     private ChatGroup group;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private ChatMessage parent;
+
     @Enumerated(EnumType.STRING)
     private MessageType type;
 
@@ -38,6 +42,7 @@ public class ChatMessage {
         CHAT,
         JOIN,
         LEAVE,
-        TYPING
+        TYPING,
+        SYSTEM
     }
 }

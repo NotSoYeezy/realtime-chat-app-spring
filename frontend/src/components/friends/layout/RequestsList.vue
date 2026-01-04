@@ -3,11 +3,12 @@ import { computed, ref, onMounted } from 'vue'
 import { useFriendsStore } from '@/stores/friendsStore'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
 
-const props = defineProps({
+defineProps({
   query: {
     type: String,
     default: ''
-  }
+  },
+  onlineUsers: Object
 })
 
 const friendsStore = useFriendsStore()
@@ -53,6 +54,7 @@ const cancel = async (inv) => {
       :loading="friendsStore.loading"
       :query="query"
       empty-text="No outgoing requests."
+      :onlineUsers="onlineUsers"
       @rowClick="() => {}"
     >
       <template #actions="{ user }">
