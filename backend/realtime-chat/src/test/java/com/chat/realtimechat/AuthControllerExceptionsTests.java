@@ -38,7 +38,6 @@ public class AuthControllerExceptionsTests {
         userRepository.deleteAll();
 
         RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setUsername(TEST_USERNAME);
         registrationRequest.setPassword(TEST_PASSWORD);
         registrationRequest.setEmail(TEST_EMAIL);
         authController.register(registrationRequest);
@@ -47,7 +46,6 @@ public class AuthControllerExceptionsTests {
     @Test
     public void authControllerUserAlreadyExistsExceptionTest() {
         RegistrationRequest registrationRequest = new RegistrationRequest();
-        registrationRequest.setUsername(TEST_USERNAME);
         registrationRequest.setPassword(TEST_PASSWORD);
         registrationRequest.setEmail(TEST_EMAIL);
 
