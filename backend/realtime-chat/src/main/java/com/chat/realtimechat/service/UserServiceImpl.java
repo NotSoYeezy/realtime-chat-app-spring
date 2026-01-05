@@ -8,7 +8,7 @@ import com.chat.realtimechat.exception.EmailAlreadyExistsException;
 import com.chat.realtimechat.exception.IncorrectPasswordException;
 import com.chat.realtimechat.exception.LoginUserNotFoundException;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
-import com.chat.realtimechat.model.dto.request.UpdateRequest;
+import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
 import com.chat.realtimechat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -128,7 +128,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User updateUser(UpdateRequest request, String username) {
+    public User updateUser(UpdateUserRequest request, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
 
         if (request.getEmail() != null && !user.getEmail().equals(request.getEmail())) {

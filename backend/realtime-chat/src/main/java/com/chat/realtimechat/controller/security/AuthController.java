@@ -63,7 +63,7 @@ public class AuthController {
     }
 
     @PostMapping("/update")
-    public ResponseEntity<?> update(@RequestBody @Valid UpdateRequest req,
+    public ResponseEntity<?> update(@RequestBody @Valid UpdateUserRequest req,
                                        @AuthenticationPrincipal UserDetails user) {
         String username = user.getUsername();
         userService.updateUser(req, username);
