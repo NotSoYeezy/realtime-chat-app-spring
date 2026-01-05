@@ -116,6 +116,11 @@ const handleCreatePassword = async () => {
   }
 }
 
+const handleCancel = () => {
+  showUpdate.value = false
+  fetchUser()
+}
+
 const handleUpdateSuccess = () => {
   showUpdate.value = false;
   fetchUser();
@@ -148,7 +153,7 @@ onMounted( async () => {
         <UpdateProfileLayout
           v-if="showUpdate"
           :user="user"
-          @cancel="showUpdate = false"
+          @cancel="handleCancel"
           @saved="handleUpdateSuccess"
         />
 
