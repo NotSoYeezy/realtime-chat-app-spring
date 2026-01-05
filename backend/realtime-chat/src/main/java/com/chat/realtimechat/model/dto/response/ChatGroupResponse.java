@@ -16,6 +16,7 @@ public class ChatGroupResponse {
     private int unreadCount;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
+    private LocalDateTime createdAt;
     private GroupType groupType;
     private String imageUrl;
     private boolean muted;
@@ -28,6 +29,7 @@ public class ChatGroupResponse {
         response.setId(group.getId());
         response.setName(group.getName());
         response.setGroupType(group.getType());
+        response.setCreatedAt(group.getCreatedAt());
         response.setImageUrl(group.getImageUrl());
         response.setUnreadCount(0);
 

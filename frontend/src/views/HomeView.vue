@@ -332,6 +332,14 @@ onMounted(async () => {
   connect()
 })
 
+watch(() => chatStore.groups, (newGroups) => {
+  newGroups.forEach(group => {
+    if (!groupSubscriptions.has(group.id)) {
+      subscribeToGroup(group.id)
+    }
+  })
+}, { deep: true })
+
 onBeforeUnmount(() => {
   if (stompClient.value) {
     stompClient.value.deactivate()

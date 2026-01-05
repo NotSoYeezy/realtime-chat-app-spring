@@ -116,6 +116,7 @@ public class GroupServiceImpl implements GroupService {
         group.setName(groupName);
         group.setType(GroupType.GROUP);
         group.setImageUrl(imageUrl);
+        group.setCreatedAt(LocalDateTime.now());
 
         group.setAdmins(new HashSet<>(Set.of(creator)));
         group.addMember(creator);
@@ -140,6 +141,7 @@ public class GroupServiceImpl implements GroupService {
         ChatGroup group = new ChatGroup();
         group.setName("Private: " + user1.getUsername() + '-' + user2.getUsername());
         group.setType(GroupType.PRIVATE);
+        group.setCreatedAt(LocalDateTime.now());
         group.addMember(user1);
         group.addMember(user2);
 

@@ -49,6 +49,9 @@ public class ChatGroup {
     @Column(name = "last_message_time")
     private LocalDateTime lastMessageTime;
 
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
+
     @Column(name = "is_deleted")
     private boolean isDeleted = false;
 

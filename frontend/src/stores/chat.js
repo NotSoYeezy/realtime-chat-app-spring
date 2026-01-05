@@ -18,8 +18,8 @@ export const useChatStore = defineStore('chat', () => {
 
   const sortedGroups = computed(() => {
     return [...groups.value].sort((a, b) => {
-      const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : 0
-      const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : 0
+      const timeA = a.lastMessageTime ? new Date(a.lastMessageTime).getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0)
+      const timeB = b.lastMessageTime ? new Date(b.lastMessageTime).getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0)
 
       return timeB - timeA
     })
@@ -153,7 +153,7 @@ export const useChatStore = defineStore('chat', () => {
       if (message.type === 'MEMBER_ADDED') {
         const currentMembers = groups.value[index].members || []
         // Avoid duplicates
-        const newMembers = message.members.filter(nm => 
+        const newMembers = message.members.filter(nm =>
           !currentMembers.some(cm => cm.id === nm.id)
         )
         groups.value[index].members = [...currentMembers, ...newMembers]
