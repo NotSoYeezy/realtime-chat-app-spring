@@ -1,6 +1,9 @@
 package com.chat.realtimechat.exception;
 
 import com.chat.realtimechat.exception.friendship.*;
+import com.chat.realtimechat.exception.google.AccountNotConnectedException;
+import com.chat.realtimechat.exception.google.ConnectionExpiredException;
+import com.chat.realtimechat.exception.google.NoAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -173,6 +176,32 @@ public class GlobalExceptionHandler {
     ) {
         log.error(ex.getMessage(), ex);
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(NoAuthenticationException.class)
+    public ResponseEntity<ApiError> handleNoAuthentication(
+            NoAuthenticationException ex,
+            HttpServletRequest request){
+        return buildError(HttpStatus.NOT_ACCEPTABLE, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(ConnectionExpiredException.class)
+    public ResponseEntity<ApiError> handleConnectionExpired(
+            ConnectionExpiredException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(AccountNotConnectedException.class)
+    public ResponseEntity<ApiError> handleAccountNotConnected(
+            AccountNotConnectedException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
 }
