@@ -4,14 +4,17 @@ import com.chat.realtimechat.model.entity.auth.GoogleRefreshToken;
 import com.chat.realtimechat.model.entity.auth.RefreshToken;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.repository.GoogleRefreshTokenRepository;
+import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.UserService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -21,6 +24,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Arrays;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -29,6 +34,7 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     private final JwtUtil jwtUtil;
     private final RefreshTokenService refreshTokenService;
     private final UserService userService;
+    private final UserRepository userRepository;
     private final OAuth2AuthorizedClientService authorizedClientService;
     private final GoogleRefreshTokenRepository googleRefreshTokenRepository;
 
@@ -42,30 +48,56 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
 
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        User user = userService.registeredGoogleUser(oAuth2User);
+        String googleId = oAuth2User.getAttribute("sub");
 
-        String token = jwtUtil.generateToken(user);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        Optional<Cookie> linkCookie = Optional.empty();
+        if (request.getCookies() != null) {
+            linkCookie = Arrays.stream(request.getCookies())
+                    .filter(c -> "GOOGLE_LINK_INTENT".equals(c.getName()))
+                    .findFirst();
+        }
 
-        String googleRefreshToken = "";
+        User user;
+
+        if (linkCookie.isPresent()) {
+            String username = linkCookie.get().getValue();
+            user = userRepository.findByUsername(username)
+                    .orElseThrow(() -> new UsernameNotFoundException(username));
+            user.setProviderId(googleId);
+            userRepository.save(user);
+            Cookie clearCookie = new Cookie("GOOGLE_LINK_INTENT", null);
+            clearCookie.setPath("/");
+            clearCookie.setMaxAge(0);
+            response.addCookie(clearCookie);
+        } else {
+            user = userService.registeredGoogleUser(oAuth2User);
+        }
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                     oauthToken.getAuthorizedClientRegistrationId(),
                     oauthToken.getName());
+
             if (client != null && client.getRefreshToken() != null) {
-                GoogleRefreshToken googleRT = googleRefreshTokenRepository.findByUserId(user.getId()).orElse(new GoogleRefreshToken());
-                googleRefreshToken = client.getRefreshToken().getTokenValue();
-                googleRT.setToken(googleRefreshToken);
+                GoogleRefreshToken googleRT = googleRefreshTokenRepository.findByUserId(user.getId())
+                        .orElse(new GoogleRefreshToken());
+                googleRT.setToken(client.getRefreshToken().getTokenValue());
                 googleRT.setUser(user);
                 googleRT.setExpiryDate(Instant.now().plusMillis(googleRefreshTokenDurationMs));
                 googleRefreshTokenRepository.save(googleRT);
             }
         }
 
-        String targetUrl = frontendUrl + "/auth/callback"
-                +"?token=" + token
-                +"&refreshToken=" + refreshToken.getToken();
+        if (linkCookie.isPresent()) {
+            getRedirectStrategy().sendRedirect(request, response, frontendUrl);
+        } else {
+            String token = jwtUtil.generateToken(user);
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-        getRedirectStrategy().sendRedirect(request, response, targetUrl);
+            String targetUrl = frontendUrl + "/auth/callback"
+                    + "?token=" + token
+                    + "&refreshToken=" + refreshToken.getToken();
+
+            getRedirectStrategy().sendRedirect(request, response, targetUrl);
+        }
     }
 }

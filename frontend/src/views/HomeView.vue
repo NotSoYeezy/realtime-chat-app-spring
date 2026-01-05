@@ -8,6 +8,7 @@ import SockJS from 'sockjs-client/dist/sockjs';
 import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
+import checkGoogleStatus from "@/api/googleHandler.js";
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -280,6 +281,20 @@ const fetchOnlineUsers = async () => {
   }
 }
 
+const checkGoogleCalendar = async () => {
+  try {
+    const response = await checkGoogleStatus.isCalendarConnected()
+    if (response.data === true) {
+      localStorage.setItem('google_calendar', 'true')
+    } else {
+      localStorage.setItem('google_calendar', 'false')
+      localStorage.setItem('google_calendar_sync_status', 'false')
+    }
+  } catch (error) {
+    console.error(error)
+  }
+}
+
 const setStatus = (status) => {
   if (!stompClient.value || !stompClient.value.connected){
     return
@@ -307,8 +322,13 @@ onMounted(async () => {
     currentSurname.value = profile.surname
     currentUser.value = profile.username
   }
-  await fetchOnlineUsers()
-  await chatStore.fetchGroups()
+  try{
+    await Promise.all([await fetchOnlineUsers(),
+      await chatStore.fetchGroups(),
+      await checkGoogleCalendar()])
+  } catch (error) {
+    console.error(error)
+  }
   connect()
 })
 

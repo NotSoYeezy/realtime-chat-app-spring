@@ -67,6 +67,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error("Refresh failed", error);
         this.logout();
+        throw error;
       }
     },
 

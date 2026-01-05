@@ -1,7 +1,7 @@
 <script setup>
-import {onMounted, onUnmounted, ref} from 'vue'
+import {createSSRApp, onMounted, onUnmounted, ref, watch} from 'vue'
 import DropdownLayout from '@/components/layout/DropdownLayout.vue'
-import checkGoogleStatus from "@/api/checkGoogleStatus.js";
+import GoogleHandler from "@/api/googleHandler.js";
 import FriendListLayout from "@/components/layout/FriendListLayout.vue"
 import {useFriendsStore} from "@/stores/friendsStore.js"
 
@@ -19,7 +19,6 @@ const emit = defineEmits(['setStatus', 'logout', 'openSettings', 'openFriends'])
 
 const isDropdown = ref(false)
 const dropdownRef = ref(null)
-
 let pollingInterval = null
 
 const toggleDropdown = () => {
@@ -43,18 +42,32 @@ const handleStatusClick = (status) => {
 }
 
 const checkStatus = async () => {
+  const isGoogleOn = localStorage.getItem('google_calendar') === 'true'
+  const isSyncOn = localStorage.getItem('google_calendar_sync_status') === 'true'
+  if (localStorage.getItem('user_status') === 'AWAY') {
+    emit('setStatus', 'AWAY');
+    return
+  }
+  if (isGoogleOn && isSyncOn) {
     try {
-      const response = await checkGoogleStatus.isBusy()
-      if (response.data) {
-        emit('setStatus', 'BUSY')
+        const response = await GoogleHandler.isBusy()
+        if (response.data === true) {
+          emit('setStatus', 'BUSY')
+        } else {
+          emit('setStatus', 'ONLINE')
+        }
+    } catch (error) {
+      if(error.response.status !== 406) {
+        console.error(error)
       }
       else {
-        emit('setStatus', 'ONLINE')
+        localStorage.setItem('google_calendar_sync_status', 'false');
+        console.error(error)
       }
-    } catch (error) {
-      console.error(error)
+    }
   }
 }
+
 
 onMounted(() => {
   checkStatus()
@@ -63,7 +76,6 @@ onMounted(() => {
   pollingInterval = setInterval(() => {
     checkStatus();
   }, 60000);
-
 })
 
 onUnmounted(() => {

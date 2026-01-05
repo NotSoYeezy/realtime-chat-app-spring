@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue'
 import AccountLayout from "@/components/settings/layout/AccountLayout.vue";
 import GeneralLayout from "@/components/settings/layout/GeneralLayout.vue";
+import GoogleAccountLayout from "@/components/settings/layout/GoogleAccountLayout.vue";
 
 defineEmits(['close', 'logout']);
 defineProps({
@@ -12,8 +13,10 @@ const activeTab = ref('general')
 
 const tabs = [
   { id: 'general', label: 'General', component: GeneralLayout },
-  { id: 'account', label: 'Account', component: AccountLayout }
+  { id: 'account', label: 'Account', component: AccountLayout },
+  { id: 'google-account', label: 'Google Account', component: GoogleAccountLayout }
 ]
+
 const currentComponent = computed(() => {
   const tab = tabs.find(t => t.id === activeTab.value)
   return tab ? tab.component : GeneralLayout
