@@ -23,14 +23,14 @@ const handleConnect = async () => {
   try {
     const token = localStorage.getItem('access_token');
 
-    await axios.post('http://localhost:8080/api/google/google-link', {}, {
+    await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/google/google-link`, {}, {
       headers: {
         'Authorization': `Bearer ${token}`
       },
       withCredentials: true
     });
 
-    window.location.href = 'http://localhost:8080/oauth2/authorization/google';
+    window.location.href = `${import.meta.env.VITE_BACKEND_URL}/oauth2/authorization/google`;
 
   } catch (error) {
     console.error("Failed to initiate linking:", error);

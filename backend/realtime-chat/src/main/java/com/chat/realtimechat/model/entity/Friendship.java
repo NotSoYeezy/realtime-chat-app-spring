@@ -4,11 +4,13 @@ import com.chat.realtimechat.model.enums.FriendshipStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Table(name = "friendships", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "friend_id"}))
 public class Friendship {
     @Id
@@ -23,6 +25,7 @@ public class Friendship {
     @JoinColumn(name = "friend_id", nullable = false)
     private User friend;
 
+    @Enumerated(EnumType.STRING)
     private FriendshipStatus status;
 
     private LocalDateTime createdAt = LocalDateTime.now();

@@ -91,7 +91,7 @@ const connect = () => {
   if (!token) return
 
   stompClient.value = new Client({
-    webSocketFactory: () => new SockJS('http://localhost:8080/ws'),
+    webSocketFactory: () => new SockJS(`${import.meta.env.VITE_BACKEND_URL}/ws`),
 
     connectHeaders: {
       Authorization: `Bearer ${token}`,

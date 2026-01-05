@@ -3,11 +3,11 @@ import { useAuthStore } from '@/stores/auth';
 import router from '@/router';
 
 const api = axios.create({
-  baseURL: 'http://localhost:8080/api/',
+  baseURL: `${import.meta.env.VITE_BACKEND_URL}/api/`,
   headers: {
-    'Content-Type': 'application/json',
-  },
-});
+    'Content-Type': 'application/json'
+  }
+})
 
 let isRefreshing = false;
 let failedQueue = [];
