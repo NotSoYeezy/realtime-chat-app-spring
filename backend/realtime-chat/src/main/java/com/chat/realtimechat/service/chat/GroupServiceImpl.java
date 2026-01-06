@@ -233,6 +233,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public ChatGroup updateGroup(Long groupId, UpdateGroupRequest request, String username, MultipartFile image) {
         ChatGroup group = getGroupAndValidateAccess(groupId, username);
         String imageUrl = null;
@@ -265,12 +266,19 @@ public class GroupServiceImpl implements GroupService {
         event.put("name", savedGroup.getName());
         event.put("imageUrl", fullImageUrl);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
+        savedGroup.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event
+            );
+        });
 
          return savedGroup;
     }
 
     @Override
+    @Transactional
     public void addMembers(Long groupId, Set<Long> memberIds, String username) {
         ChatGroup group = getGroupAndValidateAccess(groupId, username);
         List<User> newMembers = userRepository.findAllById(memberIds);
@@ -294,13 +302,20 @@ public class GroupServiceImpl implements GroupService {
         event.put("groupId", groupId);
         event.put("members", addedMembersDto);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event
+            );
+        });
 
         notifyMembers(group, new HashSet<>(newMembers), username);
 
     }
 
     @Override
+    @Transactional
     public void removeMembers(Long groupId, Set<Long> memberIds, String username) {
         ChatGroup group = chatGroupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
@@ -339,8 +354,14 @@ public class GroupServiceImpl implements GroupService {
         event.put("type", "MEMBER_REMOVED");
         event.put("groupId", groupId);
         event.put("userIds", memberIds);
-        
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
+
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event
+            );
+        });
         
         for (User u: usersToRemove) {
             messagingTemplate.convertAndSendToUser(

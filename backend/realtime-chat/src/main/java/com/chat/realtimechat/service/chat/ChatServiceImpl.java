@@ -80,10 +80,13 @@ public class ChatServiceImpl implements ChatService{
 
         ChatMessageResponse response = ChatMessageResponse.fromEntity(savedMsg);
 
-        messagingTemplate.convertAndSend(
-                "/topic/group." + groupId,
-                response
-        );
+        group.getMembers().forEach(member -> {
+            messagingTemplate.convertAndSendToUser(
+                    member.getUser().getUsername(),
+                    "/queue/messages",
+                    response
+            );
+        });
     }
 
     @Override

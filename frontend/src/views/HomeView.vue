@@ -125,7 +125,9 @@ const connect = () => {
         })
       }
 
-      subscribeToAllGroups()
+      if (chatStore.activeGroupId) {
+        subscribeToGroup(chatStore.activeGroupId)
+      }
     },
 
     onStompError: (frame) => {
@@ -181,7 +183,6 @@ const onGroupNotificationReceived = (payload) => {
       unsubscribeFromGroup(data.groupId)
   } else {
     chatStore.addGroup(data)
-    subscribeToGroup(data.id)
   }
 
 }
@@ -393,13 +394,14 @@ onMounted(async () => {
   connect()
 })
 
-watch(() => chatStore.groups, (newGroups) => {
-  newGroups.forEach(group => {
-    if (!groupSubscriptions.has(group.id)) {
-      subscribeToGroup(group.id)
-    }
-  })
-}, { deep: true })
+watch(() => chatStore.activeGroupId, (newId, oldId) => {
+  if (oldId) {
+    unsubscribeFromGroup(oldId)
+  }
+  if (newId) {
+    subscribeToGroup(newId)
+  }
+})
 
 onBeforeUnmount(() => {
   if (stompClient.value) {
