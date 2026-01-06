@@ -16,6 +16,10 @@ import com.chat.realtimechat.repository.ChatMessageRepository;
 import com.chat.realtimechat.repository.FriendshipRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
+import org.springframework.data.domain.Sort;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -98,7 +103,7 @@ public class ChatServiceImpl implements ChatService{
     }
 
     @Override
-    public ResponseEntity<List<ChatMessageResponse>> loadGroupHistory(Long groupId, Principal principal) {
+    public ResponseEntity<List<ChatMessageResponse>> loadGroupHistory(Long groupId, Principal principal, int page, int size) {
         User user = getCurrentUser(principal);
         ChatGroup group = chatGroupRepository.getById(groupId);
 
@@ -106,13 +111,16 @@ public class ChatServiceImpl implements ChatService{
             throw new GroupNotFoundException("Group not found!");
         }
 
-        List<ChatMessage> messages = chatMessageRepository.findByGroupIdOrderByTimestampAsc(groupId);
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "timestamp"));
+        Slice<ChatMessage> messageSlice = chatMessageRepository.findByGroupId(groupId, pageable);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                messages.stream()
-                        .map(ChatMessageResponse::fromEntity)
-                        .collect(Collectors.toList())
-        );
+        List<ChatMessageResponse> responseList = messageSlice.getContent().stream()
+                .map(ChatMessageResponse::fromEntity)
+                .collect(Collectors.toList());
+        
+        Collections.reverse(responseList);
+
+        return ResponseEntity.status(HttpStatus.OK).body(responseList);
     }
 
     @Override

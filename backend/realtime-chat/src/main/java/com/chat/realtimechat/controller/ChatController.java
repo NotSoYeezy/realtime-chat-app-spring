@@ -19,10 +19,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
@@ -57,10 +54,17 @@ public class ChatController {
 
     @GetMapping("/api/chat/history/{groupId}")
     @ResponseBody
-    public ResponseEntity<List<ChatMessageResponse>> getChatHistory(@PathVariable Long groupId, Principal principal) {
+    public ResponseEntity<List<ChatMessageResponse>> getChatHistory(
+            @PathVariable Long groupId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            Principal principal
+    ) {
         return chatService.loadGroupHistory(
                 groupId,
-                principal
+                principal,
+                page,
+                size
         );
     }
 

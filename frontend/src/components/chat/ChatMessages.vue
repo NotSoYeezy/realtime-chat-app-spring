@@ -17,6 +17,7 @@ const emit = defineEmits(['reply', 'view-image'])
 
 const chatStore = useChatStore()
 const scrollerRef = ref(null)
+const isLoadingMore = ref(false)
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -36,33 +37,157 @@ const lastMyMessageIndex = computed(() => {
   return -1
 })
 
-watch(() => props.messages, () => {
-  scrollToBottom()
-}, { deep: true })
+const lastMessageId = computed(() => {
+
+  if (!props.messages || props.messages.length === 0) return null
+
+  return props.messages[props.messages.length - 1].id
+
+})
+
+
+
+watch(lastMessageId, (newId, oldId) => {
+
+  // If the LAST message ID changed, it means a new message was added at the bottom.
+
+  // (When loading history, we prepend, so the last message ID usually stays the same).
+
+  if (newId && newId !== oldId) {
+
+    scrollToBottom()
+
+  }
+
+})
+
+
+
+const onScroll = async (event) => {
+
+
+
+  const target = event.target
+
+
+
+  if (target.scrollTop < 100 && !isLoadingMore.value && chatStore.activeGroup?.hasMore) {
+
+
+
+    isLoadingMore.value = true
+
+
+
+    
+
+
+
+    const oldScrollHeight = target.scrollHeight
+
+
+
+    const oldScrollTop = target.scrollTop
+
+
+
+
+
+
+
+    await chatStore.loadMoreMessages()
+
+
+
+    
+
+
+
+    await nextTick()
+
+
+
+    
+
+
+
+    // Restore scroll position by calculating the height difference
+
+
+
+    // This keeps the view stable relative to the bottom content
+
+
+
+    const newScrollHeight = target.scrollHeight
+
+
+
+    target.scrollTop = newScrollHeight - oldScrollHeight + oldScrollTop
+
+
+
+    
+
+
+
+    isLoadingMore.value = false
+
+
+
+  }
+
+
+
+}
+
+
 
 watch(() => props.loading, (isLoading) => {
+
   if (!isLoading) {
+
     scrollToBottom()
+
   }
+
 })
+
+
 
 onMounted(() => {
   scrollToBottom()
 })
+
 </script>
 
+
+
 <template>
+
   <div class="flex-1 overflow-hidden bg-[var(--surface-panel)] relative">
 
+
+
     <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] z-10 bg-[var(--surface-panel)]">
+
       <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
+
       <p>Loading messages&#8230;</p>
+
     </div>
 
+
+
     <div v-else-if="!messages || messages.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] opacity-50 z-10">
+
       <span class="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
+
       <p>No messages here yet.</p>
+
     </div>
+
+
 
     <DynamicScroller
       v-if="messages && messages.length > 0"
@@ -71,7 +196,10 @@ onMounted(() => {
       :min-item-size="60"
       key-field="id"
       class="h-full px-4 pt-4"
+      id="messages-scroll"
+      @scroll="onScroll"
     >
+
       <template v-slot="{ item, index, active }">
         <DynamicScrollerItem
           :item="item"

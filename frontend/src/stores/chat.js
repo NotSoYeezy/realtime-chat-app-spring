@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/api/axios'
+import { CHAT_PAGE_SIZE } from '@/utils/constants'
 
 export const useChatStore = defineStore('chat', () => {
   const groups = ref([])
@@ -44,7 +45,9 @@ export const useChatStore = defineStore('chat', () => {
       groups.value = response.data.map(g => ({
         ...g,
         messages: g.messages || [],
-        unreadCount: g.unreadCount || 0
+        unreadCount: g.unreadCount || 0,
+        page: 0,
+        hasMore: true
       }))
 
       if (groups.value.length > 0 && !activeGroupId.value) {
@@ -80,21 +83,50 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const fetchHistory = async (groupId) => {
+  const fetchHistory = async (groupId, page = 0) => {
     try {
-      const response = await api.get(`/chat/history/${groupId}`)
+      const response = await api.get(`/chat/history/${groupId}`, {
+        params: { 
+          page, 
+          size: CHAT_PAGE_SIZE 
+        }
+      })
 
       const index = groups.value.findIndex(g => g.id === groupId)
 
       if (index !== -1) {
-        const sortedMessages = response.data.sort((a, b) =>
-          new Date(a.timestamp) - new Date(b.timestamp)
-        )
+        const newMessages = response.data
+        const group = groups.value[index]
 
-        groups.value[index].messages = sortedMessages
+        if (page === 0) {
+           group.messages = newMessages
+           group.page = 0
+           group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+        } else {
+           // Prepend messages
+           // We need to ensure no duplicates if any overlap occurs (though slice shouldn't overlap if stable)
+           // But safe to filter just in case or just prepend
+           const existingIds = new Set(group.messages.map(m => m.id))
+           const uniqueNew = newMessages.filter(m => !existingIds.has(m.id))
+
+           group.messages = [...uniqueNew, ...group.messages]
+           group.page = page
+           group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+        }
       }
     } catch (err) {
       console.error('Failed to fetch history:', err)
+    }
+  }
+
+  const loadMoreMessages = async () => {
+    if (!activeGroup.value || !activeGroup.value.hasMore) return
+
+    try {
+       const nextPage = (activeGroup.value.page || 0) + 1
+       await fetchHistory(activeGroup.value.id, nextPage)
+    } catch (e) {
+        console.error("Load more failed", e)
     }
   }
 
@@ -205,7 +237,9 @@ export const useChatStore = defineStore('chat', () => {
       groups.value.push({
         ...newGroup,
         messages: [],
-        unreadCount: 0
+        unreadCount: 0,
+        page: 0,
+        hasMore: true
       })
     }
   }
@@ -313,6 +347,7 @@ export const useChatStore = defineStore('chat', () => {
     muteGroup,
     unmuteGroup,
     removeGroup,
-    updateMemberReadTime
+    updateMemberReadTime,
+    loadMoreMessages
   }
 })

@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatGroupRepository extends JpaRepository<ChatGroup, Long> {
-    //TODO: N+1 PROBLEM
     @Query("SELECT gm.group FROM ChatGroupMember gm WHERE gm.user = :user AND gm.group.isDeleted = false")
     List<ChatGroup> findUserGroups(@Param("user") User user);
 
