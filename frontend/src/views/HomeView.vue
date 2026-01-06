@@ -167,12 +167,6 @@ const onGroupMessageReceived = (payload) => {
     return
   }
 
-  if (message.type === 'READ_RECEIPT') {
-    chatStore.updateMemberReadTime(message.groupId, message.member)
-    return
-  }
-
-  chatStore.handleIncomingMessage(message)
 }
 
 const onGroupNotificationReceived = (payload) => {

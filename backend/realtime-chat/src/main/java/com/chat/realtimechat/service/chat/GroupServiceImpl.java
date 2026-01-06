@@ -57,10 +57,13 @@ public class GroupServiceImpl implements GroupService {
 
         ChatMessageResponse response = ChatMessageResponse.fromEntity(saved);
 
-        messagingTemplate.convertAndSend(
-                "/topic/group." + group.getId(),
-                response
-        );
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    response
+            );
+        });
     }
 
     private ChatGroup getGroupAndValidateAccess(Long groupId, String username) {
@@ -440,7 +443,13 @@ public class GroupServiceImpl implements GroupService {
         payload.put("groupId", groupId);
         payload.put("member", memberDto);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) payload);
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    payload
+            );
+        });
 
     }
 

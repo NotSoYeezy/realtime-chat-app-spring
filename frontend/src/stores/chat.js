@@ -73,7 +73,6 @@ export const useChatStore = defineStore('chat', () => {
       const index = group.members.findIndex(m => m.id === updatedMember.id)
 
       if (index !== -1) {
-        console.log('Updating read time for:', updatedMember.username)
 
         group.members[index] = {
           ...group.members[index],
@@ -86,9 +85,9 @@ export const useChatStore = defineStore('chat', () => {
   const fetchHistory = async (groupId, page = 0) => {
     try {
       const response = await api.get(`/chat/history/${groupId}`, {
-        params: { 
-          page, 
-          size: CHAT_PAGE_SIZE 
+        params: {
+          page,
+          size: CHAT_PAGE_SIZE
         }
       })
 
@@ -103,9 +102,6 @@ export const useChatStore = defineStore('chat', () => {
            group.page = 0
            group.hasMore = newMessages.length === CHAT_PAGE_SIZE
         } else {
-           // Prepend messages
-           // We need to ensure no duplicates if any overlap occurs (though slice shouldn't overlap if stable)
-           // But safe to filter just in case or just prepend
            const existingIds = new Set(group.messages.map(m => m.id))
            const uniqueNew = newMessages.filter(m => !existingIds.has(m.id))
 
@@ -184,7 +180,6 @@ export const useChatStore = defineStore('chat', () => {
     if (index !== -1) {
       if (message.type === 'MEMBER_ADDED') {
         const currentMembers = groups.value[index].members || []
-        // Avoid duplicates
         const newMembers = message.members.filter(nm =>
           !currentMembers.some(cm => cm.id === nm.id)
         )
@@ -206,15 +201,16 @@ export const useChatStore = defineStore('chat', () => {
         return
       }
 
+      if (message.type === 'READ_RECEIPT') {
+        updateMemberReadTime(message.groupId, message.member)
+        return
+      }
+
       groups.value[index].messages.push(message)
 
       if (message.type === 'CHAT') {
         groups.value[index].lastMessage = message.content
         groups.value[index].lastMessageTime = message.timestamp
-      }
-
-      if (message.type === 'SYSTEM') {
-        // We handle updates via events now, but keep this as fallback/log
       }
 
       if (activeGroupId.value == groupId) {

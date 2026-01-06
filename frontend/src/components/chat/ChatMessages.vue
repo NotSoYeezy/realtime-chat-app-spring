@@ -47,6 +47,10 @@ const lastMessageId = computed(() => {
 
 
 
+watch(() => chatStore.activeGroupId, () => {
+  scrollToBottom()
+})
+
 watch(lastMessageId, (newId, oldId) => {
 
   // If the LAST message ID changed, it means a new message was added at the bottom.
