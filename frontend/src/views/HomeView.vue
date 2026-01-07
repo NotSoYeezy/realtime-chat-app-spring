@@ -230,11 +230,19 @@ const handleTypingNotification = (sender) => {
   }, 3000)
 }
 
+const isLink = () => {
+  const urlPattern = /^(https?:\/\/[^\s]+)$/;
+  return urlPattern.test(str.trim());
+}
+
 const sendMessage = () => {
   if (messageContent.value.trim() && stompClient.value && isConnected.value && chatStore.activeGroupId) {
+    const contentType = isLink(messageContent.value) ? 'LINK' : 'TEXT'
+
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
+      contentType: contentType,
       groupId: chatStore.activeGroupId,
       parentId: replyingTo.value ? replyingTo.value.id : null // <--- PRZEKAZANIE ID
     }

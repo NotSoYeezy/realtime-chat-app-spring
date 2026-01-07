@@ -17,9 +17,7 @@ const readBy = computed(() => {
 
   return props.groupMembers.filter((member) => {
     if (member.username === props.message.sender.username) return false
-
     if (!member.lastReadTime) return false
-
     const readTime = new Date(member.lastReadTime).getTime()
     return readTime >= msgTime
   })
@@ -46,6 +44,7 @@ const readBy = computed(() => {
       ]"
     >
       <div class="flex flex-col max-w-[80%] md:max-w-[75%]">
+
         <span
           v-if="!isMine"
           class="text-xs mb-1 font-medium text-[var(--color-text-secondary)] ml-1"
@@ -76,7 +75,21 @@ const readBy = computed(() => {
             <span class="line-clamp-2 italic">{{ message.parent.content }}</span>
           </div>
 
-          {{ message.content }}
+          <template v-if="message.contentType === 'LINK'">
+            <a
+              :href="message.content"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="underline break-all hover:opacity-80"
+              :class="isMine ? 'text-inherit' : 'text-blue-600 dark:text-blue-400'"
+              @click.stop
+            >
+              {{ message.content }}
+            </a>
+          </template>
+          <template v-else>
+            {{ message.content }}
+          </template>
         </div>
 
         <span
