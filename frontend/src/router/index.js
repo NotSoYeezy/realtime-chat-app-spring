@@ -32,8 +32,13 @@ const router = createRouter({
       path: '/auth/callback',
       name: 'AuthCallback',
       component: () => import("@/views/AuthCallback.vue"),
+    },
+    {
+      path: '/password-reset',
+      name: 'PasswordReset',
+      component: () => import("@/views/PasswordResetRequestView.vue"),
     }
-  ],
+  ]
 })
 
 router.beforeEach((to, from, next) => {

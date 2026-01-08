@@ -39,18 +39,23 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     @Override
     public void initiatePasswordReset(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found"));
-
+        User user;
+        try {
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new UserNotFoundException("User not found"));
+        } catch (UserNotFoundException e) {
+            // To prevent email enumeration, we do not reveal whether the email exists.
+            return;
+        }
         PasswordResetToken token = createPasswordResetToken(user);
 
         userEmailNotifier.sendMessage(
                 """
-                To reset your password, please click the link below:
-                %s
-
-                If you did not request this, please ignore this email.
-                """.formatted(buildUrl(token.getToken())),
+                        To reset your password, please click the link below:
+                        %s
+                        
+                        If you did not request this, please ignore this email.
+                        """.formatted(buildUrl(token.getToken())),
                 "Password Reset",
                 email
         );

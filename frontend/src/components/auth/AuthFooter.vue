@@ -1,8 +1,9 @@
 <script setup>
 defineProps({
-  text: { type: String, required: true },
+  text: { type: String },
   linkText: { type: String, required: true },
-  to: { type: String, required: true }
+  to: { type: String, required: true },
+  hasPasswordReset: { type: Boolean }
 })
 </script>
 
@@ -14,6 +15,15 @@ defineProps({
       class="font-medium text-[var(--color-primary)] hover:underline ml-1"
     >
       {{ linkText }}
+    </router-link>
+  </p>
+  <p v-if="hasPasswordReset" class="text-sm text-[var(--color-text-secondary)] text-center">
+    Forgot password?
+    <router-link
+      to="/password-reset"
+      class="font-medium text-[var(--color-primary)] hover:underline ml-1"
+    >
+      Change password
     </router-link>
   </p>
 </template>
