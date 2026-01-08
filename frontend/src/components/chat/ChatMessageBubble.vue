@@ -22,6 +22,7 @@ const readBy = computed(() => {
     return readTime >= msgTime
   })
 })
+
 </script>
 
 <template>
@@ -80,7 +81,7 @@ const readBy = computed(() => {
               :href="message.content"
               target="_blank"
               rel="noopener noreferrer"
-              class="underline break-all hover:opacity-80"
+              class="underline break-words hover:opacity-80"
               :class="isMine ? 'text-inherit' : 'text-blue-600 dark:text-blue-400'"
               @click.stop
             >

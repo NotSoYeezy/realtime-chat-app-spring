@@ -230,9 +230,9 @@ const handleTypingNotification = (sender) => {
   }, 3000)
 }
 
-const isLink = () => {
+const isLink = (message) => {
   const urlPattern = /^(https?:\/\/[^\s]+)$/;
-  return urlPattern.test(str.trim());
+  return urlPattern.test(message.trim());
 }
 
 const sendMessage = () => {
@@ -242,9 +242,9 @@ const sendMessage = () => {
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
-      contentType: contentType,
+      contentType: 'LINK',
       groupId: chatStore.activeGroupId,
-      parentId: replyingTo.value ? replyingTo.value.id : null // <--- PRZEKAZANIE ID
+      parentId: replyingTo.value ? replyingTo.value.id : null
     }
 
     stompClient.value.publish({
