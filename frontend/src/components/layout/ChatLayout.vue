@@ -4,7 +4,7 @@ import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friendsStore'
 
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
-import ImageViewerModal from "@/components/chat/ImageViewerModal.vue" // Imported correctly
+import ImageViewerModal from "@/components/chat/ImageViewerModal.vue"
 import ChatHeader from '@/components/chat/ChatHeader.vue'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
@@ -38,7 +38,7 @@ const chatStore = useChatStore()
 const friendsStore = useFriendsStore()
 const currentView = ref('chat')
 
-const showInfoModal = ref(false)
+const showGroupSettings = ref(false)
 const showAddMemberModal = ref(false)
 
 const selectedImage = ref(null)
@@ -48,22 +48,22 @@ const activeGroupMembers = computed(() => {
   return chatStore.activeGroup ? chatStore.activeGroup.members : []
 })
 
-const handleOpenInfo = async () => {
+const handleOpenGroupSettings = async () => {
   if (chatStore.activeGroupId) {
     await chatStore.refreshGroup(chatStore.activeGroupId)
-    showInfoModal.value = true
+    showGroupSettings.value = true
   }
 }
 
 const handleOpenAddMember = () => {
-  showInfoModal.value = false
+  showGroupSettings.value = false
   showAddMemberModal.value = true
 }
 
 const handleMembersAdded = async (userIds) => {
   await chatStore.addMembersToGroup(userIds)
   showAddMemberModal.value = false
-  showInfoModal.value = true
+  showGroupSettings.value = true
 }
 
 const handleViewImage = (relativePath) => {
@@ -77,7 +77,7 @@ const handleViewImage = (relativePath) => {
 
 const handleCloseAddMember = () => {
   showAddMemberModal.value = false
-  showInfoModal.value = true
+  showGroupSettings.value = true
 }
 
 const openSettings = () => {
@@ -101,7 +101,7 @@ const openFriendsTab = () => {
         <ChatHeader
           :activeGroup="chatStore.activeGroup"
           :currentUser="currentUser"
-          @openInfo="handleOpenInfo"
+          @openInfo="handleOpenGroupSettings"
         />
 
         <ChatMessages
@@ -162,10 +162,10 @@ const openFriendsTab = () => {
 
     <Teleport to="body">
       <GroupInfoModal
-        v-if="showInfoModal"
+        v-if="showGroupSettings"
         :activeGroup="chatStore.activeGroup"
         :currentUser="currentUser"
-        @close="showInfoModal = false"
+        @close="showGroupSettings = false"
         @openAddMember="handleOpenAddMember"
       />
 

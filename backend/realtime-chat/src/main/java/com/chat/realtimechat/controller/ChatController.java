@@ -4,6 +4,8 @@ import com.chat.realtimechat.model.dto.request.ChatMessageRequest;
 import com.chat.realtimechat.model.dto.request.StatusUpdateRequest;
 import com.chat.realtimechat.model.dto.response.ChatMessageResponse;
 import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
+import com.chat.realtimechat.model.entity.ChatMessage;
+import com.chat.realtimechat.model.enums.MessageContentType;
 import com.chat.realtimechat.repository.ChatMessageRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.chat.ChatService;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.security.Principal;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,6 +36,7 @@ public class ChatController {
 
     private final UserPresenceService presenceService;
     private final ChatService chatService;
+    private final ChatMessageRepository chatMessageRepository;
 
     @MessageMapping("/chat.sendMessage")
     public void sendMessage(@Payload ChatMessageRequest request, Principal principal) {
@@ -79,5 +83,18 @@ public class ChatController {
                 request,
                 principal
         );
+    }
+
+    @GetMapping("api/messages/group/{groupId}/images")
+    @ResponseBody
+    public ResponseEntity<List<String>> getGroupMedia(@PathVariable Long groupId) {
+
+        List<ChatMessage> mediaMessages = chatMessageRepository.findByGroupIdAndContentType(groupId, MessageContentType.IMAGE);
+
+        List<String> imageUrls = mediaMessages.stream()
+                .map(ChatMessage::getContent)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(imageUrls);
     }
 }
