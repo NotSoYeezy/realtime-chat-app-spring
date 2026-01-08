@@ -6,6 +6,7 @@ import { useChatStore } from '@/stores/chat'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client/dist/sockjs';
 import { Stomp } from '@stomp/stompjs'
+import MediaHandler from "@/api/mediaHandler.js";
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
 import checkGoogleStatus from "@/api/googleHandler.js";
@@ -230,6 +231,35 @@ const handleTypingNotification = (sender) => {
   }, 3000)
 }
 
+const uploadImage = async (file) => {
+  if (!file) return
+
+  try {
+    const imageUrl = await MediaHandler.postMedia(file)
+
+    if (stompClient.value && isConnected.value && chatStore.activeGroupId) {
+      const chatMessage = {
+        content: imageUrl,
+        type: 'CHAT',
+        contentType: 'IMAGE',
+        groupId: chatStore.activeGroupId,
+        parentId: replyingTo.value ? replyingTo.value.id : null
+      }
+
+      stompClient.value.publish({
+        destination: '/app/chat.sendMessage',
+        body: JSON.stringify(chatMessage)
+      })
+
+      replyingTo.value = null
+    }
+
+  } catch (error) {
+    console.error("Failed to send image:", error)
+    alert("Could not upload image")
+  }
+}
+
 const isLink = (message) => {
   const urlPattern = /^(https?:\/\/[^\s]+)$/;
   return urlPattern.test(message.trim());
@@ -242,7 +272,7 @@ const sendMessage = () => {
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
-      contentType: 'LINK',
+      contentType: contentType,
       groupId: chatStore.activeGroupId,
       parentId: replyingTo.value ? replyingTo.value.id : null
     }
@@ -378,5 +408,6 @@ onBeforeUnmount(() => {
     @setStatus="setStatus"
     @logout="handleLogout"
     @openFriends="fetchOnlineUsers"
+    @uploadImage="uploadImage"
   />
 </template>

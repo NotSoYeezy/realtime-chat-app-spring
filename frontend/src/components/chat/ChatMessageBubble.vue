@@ -8,7 +8,15 @@ const props = defineProps({
   isLastSentByMe: Boolean
 })
 
-defineEmits(['reply'])
+defineEmits(['reply', 'view-image'])
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
+
+const getImageUrl = (path) => {
+  if (!path) return ''
+  if (path.startsWith('http')) return path
+  return `${backendUrl}${path}`
+}
 
 const readBy = computed(() => {
   if (!props.groupMembers) return []
@@ -22,7 +30,6 @@ const readBy = computed(() => {
     return readTime >= msgTime
   })
 })
-
 </script>
 
 <template>
@@ -73,24 +80,52 @@ const readBy = computed(() => {
             <span class="font-bold opacity-80 mb-0.5" v-if="message.parent.sender">
               {{ message.parent.sender.name }}
             </span>
-            <span class="line-clamp-2 italic">{{ message.parent.content }}</span>
+
+            <template v-if="message.parent.contentType === 'IMAGE'">
+              <div class="flex items-center gap-2 mt-1">
+                <img
+                  :src="getImageUrl(message.parent.content)"
+                  class="w-12 h-12 rounded object-cover bg-black/10 border border-white/20"
+                  alt="Reply image"
+                />
+                <span class="italic opacity-70">Photo</span>
+              </div>
+            </template>
+
+            <template v-else>
+              <span class="line-clamp-2 italic">{{ message.parent.content }}</span>
+            </template>
           </div>
 
-          <template v-if="message.contentType === 'LINK'">
+          <template v-if="message.contentType === 'IMAGE'">
+            <div class="relative group cursor-pointer">
+              <img
+                :src="getImageUrl(message.content)"
+                alt="Image attachment"
+                class="max-w-full rounded-lg object-cover bg-black/10"
+                style="max-height: 300px; min-width: 100px;"
+                @click.stop="$emit('view-image', message.content)"
+              />
+            </div>
+          </template>
+
+          <template v-else-if="message.contentType === 'LINK'">
             <a
               :href="message.content"
               target="_blank"
               rel="noopener noreferrer"
-              class="underline break-words hover:opacity-80"
+              class="underline break-words hover:opacity-80 block"
               :class="isMine ? 'text-inherit' : 'text-blue-600 dark:text-blue-400'"
               @click.stop
             >
               {{ message.content }}
             </a>
           </template>
+
           <template v-else>
             {{ message.content }}
           </template>
+
         </div>
 
         <span

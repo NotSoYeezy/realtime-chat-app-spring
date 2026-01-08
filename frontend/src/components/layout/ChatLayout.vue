@@ -4,6 +4,7 @@ import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friendsStore'
 
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
+import ImageViewerModal from "@/components/chat/ImageViewerModal.vue" // Imported correctly
 import ChatHeader from '@/components/chat/ChatHeader.vue'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
@@ -31,7 +32,7 @@ const props = defineProps({
 })
 
 defineEmits(['sendMessage', 'typing', 'updateMessageContent',
-  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply'])
+  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply', 'uploadImage'])
 
 const chatStore = useChatStore()
 const friendsStore = useFriendsStore()
@@ -39,6 +40,9 @@ const currentView = ref('chat')
 
 const showInfoModal = ref(false)
 const showAddMemberModal = ref(false)
+
+const selectedImage = ref(null)
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
 const activeGroupMembers = computed(() => {
   return chatStore.activeGroup ? chatStore.activeGroup.members : []
@@ -60,6 +64,15 @@ const handleMembersAdded = async (userIds) => {
   await chatStore.addMembersToGroup(userIds)
   showAddMemberModal.value = false
   showInfoModal.value = true
+}
+
+const handleViewImage = (relativePath) => {
+  if (!relativePath) return
+  if (!relativePath.startsWith('http')) {
+    selectedImage.value = `${backendUrl}${relativePath}`
+  } else {
+    selectedImage.value = relativePath
+  }
 }
 
 const handleCloseAddMember = () => {
@@ -100,6 +113,7 @@ const openFriendsTab = () => {
           :currentSurname="currentSurname"
           :formatTime="formatTime"
           @reply="$emit('reply', $event)"
+          @view-image="handleViewImage"
         />
 
         <ChatTypingIndicator
@@ -116,6 +130,7 @@ const openFriendsTab = () => {
           @typing="$emit('typing')"
           @sendMessage="$emit('sendMessage')"
           @update:messageContent="$emit('updateMessageContent', $event)"
+          @uploadImage="$emit('uploadImage', $event)"
         />
       </template>
 
@@ -160,6 +175,12 @@ const openFriendsTab = () => {
         :currentMembers="chatStore.activeGroup?.members || []"
         @close="handleCloseAddMember"
         @add="handleMembersAdded"
+      />
+
+      <ImageViewerModal
+        v-if="selectedImage"
+        :imageUrl="selectedImage"
+        @close="selectedImage = null"
       />
     </Teleport>
 
