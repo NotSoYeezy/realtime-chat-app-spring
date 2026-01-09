@@ -25,4 +25,6 @@ public interface UserService {
     List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) throws UsernameNotFoundException;
 
     void initiatePasswordReset(String email);
+
+    void resetPassword(String passwordResetToken, String password);
 }

@@ -6,8 +6,9 @@ import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateRequest;
+import com.chat.realtimechat.model.entity.auth.PasswordResetToken;
+import com.chat.realtimechat.repository.PasswordResetTokenRepository;
 import com.chat.realtimechat.repository.UserRepository;
-import com.chat.realtimechat.service.notifiers.UserEmailNotifier;
 import com.chat.realtimechat.service.security.PasswordResetTokenService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final FriendshipService friendshipService;
     private final PasswordResetTokenService passwordResetTokenService;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
 
     @Override
     public Iterable<User> findAllUsers() {
@@ -131,6 +133,28 @@ public class UserServiceImpl implements UserService {
         passwordResetTokenService.initiatePasswordReset(email);
 
     }
+
+    @Override
+    public void resetPassword(String token, String password) {
+
+        PasswordResetToken passwordResetToken = passwordResetTokenRepository
+                .findByToken(token)
+                .orElseThrow(() -> // TODO: throw custom error
+                        new IllegalArgumentException("Invalid password reset token")
+                );
+
+        if (passwordResetToken.isTokenExpired()) {
+            passwordResetTokenRepository.delete(passwordResetToken);
+            throw new IllegalArgumentException("Password reset token has expired"); // TODO: throw custom error
+        }
+
+        User user = passwordResetToken.getUser();
+        user.setPassword(passwordEncoder.encode(password));
+
+        userRepository.save(user);
+        passwordResetTokenRepository.delete(passwordResetToken);
+    }
+
 
 
     @Override

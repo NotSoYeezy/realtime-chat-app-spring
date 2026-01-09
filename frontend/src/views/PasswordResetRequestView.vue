@@ -5,7 +5,7 @@ import AuthCard from '@/components/auth/AuthCard.vue'
 import AuthFooter from '@/components/auth/AuthFooter.vue'
 import FormInput from '@/components/ui/FormInput.vue'
 import BaseButton from '@/components/ui/BaseButton.vue'
-import api from '@/api/axios'
+import PasswordReset from '@/api/passwordReset.js'
 
 const email = ref('')
 const loading = ref(false)
@@ -23,10 +23,7 @@ const handleSubmit = async () => {
 
   loading.value = true
   try {
-    await api.post('/auth/password-reset/request', {
-      email: email.value
-    })
-
+    await PasswordReset.request(email.value)
     success.value = true
   } catch (err) {
     error.value =
@@ -39,31 +36,15 @@ const handleSubmit = async () => {
 </script>
 <template>
   <AuthLayout>
-    <AuthCard
-      title="Reset password"
-      subtitle="Enter your email to reset your password"
-    >
-      <form
-        v-if="!success"
-        @submit.prevent="handleSubmit"
-        novalidate
-        class="space-y-4"
-      >
-        <FormInput
-          v-model="email"
-          type="email"
-          placeholder="Enter your email"
-        />
+    <AuthCard title="Reset password" subtitle="Enter your email to reset your password">
+      <form v-if="!success" @submit.prevent="handleSubmit" novalidate class="space-y-4">
+        <FormInput v-model="email" type="email" placeholder="Enter your email" />
 
         <p v-if="error" class="text-sm text-center text-[var(--color-danger-text)]">
           {{ error }}
         </p>
 
-        <BaseButton
-          type="submit"
-          class="w-full"
-          :disabled="loading"
-        >
+        <BaseButton type="submit" class="w-full" :disabled="loading">
           {{ loading ? 'Sending...' : 'Send reset link' }}
         </BaseButton>
       </form>
@@ -71,9 +52,7 @@ const handleSubmit = async () => {
       <!-- SUCCESS -->
       <div v-else class="text-center space-y-4 py-4 animate-in fade-in">
         <div class="text-green-500">
-          <span class="material-symbols-outlined text-6xl">
-            mail
-          </span>
+          <span class="material-symbols-outlined text-6xl"> mail </span>
         </div>
 
         <p class="text-sm text-[var(--color-text-secondary)]">
@@ -83,10 +62,7 @@ const handleSubmit = async () => {
       </div>
 
       <template #footer>
-        <AuthFooter
-          linkText="Go back to login page"
-          to="/login"
-        />
+        <AuthFooter linkText="Go back to login page" to="/login" />
       </template>
     </AuthCard>
   </AuthLayout>

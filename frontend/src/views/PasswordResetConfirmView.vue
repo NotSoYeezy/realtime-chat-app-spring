@@ -58,7 +58,7 @@ const handleResetPassword = async () => {
 
     setTimeout(() => {
       router.push('/login')
-    }, 2000)
+    }, 4000)
   } catch (err) {
     submitError.value =
       err.response?.data?.message ||
@@ -86,9 +86,6 @@ const handleResend = async () => {
   }
 }
 
-const goToLogin = () => {
-  router.push('/login')
-}
 </script>
 <template>
   <AuthLayout>
@@ -100,19 +97,24 @@ const goToLogin = () => {
             ? 'Link Expired'
             : 'Reset Password'
       "
-      :subtitle="status === 'loading' ? 'Please wait...' : ''"
+      :subtitle="status === 'loading' ? 'Please wait...' : 'Set your new password'"
     >
-      <div class="flex flex-col items-center gap-6 py-4 animate-in fade-in">
+
+      <!-- CONTENT -->
+      <div class="flex flex-col gap-6 py-4 animate-in fade-in">
 
         <!-- LOADING -->
-        <div v-if="status === 'loading'" class="text-[var(--color-primary)]">
+        <div
+          v-if="status === 'loading'"
+          class="flex justify-center text-[var(--color-primary)]"
+        >
           <span class="material-symbols-outlined text-6xl animate-spin">
             sync
           </span>
         </div>
 
         <!-- FORM -->
-        <div v-else-if="status === 'ready'" class="w-full space-y-4">
+        <div v-else-if="status === 'ready'" class="space-y-4">
 
           <FormInput
             v-model="password"
@@ -126,7 +128,10 @@ const goToLogin = () => {
             placeholder="Confirm new password"
           />
 
-          <p v-if="submitError" class="text-sm text-center text-[var(--color-danger-text)]">
+          <p
+            v-if="submitError"
+            class="text-sm text-center text-[var(--color-danger-text)]"
+          >
             {{ submitError }}
           </p>
 
@@ -135,7 +140,7 @@ const goToLogin = () => {
             :disabled="submitLoading"
             @click="handleResetPassword"
           >
-            {{ submitLoading ? 'Resetting...' : 'Reset Password' }}
+            {{ submitLoading ? 'Resetting...' : 'Reset password' }}
           </BaseButton>
         </div>
 
@@ -146,16 +151,18 @@ const goToLogin = () => {
               check_circle
             </span>
           </div>
+
           <p class="text-lg font-medium">
             {{ message }}
           </p>
+
           <p class="text-sm text-[var(--color-text-secondary)]">
             Redirecting to login...
           </p>
         </div>
 
         <!-- ERROR -->
-        <div v-else class="w-full text-center space-y-4">
+        <div v-else class="space-y-4 text-center">
 
           <div class="text-[var(--color-danger)]">
             <span class="material-symbols-outlined text-6xl">
@@ -167,9 +174,10 @@ const goToLogin = () => {
             {{ message }}
           </p>
 
-          <hr class="border-[var(--color-border)] my-4" />
+          <hr class="border-[var(--color-border)]" />
 
-          <div v-if="!resendSuccess" class="space-y-4">
+          <div v-if="!resendSuccess" class="space-y-4 text-left">
+
             <p class="text-sm font-medium">
               Send a new reset link:
             </p>
@@ -180,7 +188,10 @@ const goToLogin = () => {
               placeholder="Enter your email"
             />
 
-            <p v-if="resendError" class="text-xs text-[var(--color-danger-text)]">
+            <p
+              v-if="resendError"
+              class="text-xs text-center text-[var(--color-danger-text)]"
+            >
               {{ resendError }}
             </p>
 
@@ -189,7 +200,7 @@ const goToLogin = () => {
               :disabled="resendLoading || !resendEmail"
               @click="handleResend"
             >
-              {{ resendLoading ? 'Sending...' : 'Resend Link' }}
+              {{ resendLoading ? 'Sending...' : 'Resend link' }}
             </BaseButton>
           </div>
 
@@ -199,15 +210,9 @@ const goToLogin = () => {
           >
             A new reset link has been sent!
           </div>
-
-          <button
-            @click="goToLogin"
-            class="text-sm text-[var(--color-text-secondary)] hover:underline"
-          >
-            Back to sign in
-          </button>
         </div>
       </div>
     </AuthCard>
   </AuthLayout>
 </template>
+

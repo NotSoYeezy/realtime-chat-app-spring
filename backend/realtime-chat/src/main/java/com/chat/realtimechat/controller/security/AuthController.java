@@ -134,8 +134,14 @@ public class AuthController {
     }
 
     @PostMapping("/password-reset/request")
-    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<?> sendPasswordResetEmail(@RequestBody ResetPasswordRequest request) {
         userService.initiatePasswordReset(request.getEmail());
         return ResponseEntity.status(HttpStatus.OK).body("Password reset instructions have been sent to your email.");
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<?> resetPassword(@RequestBody ConfirmPasswordResetRequest request) {
+        userService.resetPassword(request.getToken(), request.getPassword());
+        return ResponseEntity.status(HttpStatus.OK).body("Password has been reset successfully.");
     }
 }
