@@ -4,7 +4,7 @@ import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
-import com.chat.realtimechat.model.dto.request.UpdateRequest;
+import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -16,7 +16,7 @@ public interface UserService {
     Iterable<User> findAllUsers();
     Optional<User> findUsersByUsername(String username);
     User registerUser(RegistrationRequest request);
-    User updateUser(UpdateRequest request, String username);
+    User updateUser(UpdateUserRequest request, String username);
     User registeredGoogleUser(OAuth2User user);
     void deleteUser(Long id);
     boolean checkPassword(String username, String password);

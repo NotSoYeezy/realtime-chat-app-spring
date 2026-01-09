@@ -8,4 +8,5 @@ public class ChatMessageRequest {
     private String content;
     private ChatMessage.MessageType type;
     private Long groupId;
+    private Long parentId;
 }

@@ -1,7 +1,7 @@
 package com.chat.realtimechat.model.dto.response;
 
+import com.chat.realtimechat.config.UploadUrlConfig;
 import com.chat.realtimechat.model.entity.ChatGroup;
-import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.enums.GroupType;
 import lombok.Data;
 
@@ -16,26 +16,37 @@ public class ChatGroupResponse {
     private int unreadCount;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
+    private LocalDateTime createdAt;
     private GroupType groupType;
-    private Set<UserResponse> members;
+    private String imageUrl;
+    private boolean muted;
+
+    private Set<UserResponse> admins;
+    private Set<ChatGroupMemberResponse> members;
 
     public static ChatGroupResponse fromEntity(ChatGroup group) {
         ChatGroupResponse response = new ChatGroupResponse();
         response.setId(group.getId());
         response.setName(group.getName());
         response.setGroupType(group.getType());
-        // TODO: FIGURE OUT HOW TO DEAL WITH THAT READ COUNT
+        response.setCreatedAt(group.getCreatedAt());
+        response.setImageUrl(group.getImageUrl());
         response.setUnreadCount(0);
+
+        if (group.getImageUrl() != null && !group.getImageUrl().isEmpty()) {
+            response.setImageUrl(UploadUrlConfig.getUploadUrl() + group.getImageUrl());
+        }
+
+        if (group.getAdmins() != null) {
+            response.setAdmins(group.getAdmins().stream()
+                    .map(UserResponse::fromEntity)
+                    .collect(Collectors.toSet())
+            );
+        }
 
         if (group.getMembers() != null) {
             response.setMembers(group.getMembers().stream()
-                    .map(user -> new UserResponse(
-                            user.getId(),
-                            user.getEmail(),
-                            user.getUsername(),
-                            user.getName(),
-                            user.getSurname()
-                    ))
+                    .map(ChatGroupMemberResponse::fromEntity)
                     .collect(Collectors.toSet()));
         }
 

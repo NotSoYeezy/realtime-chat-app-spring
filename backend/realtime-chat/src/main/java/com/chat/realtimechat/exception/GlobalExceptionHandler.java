@@ -1,6 +1,9 @@
 package com.chat.realtimechat.exception;
 
 import com.chat.realtimechat.exception.friendship.*;
+import com.chat.realtimechat.exception.google.AccountNotConnectedException;
+import com.chat.realtimechat.exception.google.ConnectionExpiredException;
+import com.chat.realtimechat.exception.google.NoAuthenticationException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -93,7 +96,7 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
-    @ExceptionHandler({TokenNotFoundException.class, UserNotFoundException.class})
+    @ExceptionHandler({TokenNotFoundException.class, UserNotFoundException.class, GroupNotFoundException.class})
     public ResponseEntity<ApiError> handleResourceNotFound(
             Exception ex,
             HttpServletRequest request
@@ -141,6 +144,30 @@ public class GlobalExceptionHandler {
         return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(GroupOperationException.class)
+    public ResponseEntity<ApiError> handleGroupOperation(
+            GroupOperationException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.BAD_REQUEST, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(GroupAccessDeniedException.class)
+    public ResponseEntity<ApiError> handleGroupAccessDenied(
+            GroupAccessDeniedException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(FileStorageException.class)
+    public ResponseEntity<ApiError> handleFileStorage(
+            FileStorageException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiError> handleGeneric(
@@ -149,6 +176,32 @@ public class GlobalExceptionHandler {
     ) {
         log.error(ex.getMessage(), ex);
         return buildError(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(NoAuthenticationException.class)
+    public ResponseEntity<ApiError> handleNoAuthentication(
+            NoAuthenticationException ex,
+            HttpServletRequest request){
+        return buildError(HttpStatus.NOT_ACCEPTABLE, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(ConnectionExpiredException.class)
+    public ResponseEntity<ApiError> handleConnectionExpired(
+            ConnectionExpiredException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+
+    @ExceptionHandler(AccountNotConnectedException.class)
+    public ResponseEntity<ApiError> handleAccountNotConnected(
+            AccountNotConnectedException ex,
+            HttpServletRequest request
+    ) {
+        return buildError(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
     }
 
 }

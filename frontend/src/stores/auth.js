@@ -2,12 +2,14 @@ import { defineStore } from 'pinia';
 import axios from '@/api/axios';
 import { jwtDecode } from "jwt-decode";
 import router from "@/router/index.js";
+import { sendHeartbeat } from '@/api/presenceApi';
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
     accessToken: localStorage.getItem('access_token') || null,
     refreshToken: localStorage.getItem('refresh_token') || null,
     refreshTimeout: null,
+    heartbeatInterval: null,
   }),
 
   getters: {
@@ -35,6 +37,7 @@ export const useAuthStore = defineStore('auth', {
       localStorage.setItem('refresh_token', refreshToken);
 
       this.startRefreshTokenTimer();
+      this.startHeartbeat();
     },
 
 
@@ -64,6 +67,7 @@ export const useAuthStore = defineStore('auth', {
       } catch (error) {
         console.error("Refresh failed", error);
         this.logout();
+        throw error;
       }
     },
 
@@ -100,6 +104,27 @@ export const useAuthStore = defineStore('auth', {
       }
     },
 
+    startHeartbeat() {
+      if (this.heartbeatInterval) return;
+
+      sendHeartbeat().catch(console.error);
+
+      this.heartbeatInterval = setInterval(async () => {
+        try {
+          await sendHeartbeat();
+        } catch (e) {
+          console.error("Heartbeat failed", e);
+        }
+      }, 30000);
+    },
+
+    stopHeartbeat() {
+      if (this.heartbeatInterval) {
+        clearInterval(this.heartbeatInterval);
+        this.heartbeatInterval = null;
+      }
+    },
+
     logout() {
       this.accessToken = null;
       this.refreshToken = null;
@@ -110,6 +135,7 @@ export const useAuthStore = defineStore('auth', {
         clearTimeout(this.refreshTimeout);
         this.refreshTimeout = null;
       }
+      this.stopHeartbeat();
       router.push('/login');
     }
   }

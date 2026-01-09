@@ -8,6 +8,7 @@ import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.FriendshipStatus;
 import com.chat.realtimechat.repository.FriendshipRepository;
 import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.chat.GroupService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class FriendshipServiceImpl implements FriendshipService {
 
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final GroupService groupService;
 
     @Override
     public void sendFriendRequest(Long senderId, Long targetId) {
@@ -65,6 +67,8 @@ public class FriendshipServiceImpl implements FriendshipService {
 
         request.setStatus(FriendshipStatus.ACCEPTED);
         friendshipRepository.save(request);
+
+        groupService.createPrivateGroup(request.getUser(), request.getFriend());
     }
 
     @Override

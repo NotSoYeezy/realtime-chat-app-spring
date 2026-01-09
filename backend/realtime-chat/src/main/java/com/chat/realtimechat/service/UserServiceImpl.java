@@ -5,9 +5,9 @@ import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
-import com.chat.realtimechat.model.dto.request.UpdateRequest;
 import com.chat.realtimechat.model.entity.auth.PasswordResetToken;
 import com.chat.realtimechat.repository.PasswordResetTokenRepository;
+import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.security.PasswordResetTokenService;
 import lombok.RequiredArgsConstructor;
@@ -158,7 +158,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public User updateUser(UpdateRequest request, String username) {
+    public User updateUser(UpdateUserRequest request, String username) {
         User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
 
         if (request.getEmail() != null && !user.getEmail().equals(request.getEmail())) {
