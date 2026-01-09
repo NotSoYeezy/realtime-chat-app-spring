@@ -9,7 +9,6 @@ import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.model.entity.auth.RegisterConfirmToken;
 import com.chat.realtimechat.repository.RefreshTokenRepository;
 import com.chat.realtimechat.repository.RegisterConfirmTokenRepository;
-import com.chat.realtimechat.service.notifiers.UserEmailNotifier;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.service.security.RegisterConfirmTokenService;
 import com.chat.realtimechat.util.JwtUtil;
@@ -29,12 +28,12 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
+    //TODO: move methods implementations into services
 
     private final JwtUtil jwtUtil;
     private final UserService userService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final RegisterConfirmTokenRepository registerConfirmTokenRepository;
-    private final UserEmailNotifier userEmailNotifier;
     private final RegisterConfirmTokenService registerConfirmTokenService;
     private final RefreshTokenService refreshTokenService;
 
@@ -132,5 +131,17 @@ public class AuthController {
         }
         registerConfirmTokenService.resendConfirmationToken(email);
         return ResponseEntity.status(HttpStatus.OK).body("Confirmation Token has been sent.");
+    }
+
+    @PostMapping("/password-reset/request")
+    public ResponseEntity<?> sendPasswordResetEmail(@RequestBody ResetPasswordRequest request) {
+        userService.initiatePasswordReset(request.getEmail());
+        return ResponseEntity.status(HttpStatus.OK).body("Password reset instructions have been sent to your email.");
+    }
+
+    @PostMapping("/password-reset/confirm")
+    public ResponseEntity<?> resetPassword(@RequestBody ConfirmPasswordResetRequest request) {
+        userService.resetPassword(request.getToken(), request.getPassword());
+        return ResponseEntity.status(HttpStatus.OK).body("Password has been reset successfully.");
     }
 }

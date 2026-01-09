@@ -19,6 +19,7 @@ import AuthFooter from '@/components/auth/AuthFooter.vue'
           text="Don't have an account?"
           linkText="Sign up"
           to="/register"
+          :hasPasswordReset="true"
         />
       </template>
     </AuthCard>
