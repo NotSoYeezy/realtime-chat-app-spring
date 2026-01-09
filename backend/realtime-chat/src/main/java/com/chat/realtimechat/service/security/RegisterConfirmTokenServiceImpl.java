@@ -70,6 +70,7 @@ public class RegisterConfirmTokenServiceImpl implements RegisterConfirmTokenServ
 
     @Override
     public void sendConfirmationEmail(RegisterConfirmToken registerConfirmToken, String userEmail) {
+        // TODO: change this to userEmailNotifier
         userEmailNotifierImpl.sendMessage(
                 "To confirm your account please click this link: " + buildUrl(registerConfirmToken.getToken()),
                 "Account Confirmation",
