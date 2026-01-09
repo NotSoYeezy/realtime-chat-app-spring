@@ -161,7 +161,6 @@ onUnmounted(() => {
       @rejectRequest="id => friendsStore.rejectRequest(id)"
       @click="$emit('openFriends')"
     />
-mystatus {{myStatus}}
 
   </aside>
 </template>
