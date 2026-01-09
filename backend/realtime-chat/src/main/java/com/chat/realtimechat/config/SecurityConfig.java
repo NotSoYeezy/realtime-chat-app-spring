@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/register", "/api/auth/refresh",
-                                "/api/auth/confirm/*", "/api/auth/resend-confirmation", "/oauth2/authorization/google").permitAll()
+                                "/api/auth/confirm/*", "/api/auth/resend-confirmation", "/oauth2/authorization/google", "/api/auth/password-reset/**").permitAll()
                         .requestMatchers("/api/friends/**").authenticated()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll() // TODO: FIGURE OUT WAY HOW TO SERVE FILES FOR NON AUTH USERS
