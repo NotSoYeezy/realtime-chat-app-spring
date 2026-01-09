@@ -165,7 +165,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendshipRepository.delete(direct);
     }
 
-
+    // TODO: add sorted by last seen
     @Override
     public List<FriendUserResponse> getFriends(Long userId) {
 
