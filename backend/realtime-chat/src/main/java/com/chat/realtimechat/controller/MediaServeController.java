@@ -13,24 +13,28 @@ import java.io.IOException;
 import java.nio.file.Files;
 
 @RestController
+@RequestMapping("/api/files")
 @RequiredArgsConstructor
-public class ImageServeController {
+public class MediaServeController {
 
     private final UploadUtils uploadUtils;
 
-    @PostMapping("/api/media/upload")
+    @PostMapping("/upload")
     public ResponseEntity<String> upload(@RequestParam("file") MultipartFile file) {
         try {
             String savedFileName = uploadUtils.saveFile(file);
-            return ResponseEntity.ok("/uploads/" + savedFileName);
+
+            String fileUrl = "/api/files/" + savedFileName;
+
+            return ResponseEntity.ok(fileUrl);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("File upload failed: " + e.getMessage());
+                    .body("Upload failed: " + e.getMessage());
         }
     }
 
-    @GetMapping("/uploads/{filename:.+}")
-    public ResponseEntity<Resource> serveFile(@PathVariable String filename) {
+    @GetMapping("/{filename:.+}")
+    public ResponseEntity<Resource> serve(@PathVariable String filename) {
         try {
             Resource resource = uploadUtils.loadFileAsResource(filename);
 
@@ -38,9 +42,13 @@ public class ImageServeController {
                 return ResponseEntity.notFound().build();
             }
 
-            String contentType = Files.probeContentType(resource.getFile().toPath());
-            if (contentType == null) {
-                contentType = "application/octet-stream";
+            String contentType = "application/octet-stream";
+            try {
+                String probedType = Files.probeContentType(resource.getFile().toPath());
+                if (probedType != null) {
+                    contentType = probedType;
+                }
+            } catch (IOException ex) {
             }
 
             return ResponseEntity.ok()

@@ -231,11 +231,40 @@ const handleTypingNotification = (sender) => {
   }, 3000)
 }
 
+const uploadFile = async (file) => {
+  if (!file) return
+
+  try {
+    const fileUrl = await MediaHandler.postFile(file)
+
+    if (stompClient.value && isConnected.value && chatStore.activeGroupId) {
+      const chatMessage = {
+        content: fileUrl,
+        type: 'CHAT',
+        contentType: 'FILE',
+        groupId: chatStore.activeGroupId,
+        parentId: replyingTo.value ? replyingTo.value.id : null,
+      }
+
+      stompClient.value.publish({
+        destination: '/app/chat.sendMessage',
+        body: JSON.stringify(chatMessage)
+      })
+
+      replyingTo.value = null
+    }
+
+  } catch (error) {
+    console.error("Failed to upload file:", error)
+    alert("Could not upload file")
+  }
+}
+
 const uploadImage = async (file) => {
   if (!file) return
 
   try {
-    const imageUrl = await MediaHandler.postMedia(file)
+    const imageUrl = await MediaHandler.postImage(file)
 
     if (stompClient.value && isConnected.value && chatStore.activeGroupId) {
       const chatMessage = {
@@ -347,12 +376,6 @@ const setStatus = (status) => {
   })
 }
 
-const updateProfile = () => {
-  currentUser.value = getCurrentUserFromToken()
-}
-
-
-
 onMounted(async () => {
   const profile = await loadUserProfile()
   if (profile) {
@@ -409,5 +432,6 @@ onBeforeUnmount(() => {
     @logout="handleLogout"
     @openFriends="fetchOnlineUsers"
     @uploadImage="uploadImage"
+    @uploadFile="uploadFile"
   />
 </template>

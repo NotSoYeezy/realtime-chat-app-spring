@@ -88,13 +88,24 @@ public class ChatController {
     @GetMapping("api/messages/group/{groupId}/images")
     @ResponseBody
     public ResponseEntity<List<String>> getGroupMedia(@PathVariable Long groupId) {
+        List<ChatMessage> imagesMessages = chatMessageRepository.findByGroupIdAndContentType(groupId, MessageContentType.IMAGE);
 
-        List<ChatMessage> mediaMessages = chatMessageRepository.findByGroupIdAndContentType(groupId, MessageContentType.IMAGE);
-
-        List<String> imageUrls = mediaMessages.stream()
+        List<String> imageUrls = imagesMessages.stream()
                 .map(ChatMessage::getContent)
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(imageUrls);
+    }
+
+    @GetMapping("/api/messages/group/{groupId}/files")
+    @ResponseBody
+    public ResponseEntity<List<String>> getGroupMediaFiles(@PathVariable Long groupId) {
+        List<ChatMessage> filesMessages = chatMessageRepository.findByGroupIdAndContentType(groupId, MessageContentType.FILE);
+
+        List<String> fileUrls = filesMessages.stream()
+                .map(ChatMessage::getContent)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(fileUrls);
     }
 }

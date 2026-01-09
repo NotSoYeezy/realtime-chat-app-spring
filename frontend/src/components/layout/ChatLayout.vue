@@ -32,7 +32,7 @@ const props = defineProps({
 })
 
 defineEmits(['sendMessage', 'typing', 'updateMessageContent',
-  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply', 'uploadImage'])
+  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply', 'uploadImage', 'uploadFile'])
 
 const chatStore = useChatStore()
 const friendsStore = useFriendsStore()
@@ -131,6 +131,7 @@ const openFriendsTab = () => {
           @sendMessage="$emit('sendMessage')"
           @update:messageContent="$emit('updateMessageContent', $event)"
           @uploadImage="$emit('uploadImage', $event)"
+          @uploadFile="$emit('uploadFile', $event)"
         />
       </template>
 
