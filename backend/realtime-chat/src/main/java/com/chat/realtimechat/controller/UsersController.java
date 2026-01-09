@@ -1,7 +1,7 @@
 package com.chat.realtimechat.controller;
 
-import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
+import com.chat.realtimechat.model.dto.response.UserSearchResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.UserService;
@@ -52,7 +52,7 @@ public class UsersController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<FriendUserResponse>> searchUsers(
+    public ResponseEntity<List<UserSearchResponse>> searchUsers(
             @RequestParam String query, @AuthenticationPrincipal UserDetails userDetails
     ) {
         return ResponseEntity.status(HttpStatus.OK).body(

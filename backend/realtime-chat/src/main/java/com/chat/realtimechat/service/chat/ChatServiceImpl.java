@@ -13,6 +13,8 @@ import com.chat.realtimechat.repository.ChatGroupRepository;
 import com.chat.realtimechat.repository.ChatMessageRepository;
 import com.chat.realtimechat.repository.FriendshipRepository;
 import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.service.notifiers.PresenceServiceNotifier;
+import com.chat.realtimechat.websocket.listener.WebSocketListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
@@ -37,7 +39,8 @@ public class ChatServiceImpl implements ChatService{
     private final FriendshipRepository friendshipRepository;
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final UserPresenceService presenceService;
+    private final PresenceService presenceService;
+    private final PresenceServiceNotifier presenceServiceNotifier;
 
     @Override
     @Transactional
@@ -115,22 +118,8 @@ public class ChatServiceImpl implements ChatService{
     @Override
     public void handleStatusChange(StatusUpdateRequest request, Principal principal) {
         User user = getCurrentUser(principal);
-        presenceService.updateUserStatus(user.getUsername(), request.getStatus());
-
-        ChatMessageResponse notification = new ChatMessageResponse();
-        notification.setType(ChatMessage.MessageType.JOIN);
-        notification.setSender(senderInfo(user));
-        notification.setUserStatus(request.getStatus());
-        notification.setTimestamp(LocalDateTime.now());
-
-        List<User> friends = friendshipRepository.findFriendsByUserId(user.getId());
-        for (User friend : friends) {
-             messagingTemplate.convertAndSendToUser(
-                     friend.getUsername(),
-                     "/queue/friends-status",
-                     notification
-             );
-        }
+        presenceService.setUserStatus(user.getUsername(), request.getStatus());
+        presenceServiceNotifier.notifyFriends(user.getUsername());
     }
 
     private User getCurrentUser(Principal principal) {
@@ -143,15 +132,11 @@ public class ChatServiceImpl implements ChatService{
     }
 
     private OnlineInfoResponse senderInfo(User user) {
-        OnlineInfoResponse onlineUser = presenceService.getOnlineUser(user.getUsername());
-        if (onlineUser != null) {
-            return onlineUser;
-        }
         return new OnlineInfoResponse(
                 user.getName(),
                 user.getSurname(),
                 user.getUsername(),
-                UserStatus.ONLINE
+                presenceService.getResolvedStatus(user.getUsername())
         );
     }
 }

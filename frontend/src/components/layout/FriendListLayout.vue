@@ -17,6 +17,7 @@ const friendsStore = useFriendsStore()
 onMounted(() => {
   if (!friendsStore.friends.length) {
     friendsStore.fetchAll()
+    friendsStore.fetchPresence()
   }
 })
 </script>

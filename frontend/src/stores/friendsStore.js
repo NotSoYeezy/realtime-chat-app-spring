@@ -8,7 +8,8 @@ export const useFriendsStore = defineStore('friends', {
     incoming: [],
     outgoing: [],
     blocked: [],
-    loading: false
+    loading: false,
+    presence: {}
   }),
 
   actions: {
@@ -19,7 +20,8 @@ export const useFriendsStore = defineStore('friends', {
           axios.get('/friends'),
           axios.get('/friends/requests/incoming'),
           axios.get('/friends/requests/outgoing'),
-          axios.get('/friends/blocked')
+          axios.get('/friends/blocked'),
+          await this.fetchPresence()
         ])
 
         this.friends = friends.data
@@ -67,6 +69,13 @@ export const useFriendsStore = defineStore('friends', {
     async unblockUser(id) {
       await axios.delete(`/friends/blocks/${id}`)
       await this.fetchAll()
-    }
+    },
+    async fetchPresence() {
+      const res = await axios.get('/presence/friends')
+      this.presence = res.data
+    },
+    async setPresence(username, status) {
+      this.presence[username] = status
+    },
   }
 })

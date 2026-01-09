@@ -12,9 +12,8 @@ defineProps({
     type: String,
     default: 'var(--color-text-primary)'
   },
-  onlineStatus: {
+  presence: {
     type: String,
-    default: 'OFFLINE'
   }
 })
 </script>
@@ -37,12 +36,12 @@ defineProps({
           {{ user.name?.charAt(0) ?? '?' }}
         </div>
         <div
-          v-if="onlineStatus !== 'OFFLINE'"
+          v-if="presence !== 'OFFLINE'"
           class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-[var(--surface-panel)]"
           :class="{
-            'bg-green-500': onlineStatus === 'ONLINE',
-            'bg-yellow-500': onlineStatus === 'AWAY',
-            'bg-red-500': onlineStatus === 'BUSY'
+            'bg-green-500': presence === 'ONLINE',
+            'bg-yellow-500': presence === 'AWAY',
+            'bg-red-500': presence === 'BUSY'
           }"
         ></div>
       </div>

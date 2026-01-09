@@ -3,6 +3,7 @@ package com.chat.realtimechat.service;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.exception.UserNotConfirmedException;
+import com.chat.realtimechat.model.dto.response.UserSearchResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.exception.EmailAlreadyExistsException;
 import com.chat.realtimechat.exception.IncorrectPasswordException;
@@ -106,7 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) {
+    public List<UserSearchResponse> searchUsers(String query, UserDetails userDetails) {
 
         User currentUser = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(LoginUserNotFoundException::new);
@@ -122,7 +123,7 @@ public class UserServiceImpl implements UserService {
                 .searchCandidates(q)
                 .stream()
                 .filter(u -> !excludedIds.contains(u.getId()))
-                .map(FriendUserResponse::fromEntity)
+                .map(UserSearchResponse::fromEntity)
                 .toList();
     }
 

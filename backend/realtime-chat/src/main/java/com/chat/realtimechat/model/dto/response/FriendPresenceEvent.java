@@ -6,11 +6,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class FriendUserResponse {
-    private Long id;
+public class FriendPresenceEvent {
     private String username;
-    private String name;
-    private String surname;
-    private UserStatus presence;
+    private UserStatus status;
 }
-

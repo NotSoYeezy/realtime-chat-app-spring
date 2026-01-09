@@ -1,6 +1,8 @@
 <script setup>
 import { computed } from 'vue'
 import UserItem from '@/components/user/UserItem.vue'
+import { useFriendsStore } from '@/stores/friendsStore.js'
+const friendsStore = useFriendsStore()
 
 const props = defineProps({
   users: {
@@ -23,10 +25,6 @@ const props = defineProps({
     type: String,
     default: 'var(--color-text-primary)'
   },
-  onlineUsers: {
-    type: Object,
-    default: () => ({})
-  }
 })
 
 defineEmits(['rowClick'])
@@ -54,10 +52,12 @@ const filteredUsers = computed(() => {
 
     <div
       v-else-if="!users.length"
-      class="p-4 text-sm text-[var(--color-text-secondary)]"
+      class="h-full flex flex-col items-center justify-center gap-2 p-6 text-center text-sm text-[var(--color-text-secondary)]"
     >
-      {{ emptyText }}
+      <span class="text-2xl opacity-60">🔍</span>
+      <span>{{ emptyText }}</span>
     </div>
+
 
     <div
       v-else-if="filteredUsers.length === 0"
@@ -77,7 +77,7 @@ const filteredUsers = computed(() => {
         <UserItem
           :user="user"
           :text-color="userTextColor"
-          :online-status="onlineUsers && onlineUsers[user.username] ? onlineUsers[user.username].status : 'OFFLINE'"
+          :presence="friendsStore.presence[user.username] || 'OFFLINE'"
         >
           <template #actions>
             <slot

@@ -9,6 +9,7 @@ import com.chat.realtimechat.model.enums.FriendshipStatus;
 import com.chat.realtimechat.repository.FriendshipRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.chat.GroupService;
+import com.chat.realtimechat.service.chat.PresenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class FriendshipServiceImpl implements FriendshipService {
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
     private final GroupService groupService;
+    private final PresenceService presenceService;
 
     @Override
     public void sendFriendRequest(Long senderId, Long targetId) {
@@ -249,6 +251,22 @@ public class FriendshipServiceImpl implements FriendshipService {
         return excluded;
     }
 
+    @Override
+    public Set<String> getFriendsUsernames(Long userId) {
+
+        Set<String> usernames = new HashSet<>();
+
+        friendshipRepository
+                .findAllByUserIdAndStatus(userId, FriendshipStatus.ACCEPTED)
+                .forEach(f -> usernames.add(f.getFriend().getUsername()));
+
+        friendshipRepository
+                .findAllByFriendIdAndStatus(userId, FriendshipStatus.ACCEPTED)
+                .forEach(f -> usernames.add(f.getUser().getUsername()));
+
+        return usernames;
+    }
+
     private User getUser(Long id) {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found: " + id));
@@ -313,7 +331,8 @@ public class FriendshipServiceImpl implements FriendshipService {
                 user.getId(),
                 user.getUsername(),
                 user.getName(),
-                user.getSurname()
+                user.getSurname(),
+                presenceService.getResolvedStatus(user.getUsername())
         );
     }
 

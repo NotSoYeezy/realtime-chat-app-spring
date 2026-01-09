@@ -1,7 +1,7 @@
 package com.chat.realtimechat.service;
 
-import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
+import com.chat.realtimechat.model.dto.response.UserSearchResponse;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
@@ -22,5 +22,5 @@ public interface UserService {
     boolean checkPassword(String username, String password);
     User authenticate(String username, String password);
     List<UserResponse> getAllUsersResponses();
-    List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) throws UsernameNotFoundException;
+    List<UserSearchResponse> searchUsers(String query, UserDetails userDetails) throws UsernameNotFoundException;
 }

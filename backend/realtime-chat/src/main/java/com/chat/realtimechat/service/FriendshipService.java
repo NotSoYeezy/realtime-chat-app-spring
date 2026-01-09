@@ -31,4 +31,6 @@ public interface FriendshipService
     List<FriendUserResponse> getBlockedUsers(Long userId);
 
     Set<Long> getExcludedUserIds(Long userId);
+
+    Set<String> getFriendsUsernames(Long userId);
 }

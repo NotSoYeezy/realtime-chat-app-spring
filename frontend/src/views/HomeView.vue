@@ -5,14 +5,15 @@ import { useAuthStore } from '@/stores/auth'
 import { useChatStore } from '@/stores/chat'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client/dist/sockjs';
-import { Stomp } from '@stomp/stompjs'
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
 import checkGoogleStatus from "@/api/googleHandler.js";
+import { useFriendsStore } from '@/stores/friendsStore.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const chatStore = useChatStore()
+const friendsStore = useFriendsStore()
 
 const messageContent = ref('')
 const stompClient = ref(null)
@@ -21,7 +22,6 @@ const currentName = ref('')
 const currentSurname = ref('')
 const currentUser = ref('')
 const typingUsers = ref(new Set())
-const onlineUsers = ref({})
 const myStatus = ref(localStorage.getItem('user_status') || 'ONLINE')
 const groupSubscriptions = new Map()
 const replyingTo = ref(null)
@@ -57,7 +57,7 @@ const decodeToken = (token) => {
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
     const jsonPayload = window.atob(base64)
     return JSON.parse(jsonPayload)
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -75,7 +75,7 @@ const loadUserProfile = async () => {
   try {
     const response = await api.get(`/users/${userId}`)
     return response.data
-  } catch (e) {
+  } catch {
     return null
   }
 }
@@ -112,17 +112,7 @@ const connect = () => {
 
       stompClient.value.subscribe('/user/queue/messages', onMessageReceived)
       stompClient.value.subscribe('/user/queue/groups', onGroupNotificationReceived)
-      stompClient.value.subscribe('/user/queue/friends-status', onFriendStatusReceived)
-      stompClient.value.subscribe('/topic/public', onPublicMessageReceived)
-
-      if (myStatus.value) {
-        stompClient.value.publish({
-          destination: '/app/user/setStatus',
-          body: JSON.stringify({
-            status: myStatus.value,
-          })
-        })
-      }
+      stompClient.value.subscribe('/user/queue/presence', onFriendStatusReceived)
 
       subscribeToAllGroups()
     },
@@ -139,10 +129,6 @@ const connect = () => {
   })
 
   stompClient.value.activate()
-}
-
-const onError = (error) => {
-  isConnected.value = false
 }
 
 const handleReply = (message) => {
@@ -194,33 +180,10 @@ const onMessageReceived = (payload) => {
 }
 
 const onFriendStatusReceived = (payload) => {
-  const message = JSON.parse(payload.body)
-  const s = message.sender
-
-  if (s && s.username) {
-     onlineUsers.value[s.username] = s
-  }
+  const event = JSON.parse(payload.body)
+  friendsStore.setPresence(event.username, event.status)
 }
 
-const onPublicMessageReceived = (payload) => {
-  const message = JSON.parse(payload.body)
-
-  if (message.type === 'JOIN') {
-    const s = message.sender
-    if (s && s.username) {
-      onlineUsers.value[s.username] = s
-    }
-    return
-  }
-
-  if (message.type === 'LEAVE') {
-    const s = message.sender
-    if (s && s.username) {
-      delete onlineUsers.value[s.username]
-    }
-    return
-  }
-}
 
 const handleTypingNotification = (sender) => {
   typingUsers.value.add(sender.username)
@@ -272,15 +235,6 @@ const handleLogout = async () => {
   router.push('/login')
 }
 
-const fetchOnlineUsers = async () => {
-  try {
-    const response = await api.get('/chat/users/online')
-    onlineUsers.value = response.data
-  } catch (error) {
-    console.error(error)
-  }
-}
-
 const checkGoogleCalendar = async () => {
   try {
     const response = await checkGoogleStatus.isCalendarConnected()
@@ -309,9 +263,6 @@ const setStatus = (status) => {
   })
 }
 
-const updateProfile = () => {
-  currentUser.value = getCurrentUserFromToken()
-}
 
 
 
@@ -322,13 +273,10 @@ onMounted(async () => {
     currentSurname.value = profile.surname
     currentUser.value = profile.username
   }
-  try{
-    await Promise.all([await fetchOnlineUsers(),
-      await chatStore.fetchGroups(),
-      await checkGoogleCalendar()])
-  } catch (error) {
-    console.error(error)
-  }
+  await Promise.all([
+    await chatStore.fetchGroups(),
+    await checkGoogleCalendar(),
+  ])
   connect()
 })
 
@@ -358,7 +306,6 @@ onBeforeUnmount(() => {
     :currentSurname="currentSurname"
     :isConnected="isConnected"
     :messageContent="messageContent"
-    :onlineUsers="onlineUsers"
     :myStatus="myStatus"
     :formatTime="formatTime"
     :replyingTo="replyingTo"
@@ -369,6 +316,5 @@ onBeforeUnmount(() => {
     @updateMessageContent="messageContent = $event"
     @setStatus="setStatus"
     @logout="handleLogout"
-    @openFriends="fetchOnlineUsers"
   />
 </template>
