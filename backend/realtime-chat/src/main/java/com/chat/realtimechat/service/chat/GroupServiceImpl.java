@@ -117,6 +117,7 @@ public class GroupServiceImpl implements GroupService {
         group.setType(GroupType.GROUP);
         group.setImageUrl(imageUrl);
         group.setCreatedAt(LocalDateTime.now());
+        group.setColorTheme("#3B82F6");
 
         group.setAdmins(new HashSet<>(Set.of(creator)));
         group.addMember(creator);
@@ -447,6 +448,25 @@ public class GroupServiceImpl implements GroupService {
 
         member.setMuted(false);
         chatGroupRepository.save(group);
+    }
+
+    @Override
+    public void setColorTheme(Long groupId, String newColorTheme){
+        ChatGroup group = chatGroupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("Group not found"));
+
+        group.setColorTheme(newColorTheme);
+        chatGroupRepository.save(group);
+    }
+
+    @Override
+    public String getColorTheme(Long groupId){
+        ChatGroup group = chatGroupRepository.findById(groupId)
+                .orElseThrow(() -> new GroupNotFoundException("Group not found"));
+
+        String colorTheme = group.getColorTheme();
+
+        return colorTheme;
     }
 }
 

@@ -1,7 +1,8 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue' // Added watch
 import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friendsStore'
+import ColorThemeApi from "@/api/colorThemeApi.js" //
 
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
 import ImageViewerModal from "@/components/chat/ImageViewerModal.vue"
@@ -47,6 +48,22 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 const activeGroupMembers = computed(() => {
   return chatStore.activeGroup ? chatStore.activeGroup.members : []
 })
+
+watch(() => props.activeGroupId, async (newGroupId) => {
+  if (!newGroupId) return
+
+  try {
+    const response = await ColorThemeApi.getColorTheme(newGroupId)
+
+    const color = response.data?.color || response.data
+
+    if (color && chatStore.activeGroup) {
+      chatStore.activeGroup.colorTheme = color
+    }
+  } catch (error) {
+    console.error("Could not fetch theme color:", error)
+  }
+}, { immediate: true })
 
 const handleOpenGroupSettings = async () => {
   if (chatStore.activeGroupId) {

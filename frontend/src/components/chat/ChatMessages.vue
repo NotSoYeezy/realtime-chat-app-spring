@@ -89,6 +89,7 @@ onMounted(() => {
             :isMine="item.sender?.username === currentUser"
             :groupMembers="chatStore.activeGroup?.members"
             :isLastSentByMe="index === lastMyMessageIndex"
+            :themeColor="chatStore.activeGroup?.colorTheme"
             @reply="$emit('reply', $event)"
             @view-image="$emit('view-image', $event)"
           />

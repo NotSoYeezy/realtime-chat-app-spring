@@ -5,7 +5,8 @@ const props = defineProps({
   message: Object,
   isMine: Boolean,
   groupMembers: Array,
-  isLastSentByMe: Boolean
+  isLastSentByMe: Boolean,
+  themeColor: { type: String, default: null }
 })
 
 defineEmits(['reply', 'view-image'])
@@ -42,11 +43,16 @@ const readBy = computed(() => {
     return readTime >= msgTime
   })
 })
+
+const themeStyle = computed(() => {
+  return props.themeColor ? { '--color-primary': props.themeColor } : {}
+})
 </script>
 
 <template>
   <div
     :class="['flex w-full group mb-1 z-10 relative', isMine ? 'justify-end' : 'justify-start']"
+    :style="themeStyle"
   >
     <div
       v-if="message.type !== 'CHAT'"
