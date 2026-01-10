@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -56,22 +55,36 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
                     .filter(c -> "GOOGLE_LINK_INTENT".equals(c.getName()))
                     .findFirst();
         }
-
         User user;
+        Optional<User> existingGoogleUser = userRepository.findByProviderId(googleId);
 
-        if (linkCookie.isPresent()) {
+        if (linkCookie.isPresent() && (existingGoogleUser.isEmpty() || existingGoogleUser.get().getUsername().equals(linkCookie.get().getValue()))) {
             String username = linkCookie.get().getValue();
-            user = userRepository.findByUsername(username)
-                    .orElseThrow(() -> new UsernameNotFoundException(username));
-            user.setProviderId(googleId);
-            userRepository.save(user);
+            Optional<User> userToLink = userRepository.findByUsername(username);
+
+            if (userToLink.isPresent()) {
+                user = userToLink.get();
+                user.setProviderId(googleId);
+                userRepository.save(user);
+            } else {
+                user = userService.registeredGoogleUser(oAuth2User);
+            }
+
             Cookie clearCookie = new Cookie("GOOGLE_LINK_INTENT", null);
             clearCookie.setPath("/");
             clearCookie.setMaxAge(0);
             response.addCookie(clearCookie);
         } else {
             user = userService.registeredGoogleUser(oAuth2User);
+
+            if (linkCookie.isPresent()) {
+                Cookie clearCookie = new Cookie("GOOGLE_LINK_INTENT", null);
+                clearCookie.setPath("/");
+                clearCookie.setMaxAge(0);
+                response.addCookie(clearCookie);
+            }
         }
+
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             OAuth2AuthorizedClient client = authorizedClientService.loadAuthorizedClient(
                     oauthToken.getAuthorizedClientRegistrationId(),
@@ -87,17 +100,13 @@ public class OAuth2LoginSuccessHandler extends SimpleUrlAuthenticationSuccessHan
             }
         }
 
-        if (linkCookie.isPresent()) {
-            getRedirectStrategy().sendRedirect(request, response, frontendUrl);
-        } else {
-            String token = jwtUtil.generateToken(user);
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        String token = jwtUtil.generateToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-            String targetUrl = frontendUrl + "/auth/callback"
-                    + "?token=" + token
-                    + "&refreshToken=" + refreshToken.getToken();
+        String targetUrl = frontendUrl + "/auth/callback"
+                + "?token=" + token
+                + "&refreshToken=" + refreshToken.getToken();
 
-            getRedirectStrategy().sendRedirect(request, response, targetUrl);
-        }
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }
