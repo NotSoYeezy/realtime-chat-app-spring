@@ -6,6 +6,7 @@ import { useChatStore } from '@/stores/chat'
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client/dist/sockjs';
 import { Stomp } from '@stomp/stompjs'
+import MediaHandler from "@/api/mediaHandler.js";
 import api from '@/api/axios.js'
 import ChatLayout from '@/components/layout/ChatLayout.vue'
 import checkGoogleStatus from "@/api/googleHandler.js";
@@ -230,13 +231,79 @@ const handleTypingNotification = (sender) => {
   }, 3000)
 }
 
+const uploadFile = async (file) => {
+  if (!file) return
+
+  try {
+    const fileUrl = await MediaHandler.postFile(file)
+
+    if (stompClient.value && isConnected.value && chatStore.activeGroupId) {
+      const chatMessage = {
+        content: fileUrl,
+        type: 'CHAT',
+        contentType: 'FILE',
+        groupId: chatStore.activeGroupId,
+        parentId: replyingTo.value ? replyingTo.value.id : null,
+      }
+
+      stompClient.value.publish({
+        destination: '/app/chat.sendMessage',
+        body: JSON.stringify(chatMessage)
+      })
+
+      replyingTo.value = null
+    }
+
+  } catch (error) {
+    console.error("Failed to upload file:", error)
+    alert("Could not upload file")
+  }
+}
+
+const uploadImage = async (file) => {
+  if (!file) return
+
+  try {
+    const imageUrl = await MediaHandler.postImage(file)
+
+    if (stompClient.value && isConnected.value && chatStore.activeGroupId) {
+      const chatMessage = {
+        content: imageUrl,
+        type: 'CHAT',
+        contentType: 'IMAGE',
+        groupId: chatStore.activeGroupId,
+        parentId: replyingTo.value ? replyingTo.value.id : null
+      }
+
+      stompClient.value.publish({
+        destination: '/app/chat.sendMessage',
+        body: JSON.stringify(chatMessage)
+      })
+
+      replyingTo.value = null
+    }
+
+  } catch (error) {
+    console.error("Failed to send image:", error)
+    alert("Could not upload image")
+  }
+}
+
+const isLink = (message) => {
+  const urlPattern = /^(https?:\/\/[^\s]+)$/;
+  return urlPattern.test(message.trim());
+}
+
 const sendMessage = () => {
   if (messageContent.value.trim() && stompClient.value && isConnected.value && chatStore.activeGroupId) {
+    const contentType = isLink(messageContent.value) ? 'LINK' : 'TEXT'
+
     const chatMessage = {
       content: messageContent.value,
       type: 'CHAT',
+      contentType: contentType,
       groupId: chatStore.activeGroupId,
-      parentId: replyingTo.value ? replyingTo.value.id : null // <--- PRZEKAZANIE ID
+      parentId: replyingTo.value ? replyingTo.value.id : null
     }
 
     stompClient.value.publish({
@@ -309,12 +376,6 @@ const setStatus = (status) => {
   })
 }
 
-const updateProfile = () => {
-  currentUser.value = getCurrentUserFromToken()
-}
-
-
-
 onMounted(async () => {
   const profile = await loadUserProfile()
   if (profile) {
@@ -370,5 +431,7 @@ onBeforeUnmount(() => {
     @setStatus="setStatus"
     @logout="handleLogout"
     @openFriends="fetchOnlineUsers"
+    @uploadImage="uploadImage"
+    @uploadFile="uploadFile"
   />
 </template>

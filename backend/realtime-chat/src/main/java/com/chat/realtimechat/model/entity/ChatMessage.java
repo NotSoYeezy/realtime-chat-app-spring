@@ -1,5 +1,6 @@
 package com.chat.realtimechat.model.entity;
 
+import com.chat.realtimechat.model.enums.MessageContentType;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -36,6 +37,9 @@ public class ChatMessage {
 
     @Enumerated(EnumType.STRING)
     private MessageType type;
+
+    @Enumerated(EnumType.STRING)
+    private MessageContentType contentType;
 
     public enum MessageType {
         CHAT,

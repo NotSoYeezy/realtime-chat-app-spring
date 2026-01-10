@@ -47,9 +47,9 @@ const memberCount = computed(() => props.activeGroup?.members?.length || 0)
     <button
       @click="$emit('openInfo')"
       class="h-9 w-9 flex items-center justify-center rounded-lg text-[var(--color-text-secondary)] hover:bg-[var(--surface-panel-strong)] hover:text-[var(--color-text-primary)] transition-colors"
-      title="Group Info"
+      title="Chat Settings"
     >
-      <span class="material-symbols-outlined">info</span>
+      <span class="material-symbols-outlined">settings</span>
     </button>
 
   </header>

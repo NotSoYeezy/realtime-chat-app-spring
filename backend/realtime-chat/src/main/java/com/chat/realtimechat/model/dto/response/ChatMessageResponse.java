@@ -1,6 +1,7 @@
 package com.chat.realtimechat.model.dto.response;
 
 import com.chat.realtimechat.model.entity.ChatMessage;
+import com.chat.realtimechat.model.enums.MessageContentType;
 import com.chat.realtimechat.model.enums.UserStatus;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class ChatMessageResponse {
     private String groupName;
     private LocalDateTime timestamp;
     private ChatMessage.MessageType type;
+    private MessageContentType contentType;
     private UserStatus userStatus;
     private ChatMessageResponse parent;
 
@@ -22,6 +24,7 @@ public class ChatMessageResponse {
         ChatMessageResponse dto = new ChatMessageResponse();
         dto.setId(message.getId());
         dto.setContent(message.getContent());
+        dto.setContentType(message.getContentType());
         dto.setTimestamp(message.getTimestamp());
         dto.setType(message.getType());
 
@@ -51,6 +54,7 @@ public class ChatMessageResponse {
         ChatMessageResponse parentDto = new ChatMessageResponse();
         parentDto.setContent(message.getParent().getContent());
         parentDto.setType(message.getParent().getType());
+        parentDto.setContentType(message.getParent().getContentType());
         if (message.getParent().getSender() != null) {
             parentDto.setSender(new OnlineInfoResponse(
                     message.getParent().getSender().getName(),

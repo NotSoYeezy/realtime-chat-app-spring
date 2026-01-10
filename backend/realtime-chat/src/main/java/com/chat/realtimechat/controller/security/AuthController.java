@@ -103,13 +103,15 @@ public class AuthController {
     }
 
     @PostMapping("/checkPassword")
-    public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody Map<String, String> request) {
+    public ResponseEntity<?> checkPassword(@AuthenticationPrincipal UserDetails user, @RequestBody(required = false) Map<String, String> request) {
         String username = user.getUsername();
-        boolean check = userService.checkPassword(username, request.get("password"));
+        String password = (request != null) ? request.get("password") : null;
+
+        boolean check = userService.checkPassword(username, password);
         if (check) {
-            return ResponseEntity.ok("Password check successful.");
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("hasPassword", true));
         }
-        return ResponseEntity.status(HttpStatus.NOT_IMPLEMENTED).body("No passwords");
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("hasPassword", false));
     }
 
     @GetMapping("/confirm/{token}")
