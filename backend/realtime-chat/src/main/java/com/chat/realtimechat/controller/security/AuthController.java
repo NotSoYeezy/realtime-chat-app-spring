@@ -109,9 +109,9 @@ public class AuthController {
 
         boolean check = userService.checkPassword(username, password);
         if (check) {
-            return ResponseEntity.ok(Map.of("hasPassword", true));
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("hasPassword", true));
         }
-        return ResponseEntity.ok(Map.of("hasPassword", false));
+        return ResponseEntity.status(HttpStatus.OK).body(Map.of("hasPassword", false));
     }
 
     @GetMapping("/confirm/{token}")
