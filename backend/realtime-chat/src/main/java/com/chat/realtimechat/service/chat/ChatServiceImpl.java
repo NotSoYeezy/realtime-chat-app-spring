@@ -1,5 +1,6 @@
 package com.chat.realtimechat.service.chat;
 
+import com.chat.realtimechat.controller.ChatController;
 import com.chat.realtimechat.exception.GroupNotFoundException;
 import com.chat.realtimechat.model.dto.request.ChatMessageRequest;
 import com.chat.realtimechat.model.dto.request.StatusUpdateRequest;
@@ -8,6 +9,7 @@ import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
 import com.chat.realtimechat.model.entity.ChatGroup;
 import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.enums.MessageContentType;
 import com.chat.realtimechat.model.enums.UserStatus;
 import com.chat.realtimechat.repository.ChatGroupRepository;
 import com.chat.realtimechat.repository.ChatMessageRepository;
@@ -53,6 +55,7 @@ public class ChatServiceImpl implements ChatService{
         chatMessage.setTimestamp(LocalDateTime.now());
         chatMessage.setType(request.getType());
         chatMessage.setGroup(group);
+        chatMessage.setContentType(request.getContentType() != null ? request.getContentType() : MessageContentType.TEXT);
 
         if (request.getParentId() != null) {
             chatMessageRepository.findById(request.getParentId())

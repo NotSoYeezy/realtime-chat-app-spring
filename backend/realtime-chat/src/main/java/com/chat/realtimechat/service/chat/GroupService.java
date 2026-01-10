@@ -4,6 +4,7 @@ import com.chat.realtimechat.model.dto.request.UpdateGroupRequest;
 import com.chat.realtimechat.model.dto.response.ChatGroupResponse;
 import com.chat.realtimechat.model.entity.ChatGroup;
 import com.chat.realtimechat.model.entity.User;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -22,4 +23,6 @@ public interface GroupService {
     void markAsRead(Long groupId, String username);
     void muteGroup(Long groupId, String username);
     void unmuteGroup(Long groupId, String username);
+    void setColorTheme(Long groupId, String newColorTheme);
+    String getColorTheme(Long groupId);
 }

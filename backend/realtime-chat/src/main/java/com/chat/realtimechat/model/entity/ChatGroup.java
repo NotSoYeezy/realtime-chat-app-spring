@@ -29,6 +29,8 @@ public class ChatGroup {
 
     private String imageUrl;
 
+    private String colorTheme;
+
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "group_admins",

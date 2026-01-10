@@ -17,6 +17,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -75,7 +76,11 @@ public class UserServiceImpl implements UserService {
         }
         String name = oAuth2User.getAttribute("name");
         String firstName = name.split(" ")[0];
-        String lastName = name.split(" ")[1];
+        String lastName = firstName;
+        if(name.split(" ").length > 1) {
+            lastName = name.split(" ")[1];
+        }
+
 
         User user = new User();
         user.setEmail(email);
@@ -185,10 +190,14 @@ public class UserServiceImpl implements UserService {
         if (user.isEmpty()) {
             throw new LoginUserNotFoundException();
         }
-        if (password == null && user.get().getPassword() == null) {
+        String dbPassword = user.get().getPassword();
+        if (password == null) {
+            return dbPassword != null;
+        }
+        if (dbPassword == null) {
             return false;
         }
-        if (!passwordEncoder.matches(password, user.get().getPassword())) {
+        if (!passwordEncoder.matches(password, dbPassword)) {
             throw new IncorrectPasswordException();
         }
         return true;

@@ -1,9 +1,11 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue' // Added watch
 import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friendsStore'
+import ColorThemeApi from "@/api/colorThemeApi.js" //
 
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
+import ImageViewerModal from "@/components/chat/ImageViewerModal.vue"
 import ChatHeader from '@/components/chat/ChatHeader.vue'
 import ChatMessages from '@/components/chat/ChatMessages.vue'
 import ChatInput from '@/components/chat/ChatInput.vue'
@@ -31,40 +33,68 @@ const props = defineProps({
 })
 
 defineEmits(['sendMessage', 'typing', 'updateMessageContent',
-  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply'])
+  'setStatus', 'logout', "updateProfile", 'reply', 'cancelReply', 'uploadImage', 'uploadFile'])
 
 const chatStore = useChatStore()
 const friendsStore = useFriendsStore()
 const currentView = ref('chat')
 
-const showInfoModal = ref(false)
+const showGroupSettings = ref(false)
 const showAddMemberModal = ref(false)
+
+const selectedImage = ref(null)
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
 const activeGroupMembers = computed(() => {
   return chatStore.activeGroup ? chatStore.activeGroup.members : []
 })
 
-const handleOpenInfo = async () => {
+watch(() => props.activeGroupId, async (newGroupId) => {
+  if (!newGroupId) return
+
+  try {
+    const response = await ColorThemeApi.getColorTheme(newGroupId)
+
+    const color = response.data?.color || response.data
+
+    if (color && chatStore.activeGroup) {
+      chatStore.activeGroup.colorTheme = color
+    }
+  } catch (error) {
+    console.error("Could not fetch theme color:", error)
+  }
+}, { immediate: true })
+
+const handleOpenGroupSettings = async () => {
   if (chatStore.activeGroupId) {
     await chatStore.refreshGroup(chatStore.activeGroupId)
-    showInfoModal.value = true
+    showGroupSettings.value = true
   }
 }
 
 const handleOpenAddMember = () => {
-  showInfoModal.value = false
+  showGroupSettings.value = false
   showAddMemberModal.value = true
 }
 
 const handleMembersAdded = async (userIds) => {
   await chatStore.addMembersToGroup(userIds)
   showAddMemberModal.value = false
-  showInfoModal.value = true
+  showGroupSettings.value = true
+}
+
+const handleViewImage = (relativePath) => {
+  if (!relativePath) return
+  if (!relativePath.startsWith('http')) {
+    selectedImage.value = `${backendUrl}${relativePath}`
+  } else {
+    selectedImage.value = relativePath
+  }
 }
 
 const handleCloseAddMember = () => {
   showAddMemberModal.value = false
-  showInfoModal.value = true
+  showGroupSettings.value = true
 }
 
 const openSettings = () => {
@@ -88,7 +118,7 @@ const openFriendsTab = () => {
         <ChatHeader
           :activeGroup="chatStore.activeGroup"
           :currentUser="currentUser"
-          @openInfo="handleOpenInfo"
+          @openInfo="handleOpenGroupSettings"
         />
 
         <ChatMessages
@@ -100,6 +130,7 @@ const openFriendsTab = () => {
           :currentSurname="currentSurname"
           :formatTime="formatTime"
           @reply="$emit('reply', $event)"
+          @view-image="handleViewImage"
         />
 
         <ChatTypingIndicator
@@ -116,6 +147,8 @@ const openFriendsTab = () => {
           @typing="$emit('typing')"
           @sendMessage="$emit('sendMessage')"
           @update:messageContent="$emit('updateMessageContent', $event)"
+          @uploadImage="$emit('uploadImage', $event)"
+          @uploadFile="$emit('uploadFile', $event)"
         />
       </template>
 
@@ -147,10 +180,10 @@ const openFriendsTab = () => {
 
     <Teleport to="body">
       <GroupInfoModal
-        v-if="showInfoModal"
+        v-if="showGroupSettings"
         :activeGroup="chatStore.activeGroup"
         :currentUser="currentUser"
-        @close="showInfoModal = false"
+        @close="showGroupSettings = false"
         @openAddMember="handleOpenAddMember"
       />
 
@@ -160,6 +193,12 @@ const openFriendsTab = () => {
         :currentMembers="chatStore.activeGroup?.members || []"
         @close="handleCloseAddMember"
         @add="handleMembersAdded"
+      />
+
+      <ImageViewerModal
+        v-if="selectedImage"
+        :imageUrl="selectedImage"
+        @close="selectedImage = null"
       />
     </Teleport>
 

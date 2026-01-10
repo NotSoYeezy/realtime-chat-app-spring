@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/groups")
@@ -137,4 +138,17 @@ public class GroupController {
         groupService.unmuteGroup(groupId, userDetails.getUsername());
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/{groupId}/setColorTheme")
+    public ResponseEntity<?> setColorTheme(@PathVariable Long groupId, @RequestBody Map<String, String> payload) {
+        groupService.setColorTheme(groupId, payload.get("color"));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{groupId}/getColorTheme")
+    public ResponseEntity<?> getColorTheme(@PathVariable Long groupId) {
+        String colorTheme = groupService.getColorTheme(groupId);
+        return ResponseEntity.ok().body(colorTheme);
+    }
+
 }

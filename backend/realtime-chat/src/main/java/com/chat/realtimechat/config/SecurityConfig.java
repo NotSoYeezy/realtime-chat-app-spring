@@ -38,7 +38,7 @@ public class SecurityConfig {
                                 "/api/auth/confirm/*", "/api/auth/resend-confirmation", "/oauth2/authorization/google", "/api/auth/password-reset/**").permitAll()
                         .requestMatchers("/api/friends/**").authenticated()
                         .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll() // TODO: FIGURE OUT WAY HOW TO SERVE FILES FOR NON AUTH USERS
+                        .requestMatchers("/api/files/**").permitAll() // TODO: FIGURE OUT WAY HOW TO SERVE FILES FOR NON AUTH USERS
                         .requestMatchers( "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated()
                 )

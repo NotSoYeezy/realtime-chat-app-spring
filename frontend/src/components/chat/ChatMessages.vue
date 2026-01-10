@@ -13,7 +13,7 @@ const props = defineProps({
   formatTime: Function
 })
 
-const emit = defineEmits(['reply'])
+const emit = defineEmits(['reply', 'view-image'])
 
 const chatStore = useChatStore()
 const scrollerRef = ref(null)
@@ -78,7 +78,8 @@ onMounted(() => {
           :active="active"
           :size-dependencies="[
             item.content,
-            item.type
+            item.type,
+            item.contentType
           ]"
           :data-index="index"
           class="pb-4"
@@ -88,7 +89,9 @@ onMounted(() => {
             :isMine="item.sender?.username === currentUser"
             :groupMembers="chatStore.activeGroup?.members"
             :isLastSentByMe="index === lastMyMessageIndex"
+            :themeColor="chatStore.activeGroup?.colorTheme"
             @reply="$emit('reply', $event)"
+            @view-image="$emit('view-image', $event)"
           />
         </DynamicScrollerItem>
       </template>

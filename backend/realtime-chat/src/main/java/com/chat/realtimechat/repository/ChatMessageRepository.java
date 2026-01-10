@@ -1,6 +1,7 @@
 package com.chat.realtimechat.repository;
 
 import com.chat.realtimechat.model.entity.ChatMessage;
+import com.chat.realtimechat.model.enums.MessageContentType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,4 +20,5 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
     long countUnreadMessages(@Param("groupId") Long groupId,
                              @Param("currentUserId") Long currentUserId,
                              @Param("lastReadTime") LocalDateTime lastReadTime);
+    List<ChatMessage> findByGroupIdAndContentType(Long groupId, MessageContentType contentType);
 }

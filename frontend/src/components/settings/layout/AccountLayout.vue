@@ -39,7 +39,6 @@ const fetchUser = async () => {
     const profileResponse = await getUser.getUser(myId)
     user.value = profileResponse.data
   } catch (err) {
-    console.error('Failed to load profile:', err)
     error.value = 'Could not load user data.'
   } finally {
     loading.value = false
@@ -49,16 +48,8 @@ const fetchUser = async () => {
 const checkPasswordStatus = async () => {
   try {
     const response = await CheckPassword.checkPassword(null);
-
-    if (response.status === 200) {
-      hasPassword.value = true;
-    }
+    hasPassword.value = response.data.hasPassword;
   } catch (err) {
-    if (err.response && err.response.status === 501) {
-      hasPassword.value = false;
-    } else {
-      console.error("Error checking password status:", err);
-    }
   }
 }
 
