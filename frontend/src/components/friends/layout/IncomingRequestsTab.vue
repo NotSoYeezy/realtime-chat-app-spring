@@ -14,12 +14,12 @@ defineProps({
 const friendsStore = useFriendsStore()
 
 onMounted(() => {
-  if (!friendsStore.incoming.length) {
-    friendsStore.fetchAll()
+  if (!friendsStore.incoming.content.length) {
+    朋友們Store.fetchIncoming()
   }
 })
 
-const items = computed(() => friendsStore.incoming ?? [])
+const items = computed(() => (friendsStore.incoming.content ?? []).map(inv => inv.fromUser))
 
 const busyId = ref(null)
 const localError = ref('')
@@ -63,7 +63,7 @@ const reject = async (inv) => {
     </div>
 
     <DefaultUsersList
-      :users="items.map(inv => inv.fromUser)"
+      :users="items"
       :loading="friendsStore.loading"
       :query="query"
       empty-text="You don’t have any incoming friend requests."
@@ -71,9 +71,9 @@ const reject = async (inv) => {
       @rowClick="() => {}"
     >
       <template #actions="{ user }">
-        <!-- znajdź zaproszenie dla tego usera -->
+        <!-- find invitation for this user -->
         <template
-          v-for="inv in items"
+          v-for="inv in friendsStore.incoming.content"
           :key="inv.friendshipId"
         >
           <template v-if="inv.fromUser?.id === user.id">
@@ -104,5 +104,14 @@ const reject = async (inv) => {
         </template>
       </template>
     </DefaultUsersList>
+
+    <div v-if="friendsStore.incoming.hasMore" class="p-2 text-center">
+      <button
+        @click="friendsStore.loadMoreIncoming()"
+        class="text-xs text-[var(--color-primary)] hover:underline"
+      >
+        Load More
+      </button>
+    </div>
   </div>
 </template>

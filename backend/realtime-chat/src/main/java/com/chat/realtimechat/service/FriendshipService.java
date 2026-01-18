@@ -3,11 +3,12 @@ package com.chat.realtimechat.service;
 import com.chat.realtimechat.model.dto.response.FriendInvitationResponse;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Set;
 
-public interface FriendshipService
-{
+public interface FriendshipService {
     void sendFriendRequest(Long senderId, Long receiverId);
 
     void acceptRequest(Long friendshipId, Long receiverId);
@@ -22,13 +23,13 @@ public interface FriendshipService
 
     void unblockUser(Long blockerId, Long blockedId);
 
-    List<FriendUserResponse> getFriends(Long friendId);
+    Page<FriendUserResponse> getFriends(Long friendId, Pageable pageable);
 
-    List<FriendInvitationResponse> getPendingRequests(Long userId);
+    Page<FriendInvitationResponse> getPendingRequests(Long userId, Pageable pageable);
 
-    List<FriendInvitationResponse> getOutgoingRequests(Long userId);
+    Page<FriendInvitationResponse> getOutgoingRequests(Long userId, Pageable pageable);
 
-    List<FriendUserResponse> getBlockedUsers(Long userId);
+    Page<FriendUserResponse> getBlockedUsers(Long userId, Pageable pageable);
 
     Set<Long> getExcludedUserIds(Long userId);
 }

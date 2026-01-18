@@ -2,6 +2,9 @@ package com.chat.realtimechat.repository;
 
 import com.chat.realtimechat.model.entity.ChatMessage;
 import com.chat.realtimechat.model.enums.MessageContentType;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,7 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
-    List<ChatMessage> findByGroupIdOrderByTimestampAsc(Long groupId);
+    Slice<ChatMessage> findByGroupId(Long groupId, Pageable pageable);
+
     Optional<ChatMessage> findFirstByGroupIdOrderByTimestampDesc(Long groupId);
     @Query("SELECT COUNT(m) FROM ChatMessage m " +
             "WHERE m.group.id = :groupId " +
