@@ -45,8 +45,6 @@ const lastMessageId = computed(() => {
 
 })
 
-
-
 watch(() => chatStore.activeGroupId, () => {
   scrollToBottom()
 })
@@ -54,88 +52,42 @@ watch(() => chatStore.activeGroupId, () => {
 watch(lastMessageId, (newId, oldId) => {
 
   if (newId && newId !== oldId) {
-
     scrollToBottom()
-
   }
-
 })
 
-
-
 const onScroll = async (event) => {
-
-
-
   const target = event.target
 
-
-
   if (target.scrollTop < 100 && !isLoadingMore.value && chatStore.activeGroup?.hasMore) {
-
-
 
     isLoadingMore.value = true
 
     const oldScrollHeight = target.scrollHeight
 
-
-
     const oldScrollTop = target.scrollTop
-
-
-
-
-
-
 
     await chatStore.loadMoreMessages()
 
-
-
-
-
-
-
     await nextTick()
-
-
 
     const newScrollHeight = target.scrollHeight
 
-
-
     target.scrollTop = newScrollHeight - oldScrollHeight + oldScrollTop
-
-
-
-
-
-
 
     isLoadingMore.value = false
 
-
-
   }
 
-
-
 }
-
-
 
 watch(() => props.loading, (isLoading) => {
 
   if (!isLoading) {
-
     scrollToBottom()
-
   }
 
 })
-
-
 
 onMounted(() => {
   scrollToBottom()
@@ -143,34 +95,17 @@ onMounted(() => {
 
 </script>
 
-
-
 <template>
 
   <div class="flex-1 overflow-hidden bg-[var(--surface-panel)] relative">
-
-
-
     <div v-if="loading" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] z-10 bg-[var(--surface-panel)]">
-
       <span class="material-symbols-outlined animate-spin text-3xl mb-2">sync</span>
-
       <p>Loading messages&#8230;</p>
-
     </div>
-
-
-
     <div v-else-if="!messages || messages.length === 0" class="absolute inset-0 flex flex-col items-center justify-center text-[var(--color-text-secondary)] opacity-50 z-10">
-
       <span class="material-symbols-outlined text-4xl mb-2">chat_bubble_outline</span>
-
       <p>No messages here yet.</p>
-
     </div>
-
-
-
     <DynamicScroller
       v-if="messages && messages.length > 0"
       ref="scrollerRef"
@@ -181,7 +116,6 @@ onMounted(() => {
       id="messages-scroll"
       @scroll="onScroll"
     >
-
       <template v-slot="{ item, index, active }">
         <DynamicScrollerItem
           :item="item"
