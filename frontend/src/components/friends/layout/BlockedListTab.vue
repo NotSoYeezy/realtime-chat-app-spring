@@ -13,12 +13,12 @@ const props = defineProps({
 const friendsStore = useFriendsStore()
 
 onMounted(() => {
-  if (!friendsStore.blocked.length) {
-    friendsStore.fetchAll()
+  if (!friendsStore.blocked.content.length) {
+    friendsStore.fetchBlocked()
   }
 })
 
-const items = computed(() => friendsStore.blocked ?? [])
+const items = computed(() => friendsStore.blocked.content ?? [])
 
 const busyId = ref(null)
 const localError = ref('')
@@ -71,5 +71,14 @@ const unblock = async (user) => {
         </button>
       </template>
     </DefaultUsersList>
+
+    <div v-if="friendsStore.blocked.hasMore" class="p-2 text-center">
+      <button
+        @click="friendsStore.loadMoreBlocked()"
+        class="text-xs text-[var(--color-primary)] hover:underline"
+      >
+        Load More
+      </button>
+    </div>
   </div>
 </template>

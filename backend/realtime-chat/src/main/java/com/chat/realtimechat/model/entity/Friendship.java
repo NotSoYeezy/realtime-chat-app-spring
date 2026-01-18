@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-@Table(name = "friendships", uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "friend_id"}))
+@Table(name = "friendships", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "friend_id" }))
 public class Friendship {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -25,7 +25,7 @@ public class Friendship {
     @JoinColumn(name = "friend_id", nullable = false)
     private User friend;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private FriendshipStatus status;
 
     private LocalDateTime createdAt = LocalDateTime.now();

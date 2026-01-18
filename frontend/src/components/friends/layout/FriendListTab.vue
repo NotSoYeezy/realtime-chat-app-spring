@@ -23,8 +23,8 @@ const busy = ref({
 })
 
 onMounted(() => {
-  if (!friendsStore.friends.length) {
-    friendsStore.fetchAll()
+  if (!friendsStore.friends.content.length) {
+    friendsStore.fetchFriends()
   }
 })
 
@@ -72,39 +72,53 @@ const blockUser = async (user) => {
     {{ localError }}
   </div>
 
-  <DefaultUsersList
-    :users="friendsStore.friends"
-    :loading="friendsStore.loading"
-    :query="query"
-    :onlineUsers="onlineUsers"
-    empty-text="You don’t have any friends yet."
-    @rowClick="openChat"
-  >
-    <template #actions="{ user }">
-      <!-- REMOVE -->
-      <button
-        class="text-xs px-2 py-1 rounded-md
-               bg-[var(--color-danger-bg-soft)]
-               text-[var(--color-danger-text)]
-               hover:opacity-90
-               disabled:opacity-50"
-        :disabled="busy.remove === user.id || busy.block === user.id"
-        @click.stop="removeFriend(user)"
+  <div class="flex flex-col h-full">
+    <div class="flex-1 overflow-y-auto">
+      <DefaultUsersList
+        :users="friendsStore.friends.content"
+        :loading="friendsStore.loading"
+        :query="query"
+        :onlineUsers="onlineUsers"
+        empty-text="You don’t have any friends yet."
+        @rowClick="openChat"
       >
-        {{ busy.remove === user.id ? 'Removing…' : 'Remove' }}
-      </button>
+        <template #actions="{ user }">
+          <!-- REMOVE -->
+          <button
+            class="text-xs px-2 py-1 rounded-md
+                   bg-[var(--color-danger-bg-soft)]
+                   text-[var(--color-danger-text)]
+                   font-semibold
+                   hover:opacity-90
+                   disabled:opacity-50"
+            :disabled="busy.remove === user.id || busy.block === user.id"
+            @click.stop="removeFriend(user)"
+          >
+            {{ busy.remove === user.id ? 'Removing…' : 'Remove' }}
+          </button>
 
-      <!-- BLOCK -->
-      <button
-        class="text-xs px-2 py-1 rounded-md
-               text-[var(--color-text-secondary)]
-               hover:text-[var(--color-text-primary)]
-               disabled:opacity-50"
-        :disabled="busy.block === user.id || busy.remove === user.id"
-        @click.stop="blockUser(user)"
-      >
-        {{ busy.block === user.id ? 'Blocking…' : 'Block' }}
-      </button>
-    </template>
-  </DefaultUsersList>
+          <!-- BLOCK -->
+          <button
+            class="text-xs px-2 py-1 rounded-md
+                   text-[var(--color-text-secondary)]
+                   hover:text-[var(--color-text-primary)]
+                   disabled:opacity-50"
+            :disabled="busy.block === user.id || busy.remove === user.id"
+            @click.stop="blockUser(user)"
+          >
+            {{ busy.block === user.id ? 'Blocking…' : 'Block' }}
+          </button>
+        </template>
+      </DefaultUsersList>
+
+      <div v-if="friendsStore.friends.hasMore" class="p-2 text-center">
+        <button
+          @click="friendsStore.loadMoreFriends()"
+          class="text-xs text-[var(--color-primary)] hover:underline"
+        >
+          Load More
+        </button>
+      </div>
+    </div>
+  </div>
 </template>

@@ -37,12 +37,17 @@ export const useChatStore = defineStore('chat', () => {
     }, 2000)
   }
 
-  const fetchGroups = async () => {
+  // Global pagination for the list of groups
+  const groupsPage = ref(0)
+  const groupsHasMore = ref(true)
+
+  const fetchGroups = async (page = 0) => {
     loading.value = true
     try {
-      const response = await api.get('/groups')
+      const response = await api.get('/groups', { params: { page, size: 20 } })
+      const newGroups = response.data.content
 
-      groups.value = response.data.map(g => ({
+      const processedGroups = newGroups.map(g => ({
         ...g,
         messages: g.messages || [],
         unreadCount: g.unreadCount || 0,
@@ -50,9 +55,20 @@ export const useChatStore = defineStore('chat', () => {
         hasMore: true
       }))
 
+      if (page === 0) {
+        groups.value = processedGroups
+      } else {
+        // Avoid duplicates just in case
+        const existingIds = new Set(groups.value.map(g => g.id))
+        const unique = processedGroups.filter(g => !existingIds.has(g.id))
+        groups.value.push(...unique)
+      }
+
+      groupsPage.value = page
+      groupsHasMore.value = !response.data.last
+
       if (groups.value.length > 0 && !activeGroupId.value) {
         const lastGroupId = localStorage.getItem('lastActiveGroupId')
-
         const groupToRestore = groups.value.find(g => g.id == lastGroupId)
 
         if (groupToRestore) {
@@ -63,6 +79,12 @@ export const useChatStore = defineStore('chat', () => {
       console.error('Failed to fetch groups', err)
     } finally {
       loading.value = false
+    }
+  }
+
+  const loadMoreGroups = async () => {
+    if (groupsHasMore.value) {
+      await fetchGroups(groupsPage.value + 1)
     }
   }
 
@@ -98,16 +120,16 @@ export const useChatStore = defineStore('chat', () => {
         const group = groups.value[index]
 
         if (page === 0) {
-           group.messages = newMessages
-           group.page = 0
-           group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+          group.messages = newMessages
+          group.page = 0
+          group.hasMore = newMessages.length === CHAT_PAGE_SIZE
         } else {
-           const existingIds = new Set(group.messages.map(m => m.id))
-           const uniqueNew = newMessages.filter(m => !existingIds.has(m.id))
+          const existingIds = new Set(group.messages.map(m => m.id))
+          const uniqueNew = newMessages.filter(m => !existingIds.has(m.id))
 
-           group.messages = [...uniqueNew, ...group.messages]
-           group.page = page
-           group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+          group.messages = [...uniqueNew, ...group.messages]
+          group.page = page
+          group.hasMore = newMessages.length === CHAT_PAGE_SIZE
         }
       }
     } catch (err) {
@@ -119,10 +141,10 @@ export const useChatStore = defineStore('chat', () => {
     if (!activeGroup.value || !activeGroup.value.hasMore) return
 
     try {
-       const nextPage = (activeGroup.value.page || 0) + 1
-       await fetchHistory(activeGroup.value.id, nextPage)
+      const nextPage = (activeGroup.value.page || 0) + 1
+      await fetchHistory(activeGroup.value.id, nextPage)
     } catch (e) {
-        console.error("Load more failed", e)
+      console.error("Load more failed", e)
     }
   }
 
@@ -166,7 +188,7 @@ export const useChatStore = defineStore('chat', () => {
         try {
           await api.post(`/groups/${groupId}/read`)
           group.unreadCount = 0
-        } catch(e) { console.error(e) }
+        } catch (e) { console.error(e) }
       }
 
       await fetchHistory(groupId)
@@ -327,6 +349,9 @@ export const useChatStore = defineStore('chat', () => {
   return {
     groups,
     sortedGroups,
+    groupsPage,
+    groupsHasMore,
+    loadMoreGroups,
     activeGroupId,
     activeGroup,
     activeMessages,

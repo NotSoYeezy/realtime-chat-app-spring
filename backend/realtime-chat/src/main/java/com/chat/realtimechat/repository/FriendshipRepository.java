@@ -3,6 +3,8 @@ package com.chat.realtimechat.repository;
 import com.chat.realtimechat.model.entity.Friendship;
 import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.FriendshipStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,11 +16,18 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     Optional<Friendship> findByUserIdAndFriendId(Long userId, Long friendId);
 
-    List<Friendship> findAllByUserIdAndStatus(Long userId, FriendshipStatus status);
+    Page<Friendship> findAllByUserIdAndStatus(Long userId, FriendshipStatus status, Pageable pageable);
 
+    Page<Friendship> findAllByFriendIdAndStatus(Long friendId, FriendshipStatus status, Pageable pageable);
+    
+    // Kept for backward compatibility if needed, but we should rely on Pageable versions
+    List<Friendship> findAllByUserIdAndStatus(Long userId, FriendshipStatus status);
     List<Friendship> findAllByFriendIdAndStatus(Long friendId, FriendshipStatus status);
 
     List<Friendship> findAllByUserIdAndFriendId(Long userId, Long friendId);
+
+    @Query("SELECT f FROM Friendship f WHERE (f.user.id = :userId AND f.status = :status) OR (f.friend.id = :userId AND f.status = :status)")
+    Page<Friendship> findAllByUserIdOrFriendIdAndStatus(@Param("userId") Long userId, @Param("status") FriendshipStatus status, Pageable pageable);
 
     List<Friendship> findAllByUserIdAndFriendIdOrUserIdAndFriendId(
             Long userId1, Long friendId1,

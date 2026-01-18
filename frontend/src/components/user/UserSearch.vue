@@ -38,7 +38,11 @@ const doSearch = async () => {
 
   try {
     const res = await UserService.searchUsers(trimmed.value)
-    results.value = Array.isArray(res.data) ? res.data : []
+    if (res.data && Array.isArray(res.data.content)) {
+      results.value = res.data.content
+    } else {
+      results.value = Array.isArray(res.data) ? res.data : []
+    }
   } catch (e) {
     error.value = e?.response?.data?.message ?? 'Search failed'
     results.value = []
