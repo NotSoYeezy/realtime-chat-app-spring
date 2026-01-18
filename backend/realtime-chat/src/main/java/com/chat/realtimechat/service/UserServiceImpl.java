@@ -17,6 +17,8 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.text.Normalizer;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -77,10 +79,9 @@ public class UserServiceImpl implements UserService {
         String name = oAuth2User.getAttribute("name");
         String firstName = name.split(" ")[0];
         String lastName = firstName;
-        if(name.split(" ").length > 1) {
+        if (name.split(" ").length > 1) {
             lastName = name.split(" ")[1];
         }
-
 
         User user = new User();
         user.setEmail(email);
@@ -105,32 +106,27 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsersResponses() {
-        return userRepository.findAll()
-                .stream()
-                .map(UserResponse::fromEntity)
-                .toList();
+    public Page<UserResponse> getAllUsersResponses(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(UserResponse::fromEntity);
     }
 
     @Override
-    public List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) {
+    public Page<FriendUserResponse> searchUsers(String query, UserDetails userDetails, Pageable pageable) {
 
         User currentUser = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(LoginUserNotFoundException::new);
 
         String q = query == null ? "" : query.trim();
         if (q.length() < 2) {
-            return List.of();
+            return Page.empty();
         }
 
         Set<Long> excludedIds = friendshipService.getExcludedUserIds(currentUser.getId());
 
         return userRepository
-                .searchCandidates(q)
-                .stream()
-                .filter(u -> !excludedIds.contains(u.getId()))
-                .map(FriendUserResponse::fromEntity)
-                .toList();
+                .searchCandidates(q, excludedIds, pageable)
+                .map(FriendUserResponse::fromEntity);
     }
 
     @Override
@@ -145,8 +141,7 @@ public class UserServiceImpl implements UserService {
         PasswordResetToken passwordResetToken = passwordResetTokenRepository
                 .findByToken(token)
                 .orElseThrow(() -> // TODO: throw custom error
-                        new IllegalArgumentException("Invalid password reset token")
-                );
+                new IllegalArgumentException("Invalid password reset token"));
 
         if (passwordResetToken.isTokenExpired()) {
             passwordResetTokenRepository.delete(passwordResetToken);
@@ -159,8 +154,6 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         passwordResetTokenRepository.delete(passwordResetToken);
     }
-
-
 
     @Override
     public User updateUser(UpdateUserRequest request, String username) {
@@ -223,7 +216,6 @@ public class UserServiceImpl implements UserService {
 
         return username;
     }
-
 
     private String stripAccents(String input) {
         return Normalizer.normalize(input, Normalizer.Form.NFD)

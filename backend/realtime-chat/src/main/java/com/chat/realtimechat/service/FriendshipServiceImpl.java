@@ -10,6 +10,8 @@ import com.chat.realtimechat.repository.FriendshipRepository;
 import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.chat.GroupService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -138,7 +140,7 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship request = getFriendship(friendshipId);
 
         if (request.getStatus() == FriendshipStatus.ACCEPTED) {
-            //TODO: change later if needed
+            // TODO: change later if needed
             return; // This means sender canceled invite after acceptance, this can be later changed
         }
 
@@ -163,47 +165,37 @@ public class FriendshipServiceImpl implements FriendshipService {
         friendshipRepository.delete(direct);
     }
 
-
     @Override
-    public List<FriendUserResponse> getFriends(Long userId) {
-
-        List<Friendship> sent = friendshipRepository.findAllByUserIdAndStatus(userId, FriendshipStatus.ACCEPTED);
-        List<Friendship> received = friendshipRepository.findAllByFriendIdAndStatus(userId, FriendshipStatus.ACCEPTED);
-
-        return Stream.concat(
-                sent.stream().map(f -> toUserResponse(f.getFriend())),
-                received.stream().map(f -> toUserResponse(f.getUser()))
-        ).toList();
+    public Page<FriendUserResponse> getFriends(Long userId, Pageable pageable) {
+        return friendshipRepository.findAllByUserIdOrFriendIdAndStatus(userId, FriendshipStatus.ACCEPTED, pageable)
+                .map(f -> {
+                    if (f.getUser().getId().equals(userId)) {
+                        return toUserResponse(f.getFriend());
+                    } else {
+                        return toUserResponse(f.getUser());
+                    }
+                });
     }
 
     @Override
-    public List<FriendInvitationResponse> getPendingRequests(Long userId) {
-
+    public Page<FriendInvitationResponse> getPendingRequests(Long userId, Pageable pageable) {
         return friendshipRepository
-                .findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING)
-                .stream()
-                .map(f -> toFriendRequestResponse(f, false))
-                .toList();
+                .findAllByFriendIdAndStatus(userId, FriendshipStatus.PENDING, pageable)
+                .map(f -> toFriendRequestResponse(f, false));
     }
 
     @Override
-    public List<FriendInvitationResponse> getOutgoingRequests(Long userId) {
-
+    public Page<FriendInvitationResponse> getOutgoingRequests(Long userId, Pageable pageable) {
         return friendshipRepository
-                .findAllByUserIdAndStatus(userId, FriendshipStatus.PENDING)
-                .stream()
-                .map(f -> toFriendRequestResponse(f, true))
-                .toList();
+                .findAllByUserIdAndStatus(userId, FriendshipStatus.PENDING, pageable)
+                .map(f -> toFriendRequestResponse(f, true));
     }
 
     @Override
-    public List<FriendUserResponse> getBlockedUsers(Long userId) {
-
+    public Page<FriendUserResponse> getBlockedUsers(Long userId, Pageable pageable) {
         return friendshipRepository
-                .findAllByUserIdAndStatus(userId, FriendshipStatus.BLOCKED)
-                .stream()
-                .map(f -> toUserResponse(f.getFriend()))
-                .toList();
+                .findAllByUserIdAndStatus(userId, FriendshipStatus.BLOCKED, pageable)
+                .map(f -> toUserResponse(f.getFriend()));
     }
 
     @Override
@@ -212,36 +204,30 @@ public class FriendshipServiceImpl implements FriendshipService {
         Set<Long> excluded = new HashSet<>();
         excluded.add(userId);
 
-        List<Friendship> friendsAsUser =
-                friendshipRepository.findAllByUserIdAndStatus(
-                        userId, FriendshipStatus.ACCEPTED);
+        List<Friendship> friendsAsUser = friendshipRepository.findAllByUserIdAndStatus(
+                userId, FriendshipStatus.ACCEPTED);
 
-        List<Friendship> friendsAsFriend =
-                friendshipRepository.findAllByFriendIdAndStatus(
-                        userId, FriendshipStatus.ACCEPTED);
+        List<Friendship> friendsAsFriend = friendshipRepository.findAllByFriendIdAndStatus(
+                userId, FriendshipStatus.ACCEPTED);
 
         friendsAsUser.forEach(f -> excluded.add(f.getFriend().getId()));
         friendsAsFriend.forEach(f -> excluded.add(f.getUser().getId()));
 
-        List<Friendship> outgoing =
-                friendshipRepository.findAllByUserIdAndStatus(
-                        userId, FriendshipStatus.PENDING);
+        List<Friendship> outgoing = friendshipRepository.findAllByUserIdAndStatus(
+                userId, FriendshipStatus.PENDING);
 
         outgoing.forEach(f -> excluded.add(f.getFriend().getId()));
 
-        List<Friendship> incoming =
-                friendshipRepository.findAllByFriendIdAndStatus(
-                        userId, FriendshipStatus.PENDING);
+        List<Friendship> incoming = friendshipRepository.findAllByFriendIdAndStatus(
+                userId, FriendshipStatus.PENDING);
 
         incoming.forEach(f -> excluded.add(f.getUser().getId()));
 
-        List<Friendship> blockedAsUser =
-                friendshipRepository.findAllByUserIdAndStatus(
-                        userId, FriendshipStatus.BLOCKED);
+        List<Friendship> blockedAsUser = friendshipRepository.findAllByUserIdAndStatus(
+                userId, FriendshipStatus.BLOCKED);
 
-        List<Friendship> blockedAsFriend =
-                friendshipRepository.findAllByFriendIdAndStatus(
-                        userId, FriendshipStatus.BLOCKED);
+        List<Friendship> blockedAsFriend = friendshipRepository.findAllByFriendIdAndStatus(
+                userId, FriendshipStatus.BLOCKED);
 
         blockedAsUser.forEach(f -> excluded.add(f.getFriend().getId()));
         blockedAsFriend.forEach(f -> excluded.add(f.getUser().getId()));
@@ -313,8 +299,7 @@ public class FriendshipServiceImpl implements FriendshipService {
                 user.getId(),
                 user.getUsername(),
                 user.getName(),
-                user.getSurname()
-        );
+                user.getSurname());
     }
 
     private FriendInvitationResponse toFriendRequestResponse(Friendship f, boolean outgoing) {
@@ -325,7 +310,6 @@ public class FriendshipServiceImpl implements FriendshipService {
                 sender,
                 receiver,
                 f.getStatus(),
-                outgoing
-        );
+                outgoing);
     }
 }

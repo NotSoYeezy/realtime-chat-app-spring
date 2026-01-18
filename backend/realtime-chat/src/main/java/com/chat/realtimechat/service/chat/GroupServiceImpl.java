@@ -24,6 +24,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -57,10 +59,12 @@ public class GroupServiceImpl implements GroupService {
 
         ChatMessageResponse response = ChatMessageResponse.fromEntity(saved);
 
-        messagingTemplate.convertAndSend(
-                "/topic/group." + group.getId(),
-                response
-        );
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    response);
+        });
     }
 
     private ChatGroup getGroupAndValidateAccess(Long groupId, String username) {
@@ -87,13 +91,12 @@ public class GroupServiceImpl implements GroupService {
     private void notifyMembers(ChatGroup group, Set<User> recipients, String senderUsername) {
         ChatGroupResponse response = ChatGroupResponse.fromEntity(group);
 
-        for (User member: recipients) {
+        for (User member : recipients) {
             if (!member.getUsername().equals(senderUsername)) {
                 messagingTemplate.convertAndSendToUser(
                         member.getUsername(),
                         "/queue/groups",
-                        response
-                );
+                        response);
             }
         }
     }
@@ -151,46 +154,43 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public List<ChatGroupResponse> getUserGroupsResponse(String username) {
+    public Page<ChatGroupResponse> getUserGroupsResponse(String username, Pageable pageable) {
         User user = findUserByUsername(username);
 
-        List<ChatGroup> groups = chatGroupRepository.findUserGroups(user);
+        Page<ChatGroup> groups = chatGroupRepository.findUserGroups(user, pageable);
 
-        List<ChatGroupResponse> response = groups.stream()
-                .map(group -> {
-                    ChatGroupResponse dto = ChatGroupResponse.fromEntity(group);
+        return groups.map(group -> {
+            ChatGroupResponse dto = ChatGroupResponse.fromEntity(group);
 
-                    dto.setMembers(group.getMembers().stream().map(ChatGroupMemberResponse::fromEntity).collect(Collectors.toSet()));
+            dto.setMembers(
+                    group.getMembers().stream().map(ChatGroupMemberResponse::fromEntity).collect(Collectors.toSet()));
 
-                    dto.setLastMessage(group.getLastMessageContent());
-                    dto.setLastMessageTime(group.getLastMessageTime());
+            dto.setLastMessage(group.getLastMessageContent());
+            dto.setLastMessageTime(group.getLastMessageTime());
 
-                    if (group.getType().equals(GroupType.PRIVATE)) {
-                        User otherUser = group.getMembers().stream()
-                                .map(ChatGroupMember::getUser)
-                                .filter(u -> !u.getId().equals(user.getId()))
-                                .findFirst()
-                                .orElse(user);
+            if (group.getType().equals(GroupType.PRIVATE)) {
+                User otherUser = group.getMembers().stream()
+                        .map(ChatGroupMember::getUser)
+                        .filter(u -> !u.getId().equals(user.getId()))
+                        .findFirst()
+                        .orElse(user);
 
-                        dto.setName(otherUser.getName() + " " + otherUser.getSurname());
-                    }
+                dto.setName(otherUser.getName() + " " + otherUser.getSurname());
+            }
 
-                    ChatGroupMember membership = group.getMembers().stream()
-                            .filter(m -> m.getUser().getId().equals(user.getId()))
-                            .findFirst()
-                            .orElseThrow();
+            ChatGroupMember membership = group.getMembers().stream()
+                    .filter(m -> m.getUser().getId().equals(user.getId()))
+                    .findFirst()
+                    .orElseThrow();
 
-                    long count = chatMessageRepository.countUnreadMessages(
-                            group.getId(),
-                            user.getId(),
-                            membership.getLastReadTime()
-                    );
-                    dto.setUnreadCount((int) count);
-                    dto.setMuted(membership.isMuted());
-                    return dto;
-                }).toList();
-
-        return response;
+            long count = chatMessageRepository.countUnreadMessages(
+                    group.getId(),
+                    user.getId(),
+                    membership.getLastReadTime());
+            dto.setUnreadCount((int) count);
+            dto.setMuted(membership.isMuted());
+            return dto;
+        });
     }
 
     @Override
@@ -207,9 +207,9 @@ public class GroupServiceImpl implements GroupService {
         ChatGroupResponse response = ChatGroupResponse.fromEntity(group);
 
         ChatGroupMember membership = group.getMembers().stream()
-                        .filter(m -> m.getUser().getUsername().equals(username))
-                        .findFirst()
-                        .orElse(null);
+                .filter(m -> m.getUser().getUsername().equals(username))
+                .findFirst()
+                .orElse(null);
         if (membership != null) {
             response.setMuted(membership.isMuted());
         }
@@ -233,6 +233,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
+    @Transactional
     public ChatGroup updateGroup(Long groupId, UpdateGroupRequest request, String username, MultipartFile image) {
         ChatGroup group = getGroupAndValidateAccess(groupId, username);
         String imageUrl = null;
@@ -265,12 +266,18 @@ public class GroupServiceImpl implements GroupService {
         event.put("name", savedGroup.getName());
         event.put("imageUrl", fullImageUrl);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
+        savedGroup.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event);
+        });
 
-         return savedGroup;
+        return savedGroup;
     }
 
     @Override
+    @Transactional
     public void addMembers(Long groupId, Set<Long> memberIds, String username) {
         ChatGroup group = getGroupAndValidateAccess(groupId, username);
         List<User> newMembers = userRepository.findAllById(memberIds);
@@ -294,13 +301,19 @@ public class GroupServiceImpl implements GroupService {
         event.put("groupId", groupId);
         event.put("members", addedMembersDto);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event);
+        });
 
         notifyMembers(group, new HashSet<>(newMembers), username);
 
     }
 
     @Override
+    @Transactional
     public void removeMembers(Long groupId, Set<Long> memberIds, String username) {
         ChatGroup group = chatGroupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
@@ -339,18 +352,21 @@ public class GroupServiceImpl implements GroupService {
         event.put("type", "MEMBER_REMOVED");
         event.put("groupId", groupId);
         event.put("userIds", memberIds);
-        
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) event);
-        
-        for (User u: usersToRemove) {
+
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    event);
+        });
+
+        for (User u : usersToRemove) {
             messagingTemplate.convertAndSendToUser(
                     u.getUsername(),
                     "/queue/groups",
                     Map.of(
                             "groupId", groupId,
-                            "eventType", "REMOVE"
-                    )
-            );
+                            "eventType", "REMOVE"));
         }
 
         chatGroupRepository.save(group);
@@ -371,8 +387,7 @@ public class GroupServiceImpl implements GroupService {
     public void addAdmin(Long groupId, Long userId, String requestorUsername) {
         ChatGroup group = getGroupAndValidateAccess(groupId, requestorUsername);
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new UserNotFoundException("User not found")
-        );
+                () -> new UserNotFoundException("User not found"));
 
         group.getAdmins().add(user);
         chatGroupRepository.save(group);
@@ -382,11 +397,11 @@ public class GroupServiceImpl implements GroupService {
     public void removeAdmin(Long groupId, Long userId, String requestorUsername) {
         ChatGroup group = getGroupAndValidateAccess(groupId, requestorUsername);
         User user = userRepository.findById(userId).orElseThrow(
-                () -> new UserNotFoundException("User not found")
-        );
+                () -> new UserNotFoundException("User not found"));
 
         if (user.getUsername().equals(requestorUsername) && group.getAdmins().size() == 1) {
-            throw new GroupOperationException("Please nominate a new admin before removing an admin role from yourself");
+            throw new GroupOperationException(
+                    "Please nominate a new admin before removing an admin role from yourself");
         }
 
         group.getAdmins().remove(user);
@@ -419,7 +434,12 @@ public class GroupServiceImpl implements GroupService {
         payload.put("groupId", groupId);
         payload.put("member", memberDto);
 
-        messagingTemplate.convertAndSend("/topic/group." + groupId, (Object) payload);
+        group.getMembers().forEach(m -> {
+            messagingTemplate.convertAndSendToUser(
+                    m.getUser().getUsername(),
+                    "/queue/messages",
+                    payload);
+        });
 
     }
 
@@ -452,7 +472,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public void setColorTheme(Long groupId, String newColorTheme){
+    public void setColorTheme(Long groupId, String newColorTheme) {
         ChatGroup group = chatGroupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
 
@@ -461,7 +481,7 @@ public class GroupServiceImpl implements GroupService {
     }
 
     @Override
-    public String getColorTheme(Long groupId){
+    public String getColorTheme(Long groupId) {
         ChatGroup group = chatGroupRepository.findById(groupId)
                 .orElseThrow(() -> new GroupNotFoundException("Group not found"));
 
@@ -470,20 +490,3 @@ public class GroupServiceImpl implements GroupService {
         return colorTheme;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

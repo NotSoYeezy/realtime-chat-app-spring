@@ -16,9 +16,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("api/users")
@@ -30,7 +30,8 @@ public class UsersController {
 
     @GetMapping("/{userId}")
     public ResponseEntity<UserResponse> getUser(@PathVariable Long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
         if (user == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
@@ -39,26 +40,21 @@ public class UsersController {
                 user.getEmail(),
                 user.getUsername(),
                 user.getName(),
-                user.getSurname()
-        );
+                user.getSurname());
         return ResponseEntity.status(HttpStatus.OK).body(registeredUserResponse);
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
+    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                userService.getAllUsersResponses()
-        );
+                userService.getAllUsersResponses(pageable));
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<FriendUserResponse>> searchUsers(
-            @RequestParam String query, @AuthenticationPrincipal UserDetails userDetails
-    ) {
+    public ResponseEntity<Page<FriendUserResponse>> searchUsers(
+            @RequestParam String query, @AuthenticationPrincipal UserDetails userDetails, Pageable pageable) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                userService.searchUsers(query, userDetails)
-        );
+                userService.searchUsers(query, userDetails, pageable));
     }
-
 
 }

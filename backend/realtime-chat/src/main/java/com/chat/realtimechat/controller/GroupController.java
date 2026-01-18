@@ -19,6 +19,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +33,10 @@ public class GroupController {
 
     @GetMapping
     @ResponseBody
-    public ResponseEntity<List<ChatGroupResponse>> getGroups(@AuthenticationPrincipal UserDetails userDetails) {
-        List<ChatGroupResponse> response = groupService.getUserGroupsResponse(userDetails.getUsername());
+    public ResponseEntity<Page<ChatGroupResponse>> getGroups(
+            @AuthenticationPrincipal UserDetails userDetails,
+            Pageable pageable) {
+        Page<ChatGroupResponse> response = groupService.getUserGroupsResponse(userDetails.getUsername(), pageable);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
@@ -40,11 +44,9 @@ public class GroupController {
     @GetMapping("/{groupId}")
     public ResponseEntity<ChatGroupResponse> getGroupInfo(
             @PathVariable Long groupId,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         return ResponseEntity.status(HttpStatus.OK).body(
-                groupService.getGroupInfo(groupId, userDetails.getUsername())
-        );
+                groupService.getGroupInfo(groupId, userDetails.getUsername()));
     }
 
     @PostMapping
@@ -57,8 +59,7 @@ public class GroupController {
                 userDetails.getUsername(),
                 request.getName(),
                 request.getMemberIds(),
-                image
-        );
+                image);
 
         ChatGroupResponse response = ChatGroupResponse.fromEntity(group);
 
@@ -75,8 +76,7 @@ public class GroupController {
                 groupId,
                 request,
                 userDetails.getUsername(),
-                image
-        );
+                image);
 
         return ResponseEntity.status(HttpStatus.OK).body(ChatGroupResponse.fromEntity(updatedGroup));
     }
@@ -85,8 +85,7 @@ public class GroupController {
     public ResponseEntity<?> addMembers(
             @PathVariable Long groupId,
             @RequestBody GroupMembersRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         groupService.addMembers(groupId, request.getUserIds(), userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body("Members added");
     }
@@ -95,8 +94,7 @@ public class GroupController {
     public ResponseEntity<?> removeMembers(
             @PathVariable Long groupId,
             @RequestBody GroupMembersRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
+            @AuthenticationPrincipal UserDetails userDetails) {
         groupService.removeMembers(groupId, request.getUserIds(), userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body("Members removed");
     }
@@ -105,9 +103,8 @@ public class GroupController {
     public ResponseEntity<?> addAdmin(
             @PathVariable Long groupId,
             @RequestBody UserIdRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        groupService.addAdmin(groupId, request.getUserId(),  userDetails.getUsername());
+            @AuthenticationPrincipal UserDetails userDetails) {
+        groupService.addAdmin(groupId, request.getUserId(), userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body("User is no longer an admin");
     }
 
@@ -115,9 +112,8 @@ public class GroupController {
     public ResponseEntity<?> removeAdmin(
             @PathVariable Long groupId,
             @RequestBody UserIdRequest request,
-            @AuthenticationPrincipal UserDetails userDetails
-    ) {
-        groupService.removeAdmin(groupId, request.getUserId(),  userDetails.getUsername());
+            @AuthenticationPrincipal UserDetails userDetails) {
+        groupService.removeAdmin(groupId, request.getUserId(), userDetails.getUsername());
         return ResponseEntity.status(HttpStatus.OK).body("User is no longer an admin");
     }
 

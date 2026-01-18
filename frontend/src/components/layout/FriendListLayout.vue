@@ -15,8 +15,8 @@ defineEmits([
 const friendsStore = useFriendsStore()
 
 onMounted(() => {
-  if (!friendsStore.friends.length) {
-    friendsStore.fetchAll()
+  if (!friendsStore.friends.content.length) {
+    friendsStore.fetchFriends()
   }
 })
 </script>
@@ -54,11 +54,20 @@ onMounted(() => {
     <!-- FRIENDS LIST (DEFAULT) -->
     <DefaultUsersList
       class="flex-1"
-      :users="friendsStore.friends"
+      :users="friendsStore.friends.content"
       :loading="friendsStore.loading"
       :onlineUsers="onlineUsers"
       empty-text="Press here to add your first friend"
       @rowClick="$emit('openChat', $event)"
     />
+
+    <div v-if="friendsStore.friends.hasMore" class="p-2 text-center border-t border-[var(--color-border)]">
+      <button
+        @click="friendsStore.loadMoreFriends()"
+        class="text-xs text-[var(--color-primary)] hover:underline"
+      >
+        Load More
+      </button>
+    </div>
   </div>
 </template>

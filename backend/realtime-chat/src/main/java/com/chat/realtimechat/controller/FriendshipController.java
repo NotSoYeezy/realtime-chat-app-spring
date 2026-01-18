@@ -14,153 +14,141 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/api/friends")
 @RequiredArgsConstructor
 public class FriendshipController {
 
-    private final FriendshipService friendshipService;
-    private final UserService userService;
+        private final FriendshipService friendshipService;
+        private final UserService userService;
 
-    private Long getCurrentUserId(UserDetails user) {
-        User u = userService.findUsersByUsername(user.getUsername())
-                // TODO: custom exception
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        return u.getId();
-    }
+        private Long getCurrentUserId(UserDetails user) {
+                User u = userService.findUsersByUsername(user.getUsername())
+                                // TODO: custom exception
+                                .orElseThrow(() -> new RuntimeException("User not found"));
+                return u.getId();
+        }
 
-    @PostMapping("/requests")
-    public ResponseEntity<?> sendRequest(
-            @AuthenticationPrincipal UserDetails user,
-            @RequestBody FriendInvitationRequest request
-    ) {
-        Long senderId = getCurrentUserId(user);
+        @PostMapping("/requests")
+        public ResponseEntity<?> sendRequest(
+                        @AuthenticationPrincipal UserDetails user,
+                        @RequestBody FriendInvitationRequest request) {
+                Long senderId = getCurrentUserId(user);
 
-        friendshipService.sendFriendRequest(
-                senderId,
-                request.getReceiverId()
-        );
+                friendshipService.sendFriendRequest(
+                                senderId,
+                                request.getReceiverId());
 
-        return ResponseEntity.status(HttpStatus.CREATED).body("Friend request sent.");
-    }
+                return ResponseEntity.status(HttpStatus.CREATED).body("Friend request sent.");
+        }
 
-    @PatchMapping("/requests/{id}/accept")
-    public ResponseEntity<?> acceptRequest(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long id
-    ) {
-        Long receiverId = getCurrentUserId(user);
+        @PatchMapping("/requests/{id}/accept")
+        public ResponseEntity<?> acceptRequest(
+                        @AuthenticationPrincipal UserDetails user,
+                        @PathVariable Long id) {
+                Long receiverId = getCurrentUserId(user);
 
-        friendshipService.acceptRequest(id, receiverId);
+                friendshipService.acceptRequest(id, receiverId);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Friend request accepted");
-    }
+                return ResponseEntity.status(HttpStatus.OK).body("Friend request accepted");
+        }
 
-    @PatchMapping("/requests/{id}/reject")
-    public ResponseEntity<?> rejectRequest(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long id
-    ) {
-        Long receiverId = getCurrentUserId(user);
+        @PatchMapping("/requests/{id}/reject")
+        public ResponseEntity<?> rejectRequest(
+                        @AuthenticationPrincipal UserDetails user,
+                        @PathVariable Long id) {
+                Long receiverId = getCurrentUserId(user);
 
-        friendshipService.rejectRequest(id, receiverId);
+                friendshipService.rejectRequest(id, receiverId);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Friend request rejected");
-    }
+                return ResponseEntity.status(HttpStatus.OK).body("Friend request rejected");
+        }
 
-    @PostMapping("/blocks")
-    public ResponseEntity<?> blockUser(
-            @AuthenticationPrincipal UserDetails user,
-            @RequestBody BlockUserRequest request
-    ) {
-        Long blockerId = getCurrentUserId(user);
+        @PostMapping("/blocks")
+        public ResponseEntity<?> blockUser(
+                        @AuthenticationPrincipal UserDetails user,
+                        @RequestBody BlockUserRequest request) {
+                Long blockerId = getCurrentUserId(user);
 
-        friendshipService.blockUser(
-                blockerId,
-                request.getBlockedUserId()
-        );
+                friendshipService.blockUser(
+                                blockerId,
+                                request.getBlockedUserId());
 
-        return ResponseEntity.status(HttpStatus.OK).body("User blocked");
-    }
+                return ResponseEntity.status(HttpStatus.OK).body("User blocked");
+        }
 
-    @DeleteMapping("/{friendId}")
-    public ResponseEntity<?> removeFriend(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long friendId
-    ) {
-        Long userId = getCurrentUserId(user);
+        @DeleteMapping("/{friendId}")
+        public ResponseEntity<?> removeFriend(
+                        @AuthenticationPrincipal UserDetails user,
+                        @PathVariable Long friendId) {
+                Long userId = getCurrentUserId(user);
 
-        friendshipService.removeFriend(userId, friendId);
+                friendshipService.removeFriend(userId, friendId);
 
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
 
-    @GetMapping
-    public ResponseEntity<List<FriendUserResponse>> getFriends(
-            @AuthenticationPrincipal UserDetails user
-    ) {
-        Long userId = getCurrentUserId(user);
+        @GetMapping
+        public ResponseEntity<Page<FriendUserResponse>> getFriends(
+                        @AuthenticationPrincipal UserDetails user,
+                        Pageable pageable) {
+                Long userId = getCurrentUserId(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                friendshipService.getFriends(userId)
-        );
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(
+                                friendshipService.getFriends(userId, pageable));
+        }
 
-    @GetMapping("/requests/incoming")
-    public ResponseEntity<List<FriendInvitationResponse>> getIncoming(
-            @AuthenticationPrincipal UserDetails user
-    ) {
-        Long userId = getCurrentUserId(user);
+        @GetMapping("/requests/incoming")
+        public ResponseEntity<Page<FriendInvitationResponse>> getIncoming(
+                        @AuthenticationPrincipal UserDetails user,
+                        Pageable pageable) {
+                Long userId = getCurrentUserId(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                friendshipService.getPendingRequests(userId)
-        );
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(
+                                friendshipService.getPendingRequests(userId, pageable));
+        }
 
-    @GetMapping("/requests/outgoing")
-    public ResponseEntity<List<FriendInvitationResponse>> getOutgoing(
-            @AuthenticationPrincipal UserDetails user
-    ) {
-        Long userId = getCurrentUserId(user);
+        @GetMapping("/requests/outgoing")
+        public ResponseEntity<Page<FriendInvitationResponse>> getOutgoing(
+                        @AuthenticationPrincipal UserDetails user,
+                        Pageable pageable) {
+                Long userId = getCurrentUserId(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                friendshipService.getOutgoingRequests(userId)
-        );
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(
+                                friendshipService.getOutgoingRequests(userId, pageable));
+        }
 
-    @GetMapping("/blocked")
-    public ResponseEntity<List<FriendUserResponse>> getBlocked(
-            @AuthenticationPrincipal UserDetails user
-    ) {
-        Long userId = getCurrentUserId(user);
+        @GetMapping("/blocked")
+        public ResponseEntity<Page<FriendUserResponse>> getBlocked(
+                        @AuthenticationPrincipal UserDetails user,
+                        Pageable pageable) {
+                Long userId = getCurrentUserId(user);
 
-        return ResponseEntity.status(HttpStatus.OK).body(
-                friendshipService.getBlockedUsers(userId)
-        );
-    }
+                return ResponseEntity.status(HttpStatus.OK).body(
+                                friendshipService.getBlockedUsers(userId, pageable));
+        }
 
-    @DeleteMapping("/requests/{id}")
-    public ResponseEntity<?> cancelRequest(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long id
-    ) {
-        Long senderId = getCurrentUserId(user);
+        @DeleteMapping("/requests/{id}")
+        public ResponseEntity<?> cancelRequest(
+                        @AuthenticationPrincipal UserDetails user,
+                        @PathVariable Long id) {
+                Long senderId = getCurrentUserId(user);
 
-        friendshipService.cancelRequest(id, senderId);
+                friendshipService.cancelRequest(id, senderId);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Friend request canceled");
-    }
+                return ResponseEntity.status(HttpStatus.OK).body("Friend request canceled");
+        }
 
-    @DeleteMapping("/blocks/{blockedUserId}")
-    public ResponseEntity<?> unblock(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long blockedUserId
-    ) {
-        Long userId = getCurrentUserId(user);
-        friendshipService.unblockUser(userId, blockedUserId);
-        return ResponseEntity.noContent().build();
-    }
+        @DeleteMapping("/blocks/{blockedUserId}")
+        public ResponseEntity<?> unblock(
+                        @AuthenticationPrincipal UserDetails user,
+                        @PathVariable Long blockedUserId) {
+                Long userId = getCurrentUserId(user);
+                friendshipService.unblockUser(userId, blockedUserId);
+                return ResponseEntity.noContent().build();
+        }
 
 }

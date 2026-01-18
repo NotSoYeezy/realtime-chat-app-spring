@@ -14,12 +14,12 @@ defineProps({
 const friendsStore = useFriendsStore()
 
 onMounted(() => {
-  if (!friendsStore.outgoing.length) {
-    friendsStore.fetchAll()
+  if (!friendsStore.outgoing.content.length) {
+    friendsStore.fetchOutgoing()
   }
 })
 
-const items = computed(() => friendsStore.outgoing ?? [])
+const items = computed(() => friendsStore.outgoing.content ?? [])
 
 const busyId = ref(null)
 const localError = ref('')
@@ -58,9 +58,9 @@ const cancel = async (inv) => {
       @rowClick="() => {}"
     >
       <template #actions="{ user }">
-        <!-- powiązanie user -> invitation -->
+        <!-- user -> invitation -->
         <template
-          v-for="inv in items"
+          v-for="inv in friendsStore.outgoing.content"
           :key="inv.friendshipId"
         >
           <template v-if="inv.toUser?.id === user.id">
@@ -79,5 +79,14 @@ const cancel = async (inv) => {
         </template>
       </template>
     </DefaultUsersList>
+
+    <div v-if="friendsStore.outgoing.hasMore" class="p-2 text-center">
+      <button
+        @click="friendsStore.loadMoreOutgoing()"
+        class="text-xs text-[var(--color-primary)] hover:underline"
+      >
+        Load More
+      </button>
+    </div>
   </div>
 </template>
