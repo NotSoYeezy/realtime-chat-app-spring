@@ -53,10 +53,6 @@ watch(() => chatStore.activeGroupId, () => {
 
 watch(lastMessageId, (newId, oldId) => {
 
-  // If the LAST message ID changed, it means a new message was added at the bottom.
-
-  // (When loading history, we prepend, so the last message ID usually stays the same).
-
   if (newId && newId !== oldId) {
 
     scrollToBottom()
@@ -81,12 +77,6 @@ const onScroll = async (event) => {
 
     isLoadingMore.value = true
 
-
-
-    
-
-
-
     const oldScrollHeight = target.scrollHeight
 
 
@@ -103,23 +93,11 @@ const onScroll = async (event) => {
 
 
 
-    
+
 
 
 
     await nextTick()
-
-
-
-    
-
-
-
-    // Restore scroll position by calculating the height difference
-
-
-
-    // This keeps the view stable relative to the bottom content
 
 
 
@@ -131,7 +109,7 @@ const onScroll = async (event) => {
 
 
 
-    
+
 
 
 

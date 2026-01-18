@@ -37,7 +37,6 @@ export const useChatStore = defineStore('chat', () => {
     }, 2000)
   }
 
-  // Global pagination for the list of groups
   const groupsPage = ref(0)
   const groupsHasMore = ref(true)
 
@@ -58,7 +57,6 @@ export const useChatStore = defineStore('chat', () => {
       if (page === 0) {
         groups.value = processedGroups
       } else {
-        // Avoid duplicates just in case
         const existingIds = new Set(groups.value.map(g => g.id))
         const unique = processedGroups.filter(g => !existingIds.has(g.id))
         groups.value.push(...unique)
