@@ -12,8 +12,8 @@ const isModalOpen = ref(false)
 const searchQuery = ref('')
 
 onMounted(async () => {
-  if (friendsStore.friends.length === 0) {
-    await friendsStore.fetchAll()
+  if (friendsStore.friends.content.length === 0) {
+    await friendsStore.fetchFriends()
   }
 })
 
@@ -165,6 +165,14 @@ const formatTime = (timestamp) => {
         </div>
       </button>
 
+      <button
+        v-if="chatStore.groupsHasMore"
+        @click="chatStore.loadMoreGroups()"
+        class="w-full text-center text-xs text-[var(--color-primary)] hover:underline py-2"
+      >
+        Load More
+      </button>
+
       <div v-if="filteredGroups.length === 0 && searchQuery" class="text-center p-4 text-[var(--color-text-secondary)] text-sm">
         No chats found.
       </div>
@@ -173,7 +181,7 @@ const formatTime = (timestamp) => {
     <Teleport to="body">
       <CreateGroupModal
         v-if="isModalOpen"
-        :users="friendsStore.friends"
+        :users="friendsStore.friends.content"
         @close="isModalOpen = false"
         @create="handleCreateGroup"
       />

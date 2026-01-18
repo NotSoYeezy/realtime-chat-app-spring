@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import api from '@/api/axios'
+import { CHAT_PAGE_SIZE } from '@/utils/constants'
 
 export const useChatStore = defineStore('chat', () => {
   const groups = ref([])
@@ -36,20 +37,36 @@ export const useChatStore = defineStore('chat', () => {
     }, 2000)
   }
 
-  const fetchGroups = async () => {
+  const groupsPage = ref(0)
+  const groupsHasMore = ref(true)
+
+  const fetchGroups = async (page = 0) => {
     loading.value = true
     try {
-      const response = await api.get('/groups')
+      const response = await api.get('/groups', { params: { page, size: 20 } })
+      const newGroups = response.data.content
 
-      groups.value = response.data.map(g => ({
+      const processedGroups = newGroups.map(g => ({
         ...g,
         messages: g.messages || [],
-        unreadCount: g.unreadCount || 0
+        unreadCount: g.unreadCount || 0,
+        page: 0,
+        hasMore: true
       }))
+
+      if (page === 0) {
+        groups.value = processedGroups
+      } else {
+        const existingIds = new Set(groups.value.map(g => g.id))
+        const unique = processedGroups.filter(g => !existingIds.has(g.id))
+        groups.value.push(...unique)
+      }
+
+      groupsPage.value = page
+      groupsHasMore.value = !response.data.last
 
       if (groups.value.length > 0 && !activeGroupId.value) {
         const lastGroupId = localStorage.getItem('lastActiveGroupId')
-
         const groupToRestore = groups.value.find(g => g.id == lastGroupId)
 
         if (groupToRestore) {
@@ -63,6 +80,12 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
+  const loadMoreGroups = async () => {
+    if (groupsHasMore.value) {
+      await fetchGroups(groupsPage.value + 1)
+    }
+  }
+
   const updateMemberReadTime = (groupId, updatedMember) => {
     const group = groups.value.find(g => g.id === groupId)
 
@@ -70,7 +93,6 @@ export const useChatStore = defineStore('chat', () => {
       const index = group.members.findIndex(m => m.id === updatedMember.id)
 
       if (index !== -1) {
-        console.log('Updating read time for:', updatedMember.username)
 
         group.members[index] = {
           ...group.members[index],
@@ -80,21 +102,47 @@ export const useChatStore = defineStore('chat', () => {
     }
   }
 
-  const fetchHistory = async (groupId) => {
+  const fetchHistory = async (groupId, page = 0) => {
     try {
-      const response = await api.get(`/chat/history/${groupId}`)
+      const response = await api.get(`/chat/history/${groupId}`, {
+        params: {
+          page,
+          size: CHAT_PAGE_SIZE
+        }
+      })
 
       const index = groups.value.findIndex(g => g.id === groupId)
 
       if (index !== -1) {
-        const sortedMessages = response.data.sort((a, b) =>
-          new Date(a.timestamp) - new Date(b.timestamp)
-        )
+        const newMessages = response.data
+        const group = groups.value[index]
 
-        groups.value[index].messages = sortedMessages
+        if (page === 0) {
+          group.messages = newMessages
+          group.page = 0
+          group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+        } else {
+          const existingIds = new Set(group.messages.map(m => m.id))
+          const uniqueNew = newMessages.filter(m => !existingIds.has(m.id))
+
+          group.messages = [...uniqueNew, ...group.messages]
+          group.page = page
+          group.hasMore = newMessages.length === CHAT_PAGE_SIZE
+        }
       }
     } catch (err) {
       console.error('Failed to fetch history:', err)
+    }
+  }
+
+  const loadMoreMessages = async () => {
+    if (!activeGroup.value || !activeGroup.value.hasMore) return
+
+    try {
+      const nextPage = (activeGroup.value.page || 0) + 1
+      await fetchHistory(activeGroup.value.id, nextPage)
+    } catch (e) {
+      console.error("Load more failed", e)
     }
   }
 
@@ -138,7 +186,7 @@ export const useChatStore = defineStore('chat', () => {
         try {
           await api.post(`/groups/${groupId}/read`)
           group.unreadCount = 0
-        } catch(e) { console.error(e) }
+        } catch (e) { console.error(e) }
       }
 
       await fetchHistory(groupId)
@@ -152,7 +200,6 @@ export const useChatStore = defineStore('chat', () => {
     if (index !== -1) {
       if (message.type === 'MEMBER_ADDED') {
         const currentMembers = groups.value[index].members || []
-        // Avoid duplicates
         const newMembers = message.members.filter(nm =>
           !currentMembers.some(cm => cm.id === nm.id)
         )
@@ -174,15 +221,16 @@ export const useChatStore = defineStore('chat', () => {
         return
       }
 
+      if (message.type === 'READ_RECEIPT') {
+        updateMemberReadTime(message.groupId, message.member)
+        return
+      }
+
       groups.value[index].messages.push(message)
 
       if (message.type === 'CHAT') {
         groups.value[index].lastMessage = message.content
         groups.value[index].lastMessageTime = message.timestamp
-      }
-
-      if (message.type === 'SYSTEM') {
-        // We handle updates via events now, but keep this as fallback/log
       }
 
       if (activeGroupId.value == groupId) {
@@ -205,7 +253,9 @@ export const useChatStore = defineStore('chat', () => {
       groups.value.push({
         ...newGroup,
         messages: [],
-        unreadCount: 0
+        unreadCount: 0,
+        page: 0,
+        hasMore: true
       })
     }
   }
@@ -297,6 +347,9 @@ export const useChatStore = defineStore('chat', () => {
   return {
     groups,
     sortedGroups,
+    groupsPage,
+    groupsHasMore,
+    loadMoreGroups,
     activeGroupId,
     activeGroup,
     activeMessages,
@@ -313,6 +366,7 @@ export const useChatStore = defineStore('chat', () => {
     muteGroup,
     unmuteGroup,
     removeGroup,
-    updateMemberReadTime
+    updateMemberReadTime,
+    loadMoreMessages
   }
 })

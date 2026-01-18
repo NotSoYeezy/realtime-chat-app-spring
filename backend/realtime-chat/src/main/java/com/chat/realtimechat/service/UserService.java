@@ -3,6 +3,8 @@ package com.chat.realtimechat.service;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
 import com.chat.realtimechat.model.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,15 +16,25 @@ import java.util.Optional;
 
 public interface UserService {
     Iterable<User> findAllUsers();
+
     Optional<User> findUsersByUsername(String username);
+
     User registerUser(RegistrationRequest request);
+
     User updateUser(UpdateUserRequest request, String username);
+
     User registeredGoogleUser(OAuth2User user);
+
     void deleteUser(Long id);
+
     boolean checkPassword(String username, String password);
+
     User authenticate(String username, String password);
-    List<UserResponse> getAllUsersResponses();
-    List<FriendUserResponse> searchUsers(String query, UserDetails userDetails) throws UsernameNotFoundException;
+
+    Page<UserResponse> getAllUsersResponses(Pageable pageable);
+
+    Page<FriendUserResponse> searchUsers(String query, UserDetails userDetails, Pageable pageable)
+            throws UsernameNotFoundException;
 
     void initiatePasswordReset(String email);
 
