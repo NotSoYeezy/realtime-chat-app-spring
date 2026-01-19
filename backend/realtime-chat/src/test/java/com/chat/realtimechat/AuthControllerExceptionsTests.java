@@ -34,9 +34,7 @@ import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -177,6 +175,27 @@ public class AuthControllerExceptionsTests {
                         .content(requestBody))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Refresh token is required."));
+    }
+
+    @Test
+    public void deleteUser_ShouldReturn401_WhenUserIsNotAuthenticated() throws Exception {
+        mockMvc.perform(post("/api/auth/delete"))
+                .andExpect(status().isUnauthorized());
+
+        verify(userService, never()).deleteAccount(any());
+    }
+
+    @Test
+    public void deleteUser_ShouldReturn400_WhenUserNotFound() throws Exception {
+        String username = "ghostUser";
+
+        given(userService.authenticate(any(), any())).willThrow(new LoginUserNotFoundException());
+
+        doThrow(new LoginUserNotFoundException()).when(userService).deleteAccount(username);
+
+        mockMvc.perform(post("/api/auth/delete")
+                        .with(user(username)))
+                .andExpect(status().isBadRequest());
     }
 
     private static String asJsonString(final Object obj) {

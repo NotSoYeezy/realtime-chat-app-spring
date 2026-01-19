@@ -213,6 +213,17 @@ public class AuthControllerTests {
                 .andExpect(content().string("123"));
     }
 
+    @Test
+    public void deleteUser_ShouldReturn200_WhenUserIsAuthenticated() throws Exception {
+        String username = "testuser";
+
+        mockMvc.perform(post("/api/auth/delete")
+                        .with(user(username)))
+                .andExpect(status().isOk());
+
+        verify(userService).deleteAccount(username);
+    }
+
 
     private static String asJsonString(final Object obj) {
         try {
