@@ -18,7 +18,7 @@ public interface UserService {
     User registerUser(RegistrationRequest request);
     User updateUser(UpdateUserRequest request, String username);
     User registeredGoogleUser(OAuth2User user);
-    void deleteUser(Long id);
+    void deleteAccount(String username);
     boolean checkPassword(String username, String password);
     User authenticate(String username, String password);
     List<UserResponse> getAllUsersResponses();

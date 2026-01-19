@@ -1,8 +1,8 @@
 <script setup>
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
-import UserService from '@/api/getUser.js'
 import { useFriendsStore } from '@/stores/friendsStore.js'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
+import User from "@/api/User.js";
 
 defineProps({
   onlineUsers: Object,
@@ -37,7 +37,7 @@ const doSearch = async () => {
   open.value = true
 
   try {
-    const res = await UserService.searchUsers(trimmed.value)
+    const res = await User.searchUsers(trimmed.value)
     results.value = Array.isArray(res.data) ? res.data : []
   } catch (e) {
     error.value = e?.response?.data?.message ?? 'Search failed'

@@ -20,6 +20,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     Optional<User> findByProviderId(String id);
 
+    void deleteByUsername(String username);
+
     @Query("""
             SELECT u FROM User u
             WHERE LOWER(u.name) LIKE LOWER(CONCAT(:query, '%'))
