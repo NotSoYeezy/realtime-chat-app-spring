@@ -26,6 +26,8 @@ public interface UserService {
 
     void deleteUser(Long id);
 
+    void deleteAccount(String username);
+
     boolean checkPassword(String username, String password);
 
     User authenticate(String username, String password);

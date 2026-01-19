@@ -1,6 +1,7 @@
 package com.chat.realtimechat.repository.chat;
 
 import com.chat.realtimechat.model.entity.chat.ChatMessage;
+import com.chat.realtimechat.model.entity.User;
 import com.chat.realtimechat.model.enums.MessageContentType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
@@ -24,4 +25,5 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
                              @Param("currentUserId") Long currentUserId,
                              @Param("lastReadTime") LocalDateTime lastReadTime);
     List<ChatMessage> findByGroupIdAndContentType(Long groupId, MessageContentType contentType);
+    void deleteAllBySender(User sender);
 }

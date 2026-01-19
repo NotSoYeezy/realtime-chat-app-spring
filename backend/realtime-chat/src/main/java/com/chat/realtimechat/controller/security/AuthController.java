@@ -9,6 +9,7 @@ import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.model.entity.auth.RegisterConfirmToken;
 import com.chat.realtimechat.repository.security.RefreshTokenRepository;
 import com.chat.realtimechat.repository.security.RegisterConfirmTokenRepository;
+import com.chat.realtimechat.repository.UserRepository;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.service.security.RegisterConfirmTokenService;
 import com.chat.realtimechat.util.JwtUtil;
@@ -36,6 +37,7 @@ public class AuthController {
     private final RegisterConfirmTokenRepository registerConfirmTokenRepository;
     private final RegisterConfirmTokenService registerConfirmTokenService;
     private final RefreshTokenService refreshTokenService;
+    private final UserRepository userRepository;
 
     @PostMapping("/register")
     public ResponseEntity<RegisteredUserResponse> register(@RequestBody @Valid RegistrationRequest req) {
@@ -91,6 +93,13 @@ public class AuthController {
                     return ResponseEntity.ok("Logged out successfully.");
                 })
                 .orElse(ResponseEntity.badRequest().body("Invalid refresh token."));
+    }
+
+    @PostMapping("/delete")
+    public ResponseEntity<?> deleteUser(@AuthenticationPrincipal UserDetails user) {
+        String username = user.getUsername();
+        userService.deleteAccount(username);
+        return  ResponseEntity.ok().build();
     }
 
     @GetMapping("/me")

@@ -6,6 +6,7 @@ import com.chat.realtimechat.exception.auth.LoginUserNotFoundException;
 import com.chat.realtimechat.exception.auth.UserNotConfirmedException;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
+import com.chat.realtimechat.model.entity.ChatGroup;
 import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.entity.auth.PasswordResetToken;
@@ -18,7 +19,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.beans.Transient;
 import java.text.Normalizer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +37,12 @@ public class UserServiceImpl implements UserService {
     private final FriendshipService friendshipService;
     private final PasswordResetTokenService passwordResetTokenService;
     private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final GoogleRefreshTokenRepository googleRefreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final ChatGroupRepository chatGroupRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final FriendshipRepository friendshipRepository;
+    private final ChatGroupMemberRepository chatGroupMemberRepository;
 
     @Override
     public Iterable<User> findAllUsers() {
@@ -93,6 +102,32 @@ public class UserServiceImpl implements UserService {
         user.setProviderId(id);
         user.setConfirmed(true);
         return userRepository.save(user);
+    }
+
+    @Transactional
+    @Override
+    public void deleteAccount(String username){
+        User user = userRepository.findByUsername(username).orElseThrow(LoginUserNotFoundException::new);
+
+        friendshipRepository.deleteByUser(user);
+        friendshipRepository.deleteByFriend(user);
+
+        chatGroupMemberRepository.deleteByUser(user);
+
+        List<ChatGroup> adminGroups = chatGroupRepository.findByAdminsContains(user);
+        for (ChatGroup group : adminGroups) {
+            group.getAdmins().remove(user);
+            chatGroupRepository.save(group);
+        }
+
+        chatMessageRepository.deleteAllBySender(user);
+
+        if(!user.getProviderId().isEmpty()){
+            googleRefreshTokenRepository.deleteByUser(user);
+        }
+
+        refreshTokenRepository.deleteAllByUser(user);
+        userRepository.delete(user);
     }
 
     @Override
@@ -198,10 +233,6 @@ public class UserServiceImpl implements UserService {
         return true;
     }
 
-    @Override
-    public void deleteUser(Long id) {
-        userRepository.deleteById(id);
-    }
 
     private String generateUsername(String name, String surname) {
         String base = (stripAccents(name) + "-" + stripAccents(surname))

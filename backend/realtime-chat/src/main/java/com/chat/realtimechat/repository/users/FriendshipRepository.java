@@ -36,4 +36,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
 
     @Query("SELECT f.friend FROM Friendship f WHERE f.user.id = :userId AND f.status = com.chat.realtimechat.model.enums.FriendshipStatus.ACCEPTED UNION SELECT f.user FROM Friendship f WHERE f.friend.id = :userId AND f.status = com.chat.realtimechat.model.enums.FriendshipStatus.ACCEPTED")
     List<User> findFriendsByUserId(@Param("userId") Long userId);
+
+    void deleteByUser(User user);
+    void deleteByFriend(User friend);
 }

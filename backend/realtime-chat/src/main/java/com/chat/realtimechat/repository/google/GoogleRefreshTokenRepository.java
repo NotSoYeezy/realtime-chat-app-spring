@@ -7,4 +7,5 @@ import java.util.Optional;
 
 public interface GoogleRefreshTokenRepository extends JpaRepository<GoogleRefreshToken, Long> {
     Optional<GoogleRefreshToken> findByUserId(Long userId);
+    void deleteByUser(User user);
 }
