@@ -9,7 +9,7 @@ import com.chat.realtimechat.model.dto.response.AuthTokenResponse;
 import com.chat.realtimechat.model.entity.auth.RegisterConfirmToken;
 import com.chat.realtimechat.repository.security.RefreshTokenRepository;
 import com.chat.realtimechat.repository.security.RegisterConfirmTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.service.security.RegisterConfirmTokenService;
 import com.chat.realtimechat.util.JwtUtil;

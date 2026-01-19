@@ -24,8 +24,6 @@ public interface UserService {
 
     User registeredGoogleUser(OAuth2User user);
 
-    void deleteUser(Long id);
-
     void deleteAccount(String username);
 
     boolean checkPassword(String username, String password);

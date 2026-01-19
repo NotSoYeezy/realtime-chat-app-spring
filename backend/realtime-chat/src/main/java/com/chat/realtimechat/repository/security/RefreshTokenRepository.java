@@ -1,6 +1,6 @@
 package com.chat.realtimechat.repository.security;
 
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.entity.auth.RefreshToken;
 import org.springframework.data.jpa.repository.JpaRepository;
 

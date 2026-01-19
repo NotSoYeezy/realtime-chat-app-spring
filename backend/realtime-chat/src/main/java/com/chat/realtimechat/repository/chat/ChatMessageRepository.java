@@ -1,7 +1,7 @@
 package com.chat.realtimechat.repository.chat;
 
 import com.chat.realtimechat.model.entity.chat.ChatMessage;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.enums.MessageContentType;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;

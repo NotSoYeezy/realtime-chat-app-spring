@@ -6,12 +6,18 @@ import com.chat.realtimechat.exception.auth.LoginUserNotFoundException;
 import com.chat.realtimechat.exception.auth.UserNotConfirmedException;
 import com.chat.realtimechat.model.dto.response.FriendUserResponse;
 import com.chat.realtimechat.model.dto.response.UserResponse;
-import com.chat.realtimechat.model.entity.ChatGroup;
+import com.chat.realtimechat.model.entity.chat.ChatGroup;
 import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
 import com.chat.realtimechat.model.entity.auth.PasswordResetToken;
+import com.chat.realtimechat.repository.chat.ChatGroupMemberRepository;
+import com.chat.realtimechat.repository.chat.ChatGroupRepository;
+import com.chat.realtimechat.repository.chat.ChatMessageRepository;
+import com.chat.realtimechat.repository.google.GoogleRefreshTokenRepository;
 import com.chat.realtimechat.repository.security.PasswordResetTokenRepository;
 import com.chat.realtimechat.model.dto.request.UpdateUserRequest;
+import com.chat.realtimechat.repository.security.RefreshTokenRepository;
+import com.chat.realtimechat.repository.users.FriendshipRepository;
 import com.chat.realtimechat.repository.users.UserRepository;
 import com.chat.realtimechat.service.security.PasswordResetTokenService;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +26,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.beans.Transient;
 import java.text.Normalizer;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
