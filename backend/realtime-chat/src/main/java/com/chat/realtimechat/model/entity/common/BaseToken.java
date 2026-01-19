@@ -1,6 +1,5 @@
 package com.chat.realtimechat.model.entity.common;
 
-import com.chat.realtimechat.model.entity.auth.RefreshToken;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

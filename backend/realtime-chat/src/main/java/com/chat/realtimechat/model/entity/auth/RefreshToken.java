@@ -1,6 +1,6 @@
 package com.chat.realtimechat.model.entity.auth;
 
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.entity.common.BaseToken;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -2,10 +2,10 @@ package com.chat.realtimechat.security;
 
 import com.chat.realtimechat.model.entity.auth.GoogleRefreshToken;
 import com.chat.realtimechat.model.entity.auth.RefreshToken;
-import com.chat.realtimechat.model.entity.User;
-import com.chat.realtimechat.repository.GoogleRefreshTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
-import com.chat.realtimechat.service.UserService;
+import com.chat.realtimechat.model.entity.users.User;
+import com.chat.realtimechat.repository.google.GoogleRefreshTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
+import com.chat.realtimechat.service.users.UserService;
 import com.chat.realtimechat.service.security.RefreshTokenService;
 import com.chat.realtimechat.util.JwtUtil;
 import jakarta.servlet.http.Cookie;

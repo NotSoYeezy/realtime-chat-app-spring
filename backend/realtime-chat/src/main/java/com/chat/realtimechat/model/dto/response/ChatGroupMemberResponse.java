@@ -1,6 +1,6 @@
 package com.chat.realtimechat.model.dto.response;
 
-import com.chat.realtimechat.model.entity.ChatGroupMember;
+import com.chat.realtimechat.model.entity.chat.ChatGroupMember;
 import lombok.Data;
 import java.time.LocalDateTime;
 

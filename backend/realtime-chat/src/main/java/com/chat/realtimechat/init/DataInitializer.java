@@ -1,10 +1,10 @@
 package com.chat.realtimechat.init;
 
-import com.chat.realtimechat.model.entity.Friendship;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.Friendship;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.enums.FriendshipStatus;
-import com.chat.realtimechat.repository.FriendshipRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.users.FriendshipRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;

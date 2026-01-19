@@ -1,6 +1,6 @@
 package com.chat.realtimechat.model.dto.response;
 
-import com.chat.realtimechat.model.entity.ChatMessage;
+import com.chat.realtimechat.model.entity.chat.ChatMessage;
 import com.chat.realtimechat.model.enums.MessageContentType;
 import com.chat.realtimechat.model.enums.UserStatus;
 import lombok.Data;

@@ -1,11 +1,11 @@
 package com.chat.realtimechat.service.security;
 
-import com.chat.realtimechat.exception.TokenExpiredException;
-import com.chat.realtimechat.exception.TokenNotFoundException;
-import com.chat.realtimechat.exception.UserNotFoundException;
+import com.chat.realtimechat.exception.auth.TokenExpiredException;
+import com.chat.realtimechat.exception.auth.TokenNotFoundException;
+import com.chat.realtimechat.exception.auth.UserNotFoundException;
 import com.chat.realtimechat.model.entity.auth.RefreshToken;
-import com.chat.realtimechat.repository.RefreshTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.security.RefreshTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import com.chat.realtimechat.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

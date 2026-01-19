@@ -1,10 +1,10 @@
 package com.chat.realtimechat.service.security;
 
 import com.chat.realtimechat.exception.friendship.UserNotFoundException;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.entity.auth.PasswordResetToken;
-import com.chat.realtimechat.repository.PasswordResetTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.security.PasswordResetTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import com.chat.realtimechat.service.notifiers.UserEmailNotifier;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;

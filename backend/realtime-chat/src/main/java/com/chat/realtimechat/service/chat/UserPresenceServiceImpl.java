@@ -1,10 +1,10 @@
 package com.chat.realtimechat.service.chat;
 
 import com.chat.realtimechat.model.dto.response.OnlineInfoResponse;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.enums.UserStatus;
-import com.chat.realtimechat.repository.FriendshipRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.users.FriendshipRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

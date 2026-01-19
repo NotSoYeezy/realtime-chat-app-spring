@@ -1,8 +1,7 @@
 package com.chat.realtimechat.service.security;
 
 
-import com.chat.realtimechat.model.entity.User;
-import com.chat.realtimechat.model.entity.auth.RefreshToken;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.entity.auth.RegisterConfirmToken;
 
 public interface RegisterConfirmTokenService {

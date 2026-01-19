@@ -1,15 +1,15 @@
 package com.chat.realtimechat;
 
 import com.chat.realtimechat.controller.security.AuthController;
-import com.chat.realtimechat.exception.IncorrectPasswordException;
-import com.chat.realtimechat.exception.LoginUserNotFoundException;
-import com.chat.realtimechat.exception.UserAlreadyExistsException;
+import com.chat.realtimechat.exception.auth.IncorrectPasswordException;
+import com.chat.realtimechat.exception.auth.LoginUserNotFoundException;
+import com.chat.realtimechat.exception.auth.UserAlreadyExistsException;
 import org.junit.jupiter.api.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import com.chat.realtimechat.model.dto.request.LoginRequest;
 import com.chat.realtimechat.model.dto.request.RegistrationRequest;
-import com.chat.realtimechat.repository.RefreshTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.security.RefreshTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

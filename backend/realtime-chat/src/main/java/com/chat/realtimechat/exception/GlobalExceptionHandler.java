@@ -1,5 +1,10 @@
 package com.chat.realtimechat.exception;
 
+import com.chat.realtimechat.exception.auth.*;
+import com.chat.realtimechat.exception.auth.UserNotFoundException;
+import com.chat.realtimechat.exception.chat.GroupAccessDeniedException;
+import com.chat.realtimechat.exception.chat.GroupNotFoundException;
+import com.chat.realtimechat.exception.chat.GroupOperationException;
 import com.chat.realtimechat.exception.friendship.*;
 import com.chat.realtimechat.exception.google.AccountNotConnectedException;
 import com.chat.realtimechat.exception.google.ConnectionExpiredException;

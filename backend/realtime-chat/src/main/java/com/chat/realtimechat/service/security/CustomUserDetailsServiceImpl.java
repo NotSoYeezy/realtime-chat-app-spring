@@ -1,7 +1,7 @@
 package com.chat.realtimechat.service.security;
 
-import com.chat.realtimechat.model.entity.User;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.model.entity.users.User;
+import com.chat.realtimechat.repository.users.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

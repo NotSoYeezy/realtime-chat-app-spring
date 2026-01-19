@@ -1,6 +1,6 @@
 package com.chat.realtimechat.model.dto.response;
 
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

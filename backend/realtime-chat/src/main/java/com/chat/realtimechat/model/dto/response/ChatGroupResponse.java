@@ -1,7 +1,7 @@
 package com.chat.realtimechat.model.dto.response;
 
 import com.chat.realtimechat.config.UploadUrlConfig;
-import com.chat.realtimechat.model.entity.ChatGroup;
+import com.chat.realtimechat.model.entity.chat.ChatGroup;
 import com.chat.realtimechat.model.enums.GroupType;
 import lombok.Data;
 

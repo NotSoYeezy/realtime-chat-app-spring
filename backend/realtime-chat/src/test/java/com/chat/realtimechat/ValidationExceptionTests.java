@@ -2,23 +2,16 @@ package com.chat.realtimechat;
 
 
 import com.chat.realtimechat.controller.security.AuthController;
-import com.chat.realtimechat.model.dto.request.RegistrationRequest;
-import com.chat.realtimechat.repository.RefreshTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
-import com.chat.realtimechat.service.UserService;
-import jakarta.validation.ValidationException;
+import com.chat.realtimechat.repository.security.RefreshTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.transaction.TransactionSystemException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;

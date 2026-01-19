@@ -1,13 +1,13 @@
 package com.chat.realtimechat.service.security;
 
-import com.chat.realtimechat.exception.TokenExpiredException;
-import com.chat.realtimechat.exception.TokenNotFoundException;
-import com.chat.realtimechat.exception.UserAlreadyExistsException;
-import com.chat.realtimechat.exception.UserNotFoundException;
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.exception.auth.TokenExpiredException;
+import com.chat.realtimechat.exception.auth.TokenNotFoundException;
+import com.chat.realtimechat.exception.auth.UserAlreadyExistsException;
+import com.chat.realtimechat.exception.auth.UserNotFoundException;
+import com.chat.realtimechat.model.entity.users.User;
 import com.chat.realtimechat.model.entity.auth.RegisterConfirmToken;
-import com.chat.realtimechat.repository.RegisterConfirmTokenRepository;
-import com.chat.realtimechat.repository.UserRepository;
+import com.chat.realtimechat.repository.security.RegisterConfirmTokenRepository;
+import com.chat.realtimechat.repository.users.UserRepository;
 import com.chat.realtimechat.service.notifiers.UserEmailNotifier;
 import com.chat.realtimechat.service.notifiers.UserEmailNotifierImpl;
 import jakarta.transaction.Transactional;

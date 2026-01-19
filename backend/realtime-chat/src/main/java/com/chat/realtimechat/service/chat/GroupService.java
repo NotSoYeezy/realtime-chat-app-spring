@@ -2,14 +2,12 @@ package com.chat.realtimechat.service.chat;
 
 import com.chat.realtimechat.model.dto.request.UpdateGroupRequest;
 import com.chat.realtimechat.model.dto.response.ChatGroupResponse;
-import com.chat.realtimechat.model.entity.ChatGroup;
-import com.chat.realtimechat.model.entity.User;
-import jakarta.servlet.http.HttpServletResponse;
+import com.chat.realtimechat.model.entity.chat.ChatGroup;
+import com.chat.realtimechat.model.entity.users.User;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
 import java.util.Set;
 
 public interface GroupService {

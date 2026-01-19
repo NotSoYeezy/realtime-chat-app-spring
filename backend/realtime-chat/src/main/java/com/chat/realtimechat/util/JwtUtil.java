@@ -1,6 +1,6 @@
 package com.chat.realtimechat.util;
 
-import com.chat.realtimechat.model.entity.User;
+import com.chat.realtimechat.model.entity.users.User;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
