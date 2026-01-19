@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import SettingsButton from '@/components/settings/SettingsButton.vue'
-import UpdateUser from '@/api/updateUser.js'
+import User from "@/api/User.js";
 
 defineProps({
   user: {
@@ -130,7 +130,7 @@ const handleSave = async() => {
 
     if (Object.keys(payload).length === 0) return
 
-    const response = await UpdateUser.updateUser(payload)
+    const response = await User.updateUser(payload)
 
     if (response.status === 200) {
       if (payload.email || payload.password) {

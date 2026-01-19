@@ -1,8 +1,8 @@
 <script setup>
 import { ref, watch, computed, onBeforeUnmount } from 'vue'
-import UserService from '@/api/getUser.js'
 import { useFriendsStore } from '@/stores/friendsStore.js'
 import DefaultUsersList from '@/components/user/DefaultUsersList.vue'
+import User from "@/api/User.js";
 
 defineProps({
   onlineUsers: Object,

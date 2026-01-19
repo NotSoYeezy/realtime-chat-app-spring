@@ -1,12 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
-import getUser from '@/api/getUser.js'
 import SettingsTab from '@/components/settings/SettingsTab.vue'
 import SettingsButton from '@/components/settings/SettingsButton.vue'
-import CheckPassword from '@/api/checkPassword.js'
 import UpdateProfileLayout from '@/components/settings/layout/UpdateProfileLayout.vue'
 import PasswordInput from "@/components/auth/PasswordInput.vue";
-import UpdateUser from "@/api/updateUser.js";
+import User from "@/api/User.js";
 
 const emit = defineEmits(['updateProfile', 'logout'])
 
@@ -18,6 +16,10 @@ const hasPassword = ref(true)
 const showVerify = ref(false)
 const showUpdate = ref(false)
 const showCreatePassword = ref(false)
+
+const showDelete = ref(false)
+const deleteConfirmation = ref('')
+const deleteError = ref('')
 
 const currentPassword = ref('')
 const newPassword = ref('')
@@ -31,12 +33,12 @@ const fetchUser = async () => {
   error.value = null
 
   try {
-    const idResponse = await getUser.getMyId()
+    const idResponse = await User.getMyId()
     const myId = idResponse.data
 
     if (!myId) throw new Error('no ID')
 
-    const profileResponse = await getUser.getUser(myId)
+    const profileResponse = await User.getUser(myId)
     user.value = profileResponse.data
   } catch (err) {
     error.value = 'Could not load user data.'
@@ -47,12 +49,11 @@ const fetchUser = async () => {
 
 const checkPasswordStatus = async () => {
   try {
-    const response = await CheckPassword.checkPassword(null);
+    const response = await User.checkPassword(null);
     hasPassword.value = response.data.hasPassword;
   } catch (err) {
   }
 }
-
 
 const handleVerify = async () => {
   verifyError.value = ' '
@@ -63,7 +64,7 @@ const handleVerify = async () => {
   }
 
   try {
-    const response = await CheckPassword.checkPassword(currentPassword.value);
+    const response = await User.checkPassword(currentPassword.value);
     if(response.status === 200) {
       showUpdate.value = true
       showVerify.value = false
@@ -77,7 +78,6 @@ const handleVerify = async () => {
     }
   }
 }
-
 
 const handleCreatePassword = async () => {
   createError.value = ' '
@@ -95,7 +95,7 @@ const handleCreatePassword = async () => {
 
   try {
     payload.password = newPassword.value;
-    const response = await UpdateUser.updateUser(payload)
+    const response = await User.updateUser(payload)
     if(response.status === 200) {
       showCreatePassword.value = false;
       hasPassword.value = true;
@@ -104,6 +104,24 @@ const handleCreatePassword = async () => {
     }
   } catch (err) {
     createError.value = err.load.data.message;
+  }
+}
+
+const handleDeleteAccount = async () => {
+  deleteError.value = ''
+
+  if (deleteConfirmation.value !== 'DELETE') {
+    deleteError.value = 'Please type "DELETE" exactly to confirm.'
+    return
+  }
+
+  try {
+    const response = await User.deleteUser()
+    if(response.status === 200) {
+      emit("logout")
+    }
+  } catch (err) {
+    deleteError.value = 'Failed to delete account. Please try again.'
   }
 }
 
@@ -275,8 +293,58 @@ onMounted( async () => {
                 </div>
               </div>
             </div>
-
           </div>
+
+          <div class="pt-6 mt-6 border-t border-[var(--color-border)]">
+            <h3 class="text-sm font-semibold text-[var(--color-danger-text)] mb-2">Danger Zone</h3>
+
+            <div v-if="!showDelete">
+              <p class="text-sm text-[var(--color-text-secondary)] mb-4">
+                Permanently delete your account and all of your content.
+              </p>
+              <button
+                @click="showDelete = true"
+                class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
+              >
+                Delete Account
+              </button>
+            </div>
+
+            <div v-else class="space-y-4 p-4 border border-red-500/20 bg-red-500/5 rounded-lg animate-in slide-in-from-top-2 fade-in duration-200">
+              <p class="text-sm font-medium text-[var(--color-danger-text)]">
+                This action cannot be undone. To confirm, type <span class="font-bold select-all">DELETE</span> in the box below.
+              </p>
+
+              <div>
+                <input
+                  v-model="deleteConfirmation"
+                  type="text"
+                  placeholder="Type DELETE"
+                  class="w-full px-4 py-2.5 rounded-lg bg-[var(--surface-input)] border border-[var(--color-border)] text-[var(--color-text-primary)] placeholder-[var(--color-text-placeholder)] focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-all"
+                />
+                <p v-if="deleteError" class="text-[var(--color-danger-text)] text-xs mt-2">
+                  {{ deleteError }}
+                </p>
+              </div>
+
+              <div class="flex items-center gap-3">
+                <button
+                  @click="handleDeleteAccount"
+                  :disabled="deleteConfirmation !== 'DELETE'"
+                  class="px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
+                >
+                  Confirm Delete
+                </button>
+                <button
+                  @click="showDelete = false; deleteConfirmation = ''; deleteError = ''"
+                  class="px-4 py-2 text-sm font-medium text-[var(--color-text-secondary)] hover:text-[var(--color-text-primary)] transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
