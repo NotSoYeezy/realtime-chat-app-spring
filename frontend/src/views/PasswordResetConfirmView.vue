@@ -32,7 +32,6 @@ onMounted(async () => {
     return
   }
 
-  // opcjonalnie: backend validate-token
   status.value = 'ready'
 })
 

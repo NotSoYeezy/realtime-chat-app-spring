@@ -10,7 +10,6 @@ defineProps({
 
 defineEmits(['update:modelValue'])
 
-// MISSING PART — added now:
 const showPassword = ref(false)
 
 function toggleVisibility() {

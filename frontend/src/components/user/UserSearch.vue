@@ -37,7 +37,7 @@ const doSearch = async () => {
   open.value = true
 
   try {
-    const res = await UserService.searchUsers(trimmed.value)
+    const res = await User.searchUsers(trimmed.value)
     if (res.data && Array.isArray(res.data.content)) {
       results.value = res.data.content
     } else {
@@ -82,7 +82,6 @@ const onFocus = () => {
 }
 
 const onBlur = () => {
-  // mały delay, żeby klik w listę zadziałał
   setTimeout(() => (open.value = false), 150)
 }
 </script>

@@ -2,15 +2,23 @@ package com.chat.realtimechat.init;
 
 import com.chat.realtimechat.model.entity.users.Friendship;
 import com.chat.realtimechat.model.entity.users.User;
+import com.chat.realtimechat.model.entity.chat.ChatGroup;
+import com.chat.realtimechat.model.entity.chat.ChatMessage;
 import com.chat.realtimechat.model.enums.FriendshipStatus;
+import com.chat.realtimechat.model.enums.GroupType;
+import com.chat.realtimechat.model.enums.MessageContentType;
 import com.chat.realtimechat.repository.users.FriendshipRepository;
 import com.chat.realtimechat.repository.users.UserRepository;
+import com.chat.realtimechat.repository.chat.ChatGroupRepository;
+import com.chat.realtimechat.repository.chat.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 @Component
 @RequiredArgsConstructor
@@ -20,6 +28,8 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
     private final PasswordEncoder passwordEncoder;
+    private final ChatGroupRepository chatGroupRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     @Override
     public void run(String... args) {
@@ -87,6 +97,42 @@ public class DataInitializer implements CommandLineRunner {
         blocked(demo, eva);
         blocked(demo, olaf);
         blocked(demo, matthew);
+
+        // Create a big group for pagination testing
+        ChatGroup bigGroup = new ChatGroup();
+        bigGroup.setName("Pagination Test Group");
+        bigGroup.setType(GroupType.GROUP);
+        bigGroup.setCreatedAt(LocalDateTime.now().minusDays(10));
+        bigGroup.addMember(demo);
+        bigGroup.getAdmins().add(demo);
+        bigGroup.addMember(anna);
+        bigGroup.addMember(brian);
+        bigGroup.addMember(celine);
+
+        chatGroupRepository.save(bigGroup);
+
+        java.util.List<ChatMessage> messages = new ArrayList<>();
+        User[] senders = {demo, anna, brian, celine};
+        LocalDateTime baseTime = LocalDateTime.now().minusDays(5);
+
+        for (int i = 0; i < 150; i++) {
+            ChatMessage msg = new ChatMessage();
+            msg.setGroup(bigGroup);
+            msg.setSender(senders[i % senders.length]);
+            msg.setContent("This is message number " + (i + 1) + " for testing pagination. " +
+                    (i % 3 == 0 ? "Some extra text here." : ""));
+            msg.setTimestamp(baseTime.plusMinutes(i * 10));
+            msg.setType(ChatMessage.MessageType.CHAT);
+            msg.setContentType(MessageContentType.TEXT);
+            messages.add(msg);
+        }
+        chatMessageRepository.saveAll(messages);
+
+        // Update group last message info
+        ChatMessage lastMsg = messages.get(messages.size() - 1);
+        bigGroup.setLastMessageContent(lastMsg.getContent());
+        bigGroup.setLastMessageTime(lastMsg.getTimestamp());
+        chatGroupRepository.save(bigGroup);
 
         System.out.println(">>> DEMO USER READY <<<");
     }

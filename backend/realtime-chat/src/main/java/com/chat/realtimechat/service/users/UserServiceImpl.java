@@ -182,12 +182,12 @@ public class UserServiceImpl implements UserService {
 
         PasswordResetToken passwordResetToken = passwordResetTokenRepository
                 .findByToken(token)
-                .orElseThrow(() -> // TODO: throw custom error
+                .orElseThrow(() ->
                 new IllegalArgumentException("Invalid password reset token"));
 
         if (passwordResetToken.isTokenExpired()) {
             passwordResetTokenRepository.delete(passwordResetToken);
-            throw new IllegalArgumentException("Password reset token has expired"); // TODO: throw custom error
+            throw new IllegalArgumentException("Password reset token has expired");
         }
 
         User user = passwordResetToken.getUser();

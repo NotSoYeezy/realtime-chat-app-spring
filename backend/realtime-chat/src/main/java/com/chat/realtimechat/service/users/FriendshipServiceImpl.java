@@ -139,7 +139,6 @@ public class FriendshipServiceImpl implements FriendshipService {
         Friendship request = getFriendship(friendshipId);
 
         if (request.getStatus() == FriendshipStatus.ACCEPTED) {
-            // TODO: change later if needed
             return; // This means sender canceled invite after acceptance, this can be later changed
         }
 

@@ -1,8 +1,8 @@
 <script setup>
-import { ref, computed, watch } from 'vue' // Added watch
+import { ref, computed, watch } from 'vue'
 import { useChatStore } from '@/stores/chat'
 import { useFriendsStore } from '@/stores/friendsStore'
-import ColorThemeApi from "@/api/colorThemeApi.js" //
+import ColorThemeApi from "@/api/colorThemeApi.js"
 
 import ChatSidebarLeft from '@/components/chat/ChatSidebarLeft.vue'
 import ImageViewerModal from "@/components/chat/ImageViewerModal.vue"

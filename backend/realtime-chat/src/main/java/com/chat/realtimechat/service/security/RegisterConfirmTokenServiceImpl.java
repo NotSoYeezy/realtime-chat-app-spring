@@ -21,7 +21,6 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class RegisterConfirmTokenServiceImpl implements RegisterConfirmTokenService {
-    private final UserEmailNotifierImpl userEmailNotifierImpl;
     @Value("${auth.registerConfirmTokenExpirationMs}")
     private Long registerConfirmTokenExpirationMs;
     @Value("${url.base}")
@@ -70,8 +69,7 @@ public class RegisterConfirmTokenServiceImpl implements RegisterConfirmTokenServ
 
     @Override
     public void sendConfirmationEmail(RegisterConfirmToken registerConfirmToken, String userEmail) {
-        // TODO: change this to userEmailNotifier
-        userEmailNotifierImpl.sendMessage(
+        userEmailNotifier.sendMessage(
                 "To confirm your account please click this link: " + buildUrl(registerConfirmToken.getToken()),
                 "Account Confirmation",
                 userEmail

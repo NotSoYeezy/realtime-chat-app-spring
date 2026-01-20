@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
-import BaseButton from '@/components/ui/BaseButton.vue' // Użyjmy BaseButton dla spójności
+import BaseButton from '@/components/ui/BaseButton.vue'
 
 const props = defineProps({
   friends: Array,
@@ -10,7 +10,7 @@ const props = defineProps({
 const emit = defineEmits(['close', 'add'])
 
 const searchQuery = ref('')
-const selectedIds = ref(new Set()) // Zbiór zaznaczonych ID
+const selectedIds = ref(new Set())
 
 const availableFriends = computed(() => {
   const q = searchQuery.value.toLowerCase().trim()
@@ -36,7 +36,6 @@ const toggleSelection = (userId) => {
 
 const handleAdd = () => {
   if (selectedIds.value.size === 0) return
-  // Emitujemy tablicę ID
   emit('add', Array.from(selectedIds.value))
 }
 </script>

@@ -29,7 +29,6 @@ import java.util.Optional;
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    //TODO: move methods implementations into services
 
     private final JwtUtil jwtUtil;
     private final UserService userService;

@@ -56,5 +56,4 @@ public class UsersController {
         return ResponseEntity.status(HttpStatus.OK).body(
                 userService.searchUsers(query, userDetails, pageable));
     }
-
 }

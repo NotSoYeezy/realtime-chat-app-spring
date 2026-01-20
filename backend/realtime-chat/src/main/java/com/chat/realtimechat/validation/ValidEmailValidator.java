@@ -11,7 +11,6 @@ public class ValidEmailValidator implements ConstraintValidator<ValidEmail, Stri
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
 
-        // Allow null or blank values, use @NotBlank for mandatory fields
         if (value == null || value.isBlank()) {
             return true;
         }

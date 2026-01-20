@@ -19,8 +19,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
     Page<Friendship> findAllByUserIdAndStatus(Long userId, FriendshipStatus status, Pageable pageable);
 
     Page<Friendship> findAllByFriendIdAndStatus(Long friendId, FriendshipStatus status, Pageable pageable);
-    
-    // Kept for backward compatibility if needed, but we should rely on Pageable versions
+
     List<Friendship> findAllByUserIdAndStatus(Long userId, FriendshipStatus status);
     List<Friendship> findAllByFriendIdAndStatus(Long friendId, FriendshipStatus status);
 

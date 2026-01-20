@@ -11,7 +11,7 @@ defineProps({
 const emit = defineEmits(['update:messageContent', 'sendMessage', 'typing', 'cancelReply', 'uploadImage', 'uploadFile'])
 
 const imageInputRef = ref(null)
-const fileInputRef = ref(null) // New ref for generic files
+const fileInputRef = ref(null)
 const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'
 
 const handleImageSelect = (event) => {

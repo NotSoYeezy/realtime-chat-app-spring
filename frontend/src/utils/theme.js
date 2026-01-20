@@ -9,7 +9,6 @@ export function applyTheme() {
     document.documentElement.classList.remove('dark');
   }
   else {
-    // fallback: system
     if (prefersDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -26,7 +25,6 @@ export function toggleTheme() {
   } else if (saved === 'light') {
     localStorage.theme = 'dark';
   } else {
-    // jeśli system → ciemny tymczasowo
     localStorage.theme = 'dark';
   }
 
