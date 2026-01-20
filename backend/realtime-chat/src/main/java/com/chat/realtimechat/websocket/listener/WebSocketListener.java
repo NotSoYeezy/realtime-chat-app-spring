@@ -55,8 +55,8 @@ public class WebSocketListener {
             userRepository.findByUsername(username).ifPresent(u -> {
                 u.setLastSeen(LocalDateTime.now());
                 userRepository.save(u);
+                sendPresenceMessage(username, ChatMessage.MessageType.LEAVE, UserStatus.OFFLINE);
             });
-            sendPresenceMessage(username, ChatMessage.MessageType.LEAVE, UserStatus.OFFLINE);
         }
     }
 
