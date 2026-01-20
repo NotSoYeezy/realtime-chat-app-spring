@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ChatGroupRepository extends JpaRepository<ChatGroup, Long> {
@@ -27,4 +28,6 @@ public interface ChatGroupRepository extends JpaRepository<ChatGroup, Long> {
         Optional<ChatGroup> findPrivateGroup(@Param("user1") User user1, @Param("user2") User user2);
 
         ChatGroup getById(Long id);
+
+        List<ChatGroup> findByAdminsContains(User user);
 }
