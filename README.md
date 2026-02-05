@@ -1,64 +1,103 @@
 # Real-Time Chat Application
 
+A full-stack real-time chat platform built with Spring Boot and Vue 3. It provides
+user authentication, one-to-one and group chats, real-time messaging over WebSocket,
+and supporting services such as email notifications and file uploads.
+
 ## Authors
+
 Franciszek Dyląg, Mateusz Guzowski, Marcin Wojdalski
 
----
+## Features
+
+- JWT-based authentication with Google OAuth support
+- Real-time messaging via WebSocket (STOMP)
+- Group conversations and contact management
+- File attachments and uploads
+- Email confirmation and password reset flows
+- Swagger/OpenAPI documentation
+
+## Tech Stack
+
+- **Frontend:** Vue 3, Vite, Tailwind CSS
+- **Backend:** Spring Boot (REST + WebSocket), Spring Security
+- **Data/Infra:** PostgreSQL, Redis, RabbitMQ
+- **Containerization:** Docker, Docker Compose
 
 ## Architecture
 
-**3-Tier Architecture:**
-- **Frontend**: Vue.js
-- **Backend**: Spring Boot (REST + WebSocket)
-- **Database**: PostgreSQL
+**3-Tier Architecture**
 
----
+- **Frontend:** Vue.js SPA
+- **Backend:** Spring Boot API and WebSocket gateway
+- **Database:** PostgreSQL
 
-## Core Components
+## Getting Started
 
-### 1. Backend (Spring Boot)
+### Prerequisites
 
-**Main Modules:**
-- **Authentication & Authorization** - Managing user authentication and authorization
-- **WebSocket Layer** - Real-time message delivery
-- **REST API** - User management, conversation history, group operations
-- **Message Service** - Handle message exchanging process, this should also be responsible for handling attachments
+- Java 21
+- Node.js 20+
+- Docker (recommended for infrastructure services)
 
----
+### Environment Variables
 
-### 2. Frontend (Vue.js)
+Create a `.env` file at the repository root if you are using Docker Compose. The
+backend reads these values when starting:
 
-**Main Features:**
-- Login/Registration
-- Chat interface (conversation list + message panel)
-- Real-time message updates via WebSocket
-- User search & contact management
-- Group creation & management
-- Message notifications
+```
+SPRING_PROFILES_ACTIVE=local
+GOOGLE_CLIENT_ID=your-client-id
+GOOGLE_CLIENT_SECRET=your-client-secret
+MAIL_USERNAME=your-email
+MAIL_PASSWORD=your-email-password
+```
 
----
+The frontend expects `VITE_BACKEND_URL` in `frontend/.env` (defaults to
+`http://localhost:8080`).
 
-### 3. Database (PostgreSQL)
+### Run Infrastructure + Backend with Docker Compose
 
-**Core Tables:**
-- `users` - User accounts
-- `conversations` - Private chats & groups
-- `conversation_participants` - Many-to-many relationship
-- `messages` - All messages with timestamps
+```sh
+docker compose up --build
+```
 
-Note: We might also use Redis as a message broker (i.e. when sending async email to user)
+This starts PostgreSQL, Redis, RabbitMQ, and the Spring Boot backend. Useful ports:
 
----
+- Backend API: `http://localhost:8080`
+- RabbitMQ management UI: `http://localhost:15672`
+- RedisInsight: `http://localhost:5540`
 
-## Key Considerations
+### Run the Frontend Locally
 
-- **Message Delivery**: Handle offline users (store & forward when online)
-- **Security**: Validate user permissions for conversations
+```sh
+cd frontend
+npm install
+npm run dev
+```
 
---- 
+The app will be available at `http://localhost:5173`.
 
-## Additional Features:
-- Read receipts & typing indicators
-- Calendar integration -> user status might be automatically toggled to busy when having a meeting in his calendar
-- Dockerizing our application
-- Swagger documentation
+### Run the Backend Locally
+
+```sh
+cd backend/realtime-chat
+./mvnw spring-boot:run
+```
+
+### Tests and Linting
+
+```sh
+# Backend tests
+cd backend/realtime-chat
+./mvnw test
+
+# Frontend lint
+cd frontend
+npm run lint
+```
+
+### API Docs
+
+When the backend is running, Swagger UI is available at:
+`http://localhost:8080/swagger-ui/index.html`.
